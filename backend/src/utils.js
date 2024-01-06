@@ -8,18 +8,15 @@ export default __dirname;
 
 
 const storage = multer.diskStorage({
-  destination: (req,file,cb) => {
+  destination: (req, file, cb) => {
+    if (!fs.existsSync("./src/public/" + req.body?.thumbnail)) {
+      fs.mkdirSync("./src/public/" + req.body?.thumbnail, { recursive: true })
+    }
     cb(null, `./src/public/${req.body?.thumbnail}/`)
   },
-  filename: (req,file,cb) => {
-    cb(null, req.body?.thumbnail + file.originalname)
+  filename: (req, file, cb) => {
+    cb(null, file.originalname)
   }
 })
 
-export const createFolder = (req,res,next) => {
-  if (!fs.existsSync("./src/public/" + req.body?.thumbnail)) {
-    fs.mkdirSync("./src/public/" + req.body?.thumbnail)
-  }
-}
-
-export const uploader = multer({storage})
+export const uploader = multer({ storage })

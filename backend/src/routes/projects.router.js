@@ -1,6 +1,6 @@
 import { Router } from "express"
 import { getAllFromProject, createProject } from "../controllers/project.controller.js"
-import { uploader, createFolder } from "../utils.js"
+import { uploader } from "../utils.js"
 
 const router = Router()
 
