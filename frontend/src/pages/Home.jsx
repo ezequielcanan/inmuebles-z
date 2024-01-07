@@ -4,7 +4,7 @@ import Main from "../containers/Main"
 
 const Home = () => {
   return (
-    <Main className="bg-first/65 bg-[url('render.jpeg')] bg-no-repeat bg-cover bg-top bg-blend-multiply justify-center items-center">
+    <Main className="bg-first/65 bg-[url('baumo.jpeg')] bg-center bg-no-repeat bg-cover bg-top bg-blend-multiply justify-center items-center">
       <section className="flex flex-col items-start">
         <h1 className="nav-title text-8xl font-black mb-[40px]">Desarrollos &<br/> proyectos</h1>
         <p className="text-fourth text-3xl">Aplicación para manejo de desarrollos inmobiliarios</p>

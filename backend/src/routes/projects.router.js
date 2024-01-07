@@ -1,11 +1,12 @@
-import { Router } from "express"
-import { getAllFromProject, createProject } from "../controllers/project.controller.js"
+import Z_Router from "./router.js"
+import { getAllFromProject, createProject, getProjects } from "../controllers/project.controller.js"
 import { uploader } from "../utils.js"
 
-const router = Router()
-
-router.post("/", uploader.single("image"), createProject)
-
-router.get("/:pid", getAllFromProject)
-
-export default router
+export default class ProjectsRouter extends Z_Router {
+  init() {
+    this.get("/", getProjects)
+    this.post("/", uploader.single("file"), createProject)
+    this.get("/", getProjects)
+    this.get("/:pid", getAllFromProject)
+  }
+}

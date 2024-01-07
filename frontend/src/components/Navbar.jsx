@@ -18,7 +18,7 @@ const Navbar = () => {
   ]
 
   return (
-    <header className="w-full h-[120px] bg-first fixed">
+    <header className="w-full h-[120px] bg-first fixed z-50">
       <nav className="w-full h-full flex items-center justify-between px-20">
         <Link to={"/"}>
           <img src="/logo.svg" alt="" />

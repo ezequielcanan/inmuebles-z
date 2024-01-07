@@ -9,13 +9,16 @@ export default __dirname;
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    if (!fs.existsSync("./src/public/" + req.body?.thumbnail)) {
-      fs.mkdirSync("./src/public/" + req.body?.thumbnail, { recursive: true })
+    const data = JSON.parse(req.body?.data)
+    req.data = data
+    if (!fs.existsSync("./src/public/" + data?.folder)) {
+      fs.mkdirSync("./src/public/" + data?.folder, { recursive: true })
     }
-    cb(null, `./src/public/${req.body?.thumbnail}/`)
+    cb(null, `./src/public/${data?.folder}/`)
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname)
+    const ext = file.originalname.substring(file.originalname.lastIndexOf('.'), file.originalname.length);
+    cb(null, (req.data?.title || req.data?.name || req.data?.tenant) + ext)
   }
 })
 
