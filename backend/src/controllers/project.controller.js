@@ -38,3 +38,14 @@ export const createProject = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const getProject = async (req, res) => {
+  try {
+    const result = await projectService.getProject(req.params?.pid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}

@@ -10,9 +10,9 @@ const Projects = () => {
   const sections = ["De pozo", "En desarrollo", "Finalizados"]
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/projects")
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/projects")
       .then(res => res.json())
-      .then(json => (console.log(json), setProjects(json.payload)))
+      .then(json => (setProjects(json.payload)))
   }, [])
 
   return (

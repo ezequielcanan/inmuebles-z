@@ -26,7 +26,7 @@ const NewProject = () => {
     formData.append("data", JSON.stringify(data))
     formData.append("file", image)
 
-    fetch("http://localhost:3000/api/projects", {method: "POST", body: formData})
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/projects", {method: "POST", body: formData})
       .then(res => res.json()).then(json => navigate("/projects"))
   })
 

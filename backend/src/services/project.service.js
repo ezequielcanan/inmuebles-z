@@ -22,6 +22,11 @@ class ProjectService {
     }
     return categories
   }
+
+  getProject = async (pid) => {
+    const result = await projectModel.findById(pid)
+    return result
+  }
 }
 
 export default ProjectService

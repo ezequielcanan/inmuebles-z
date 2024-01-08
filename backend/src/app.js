@@ -3,6 +3,8 @@ import mongoose from "mongoose"
 import dotenv from "dotenv"
 import cookieParser from "cookie-parser"
 import ProjectsRouter from "./routes/projects.router.js"
+import FloorRouter from "./routes/floor.router.js"
+import ApartmentRouter from "./routes/apartments.router.js"
 import cors from "cors"
 import __dirname from "./utils.js"
 
@@ -17,7 +19,12 @@ app.use(express.urlencoded({ extended: false }))
 app.use("/static", express.static(__dirname + "/public"))
 
 const projectsRouter = new ProjectsRouter()
+const floorRouter = new FloorRouter()
+const apartmentRouter = new ApartmentRouter()
+
 app.use("/api/projects", projectsRouter.getRouter())
+app.use("/api/floor", floorRouter.getRouter())
+app.use("/api/apartments", apartmentRouter.getRouter())
 
 // MONGO CONNECTION AND RUNNING SERVER
 mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGO_DB })

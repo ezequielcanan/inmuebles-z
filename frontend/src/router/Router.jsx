@@ -4,8 +4,9 @@ import Home from "../pages/Home"
 import Apartment from "../pages/Apartment"
 import Projects from "../pages/Projects"
 import Project from "../pages/Project"
-import Floor from "../pages/Floor"
 import NewProject from "../pages/NewProject"
+import Floor from "../pages/Floor"
+import ApartmentEdit from "../pages/ApartmentEdit"
 
 const Router = () => {
   return (
@@ -16,14 +17,13 @@ const Router = () => {
         <Route path="/apartment" element={<Apartment/>}/>
         <Route path="/new-project" element={<NewProject/>}/>
         <Route path="/projects" element={<Projects/>}/>
-        <Route path="/rawson" element={<Project/>}/>
         <Route path="/piso" element={<Floor/>}/>
         <Route path="/category/:category" />
-        <Route path="/projects/:project" />
+        <Route path="/projects/:project" element={<Project/>}/>
         <Route path="/projects/:project/edit" />
-        <Route path="/projects/:project/:piso" />
-        <Route path="/projects/:project/:piso/:inmueble"/>
-        <Route path="/projects/:project/:piso/:inmueble/edit" />
+        <Route path="/floors/:floor/edit" element={<Floor/>}/>
+        <Route path="/inmueble/:inmueble"/>
+        <Route path="/inmueble/:inmueble/edit" element={<ApartmentEdit/>}/>
         <Route path="/login" />
         <Route path="/register" />
       </Routes>
