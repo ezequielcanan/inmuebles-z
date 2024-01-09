@@ -4,7 +4,7 @@ const rentsCollection = "rents"
 
 const rentsSchema = new mongoose.Schema({
   apartment: {type: mongoose.Schema.Types.ObjectId, ref: "apartments"},
-  fromDate: {type: Date},
+  fromDate: Date,
   toDate: Date,
   tenant: {type: mongoose.Schema.Types.ObjectId, ref: "tenants"},
   value: Number,
