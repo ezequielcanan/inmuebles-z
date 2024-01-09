@@ -5,8 +5,9 @@ import Apartment from "../pages/Apartment"
 import Projects from "../pages/Projects"
 import Project from "../pages/Project"
 import NewProject from "../pages/NewProject"
-import Floor from "../pages/Floor"
+import FloorEdit from "../pages/FloorEdit"
 import ApartmentEdit from "../pages/ApartmentEdit"
+import Floor from "../pages/Floor"
 
 const Router = () => {
   return (
@@ -17,11 +18,11 @@ const Router = () => {
         <Route path="/apartment" element={<Apartment/>}/>
         <Route path="/new-project" element={<NewProject/>}/>
         <Route path="/projects" element={<Projects/>}/>
-        <Route path="/piso" element={<Floor/>}/>
         <Route path="/category/:category" />
         <Route path="/projects/:project" element={<Project/>}/>
         <Route path="/projects/:project/edit" />
-        <Route path="/floors/:floor/edit" element={<Floor/>}/>
+        <Route path="/floors/:floor" element={<Floor/>}/>
+        <Route path="/floors/:floor/edit" element={<FloorEdit/>}/>
         <Route path="/inmueble/:inmueble"/>
         <Route path="/inmueble/:inmueble/edit" element={<ApartmentEdit/>}/>
         <Route path="/login" />

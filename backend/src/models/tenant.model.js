@@ -3,8 +3,8 @@ import mongoose from "mongoose"
 const tenantsCollection = "tenants"
 
 const tenantsSchema = new mongoose.Schema({
-  name: String,
-  number: {type: Number, unique: true},
+  tenantName: String,
+  tenantNumber: { type: Number, unique: true },
   tenantThumbnail: String
 })
 

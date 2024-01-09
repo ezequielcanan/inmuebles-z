@@ -22,7 +22,7 @@ const apartmentsSchema = new mongoose.Schema({
       }
     },
   },
-  rooms: Number,
+  rooms: String,
   rent: { type: mongoose.Schema.Types.ObjectId, ref: "rents" },
   orientation: { type: String, enum: ["Frente", "Contrafrente", "Izquierda", "Derecha"] }
 });

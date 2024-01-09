@@ -20,6 +20,10 @@ export default class Z_Router {
     this.router.post(path, this.generateCustomResponse, this.applyCallbacks(callbacks))
   }
 
+  put = (path, ...callbacks) => {
+    this.router.put(path, this.generateCustomResponse, this.applyCallbacks(callbacks))
+  }
+
   applyCallbacks = callbacks => {
     return callbacks.map(callback => async (...params) => {
       try {

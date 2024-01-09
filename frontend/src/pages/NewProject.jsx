@@ -5,7 +5,7 @@ import {useForm} from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 
 const NewProject = () => {
-  const [image, setImage] = useState(null)
+  const [image, setImage] = useState(false)
   const [selected, setSelected] = useState("De pozo")
   const {handleSubmit, register} = useForm()
   const navigate = useNavigate()

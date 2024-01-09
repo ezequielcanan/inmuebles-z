@@ -22,6 +22,11 @@ class ApartmentService {
     const apartment = await apartmentModel.create(data)
     return apartment
   }
+
+  updateApartment = async (aid, data) => {
+    const result = await apartmentModel.findOneAndUpdate({ _id: aid }, { ...data })
+    return result
+  }
 }
 
 export default ApartmentService

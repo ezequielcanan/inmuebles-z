@@ -33,3 +33,14 @@ export const createApartment = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const updateApartment = async (req, res) => {
+  try {
+    const result = await apartmentService.updateApartment(req.params?.aid, req.body)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
