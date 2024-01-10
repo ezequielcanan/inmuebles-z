@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const ext = file.originalname.substring(file.originalname.lastIndexOf('.'), file.originalname.length);
-    cb(null, (req.data?.title || req.data?.name || req.data?.tenant) + ext)
+    cb(null, (req.data?.title || req.data?.name || req.data?.tenant) ? (req.data?.title || req.data?.name || req.data?.tenant) + ext : file.originalname)
   }
 })
 

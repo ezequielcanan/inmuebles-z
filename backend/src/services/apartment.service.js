@@ -1,4 +1,6 @@
 import apartmentModel from "../models/apartment.model.js"
+import fs from "fs"
+import __dirname from "../utils.js"
 
 class ApartmentService {
   constructor() { }
@@ -26,6 +28,12 @@ class ApartmentService {
   updateApartment = async (aid, data) => {
     const result = await apartmentModel.findOneAndUpdate({ _id: aid }, { ...data })
     return result
+  }
+
+  getFiles = (fileType, project, apartment) => {
+    const files = []
+    fs.readdirSync(__dirname + "/public/projects/" + project + "/" + apartment + "/" + fileType).forEach(file => files.push(file))
+    return files
   }
 }
 

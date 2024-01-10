@@ -57,7 +57,8 @@ const NewProject = () => {
       type: "file",
       name: "file",
       imageState: image,
-      onChangeFunction: loadImage
+      onChangeFunction: loadImage,
+      label: "Imagen de portada:"
     }
   ]
 

@@ -1,13 +1,13 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Navbar from "../components/Navbar"
 import Home from "../pages/Home"
-import Apartment from "../pages/Apartment"
 import Projects from "../pages/Projects"
 import Project from "../pages/Project"
 import NewProject from "../pages/NewProject"
 import FloorEdit from "../pages/FloorEdit"
 import ApartmentEdit from "../pages/ApartmentEdit"
 import Floor from "../pages/Floor"
+import Apartment from "../pages/Apartment"
 
 const Router = () => {
   return (
@@ -15,7 +15,6 @@ const Router = () => {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home/>}/>
-        <Route path="/apartment" element={<Apartment/>}/>
         <Route path="/new-project" element={<NewProject/>}/>
         <Route path="/projects" element={<Projects/>}/>
         <Route path="/category/:category" />
@@ -23,7 +22,7 @@ const Router = () => {
         <Route path="/projects/:project/edit" />
         <Route path="/floors/:floor" element={<Floor/>}/>
         <Route path="/floors/:floor/edit" element={<FloorEdit/>}/>
-        <Route path="/inmueble/:inmueble"/>
+        <Route path="/inmueble/:inmueble" element={<Apartment/>}/>
         <Route path="/inmueble/:inmueble/edit" element={<ApartmentEdit/>}/>
         <Route path="/login" />
         <Route path="/register" />

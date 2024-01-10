@@ -23,11 +23,11 @@ const Floor = () => {
   return (
     <Main className={"pt-[200px] items-center mb-auto bg-sixth "}>
       {floor ? (
-        <div className="flex justify-between items-center w-full">
+        <section className="flex justify-between items-center w-full">
           <Link to={"/projects/"+floor.project}><FaChevronLeft className="text-6xl text-fourth"/></Link>
           <h1 className="text-fourth text-6xl">{floor.title}</h1> 
           <Link to={"/floors/"+fid+"/edit"}><FaEdit className="text-6xl text-fourth"/></Link>
-        </div>
+        </section>
       ) : null}
       <section className="flex flex-col gap-y-[50px] my-auto">
         {apartments ? (

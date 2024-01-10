@@ -24,6 +24,10 @@ export default class Z_Router {
     this.router.put(path, this.generateCustomResponse, this.applyCallbacks(callbacks))
   }
 
+  delete = (path, ...callbacks) => {
+    this.router.delete(path, this.generateCustomResponse, this.applyCallbacks(callbacks))
+  }
+
   applyCallbacks = callbacks => {
     return callbacks.map(callback => async (...params) => {
       try {

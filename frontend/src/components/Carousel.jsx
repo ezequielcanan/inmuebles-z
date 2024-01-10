@@ -1,57 +1,46 @@
-import { Children, useState } from "react";
 import {
   BsFillArrowRightCircleFill,
   BsFillArrowLeftCircleFill,
 } from "react-icons/bs";
 
-export default function Carousel({ children }) {
-  let [current, setCurrent] = useState(0);
+import { FaImage } from "react-icons/fa";
+export default function Carousel({ children: slides, setState: setCurrent, state: current, onChangeFunction }) {
 
   let previousSlide = () => {
-    if (current === 0) setCurrent(children.length - 1);
+    if (current === 0) setCurrent(slides.length);
     else setCurrent(current - 1);
   };
 
   let nextSlide = () => {
-    if (current === children.length - 1) setCurrent(0);
+    if (current === slides.length) setCurrent(0);
     else setCurrent(current + 1);
   };
 
   return (
-    <div className="overflow-hidden relative w-[800px]">
-      <div
-        className={`flex transition ease-out duration-40`}
-        style={{
-          margin: `-${current * 100}`,
-        }}
-      >
-        {children}
+    <div className="relative w-3/5">
+      <div className="overflow-hidden">
+        <div
+          className={`flex transition ease-out duration-400`}
+          style={{
+            transform: `translateX(-${current * 100}%)`,
+          }}
+        >
+          {slides}
+          <form className="w-full flex-shrink-0 flex justify-center items-center border-4 border-dashed">
+            <input type="file" name="file" id="file" hidden onChange={e => onChangeFunction(e)} />
+            <label htmlFor="file" className="cursor-pointer w-full h-full flex items-center justify-center">
+              <FaImage size={200} className="text-fourth" />
+            </label>
+          </form>
+        </div>
       </div>
 
-      <div className="absolute top-50 w-full justify-between items-center flex text-white px-10 text-3xl">
-        <button onClick={previousSlide}>
-          <BsFillArrowLeftCircleFill />
-        </button>
-        <button onClick={nextSlide}>
-          <BsFillArrowRightCircleFill />
-        </button>
-      </div>
-
-      <div className="absolute bottom-0 py-4 flex justify-center gap-3 w-full">
-        {children.map((s, i) => {
-          return (
-            <div
-              onClick={() => {
-                setCurrent(i);
-              }}
-              key={"circle" + i}
-              className={`rounded-full w-5 h-5 cursor-pointer  ${
-                i == current ? "bg-white" : "bg-gray-500"
-              }`}
-            ></div>
-          );
-        })}
-      </div>
+      <button onClick={previousSlide} className="absolute z-30 top-[50%] left-[-20%]">
+        <BsFillArrowLeftCircleFill size={70} className="text-first" />
+      </button>
+      <button onClick={nextSlide} className="absolute z-30 top-[50%] right-[-20%]">
+        <BsFillArrowRightCircleFill size={70} className="text-first" />
+      </button>
     </div>
   );
 }

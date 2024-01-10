@@ -19,7 +19,7 @@ const ApartmentEdit = () => {
   useEffect(() => {
     fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/" + inmueble)
       .then(res => res.json())
-      .then(json => (setApartment(json.payload), setRented(json.payload.rent ? true : false)))
+      .then(json => (setApartment(json.payload), setRented(json.payload?.rent ? true : false)))
   }, [])
 
   const onSubmit = handleSubmit(async data => {
@@ -163,7 +163,7 @@ const ApartmentEdit = () => {
       name: "rented",
       multiOptions: true,
       label: "Alquilado",
-      value: apartment.rent,
+      value: apartment?.rent,
       stateFunc: (checked) => setRented(checked ? true : false)
     }
   ]
@@ -207,17 +207,17 @@ const ApartmentEdit = () => {
   return (
     <Main className={"pt-[200px] pb-[100px] bg-sixth gap-y-[100px] items-center"}>
       {apartment && <>
-        <div>
+        <section>
           <h1 className="text-6xl text-fourth text-center">{apartment.floor.title}</h1>
           <h2 className="text-6xl text-fourth mt-[50px] text-center">UF: {uf}</h2>
-        </div>
-        <div className="flex justify-center relative">
+        </section>
+        <section className="flex justify-center relative">
           {!form ? <Form fields={fields} register={register} enter={false}/> : null}
           {form == 1 ? <Form fields={secondFields} register={register} enter={false} /> : null}
-          {form == 2 ? <Form fields={thirdFields} register={register} className="" onSubmit={onSubmit}/> : null}
+          {form == 2 ? <Form fields={thirdFields} register={register} className={rented ? "!from-orange-300 !to-orange-500" : ""} onSubmit={onSubmit}/> : null}
           {form ? <FaChevronLeft size={50} className="absolute top-[50%] left-[-120px] text-fourth cursor-pointer" onClick={prev}/> : null}
           {form < 2 ? <FaChevronRight size={50} className="absolute top-[50%] right-[-120px] text-fourth cursor-pointer" onClick={next}/> : null}
-        </div>
+        </section>
       </>}
     </Main>
   )

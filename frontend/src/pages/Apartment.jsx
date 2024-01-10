@@ -1,51 +1,54 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useParams } from "react-router-dom"
 import Main from "../containers/Main"
+import { BounceLoader } from "react-spinners"
+import ApartmentInfoTable from "../components/ApartmentInfoTable"
 
 const Apartment = () => {
-  const [info, setInfo] = useState(false)
-  
-  const handleCategoryClick = (category) => {
-    info == category ? setInfo(false) : setInfo(category)
+  const { inmueble } = useParams()
+  const [apartment, setApartment] = useState()
+  const [info, setInfo] = useState()
+  const [carouselIndex, setCarouselIndex] = useState(0)
+  const ulButtons = ["Titular", "Ficha", "Fotos", "Videos", "Plano", "Historial", "Documentos"]
+
+  const onChangeFunction = (e) => {
+    setCarouselIndex(0)
+    const imageForm = new FormData()
+    imageForm.append("data", JSON.stringify({folder: `projects/${apartment.project?.title || ""}/${apartment._id || ""}/photos`}))
+    imageForm.append("file", e.target.files[0])
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/photo", {method: "POST", body: imageForm}).then(res => res.json()).then(json => setInfo(""))
   }
 
-  const liClassName = "px-[25px] py-[20px] duration-300 hover:bg-third text-center"
+  useEffect(() => {
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/" + inmueble)
+      .then(res => res.json())
+      .then(json => (setApartment(json.payload), json?.payload?.rent && ulButtons.splice(4,0,"Inquilino")))
+  }, [])
+
+  const handleSectionClick = (section) => {
+    info !== section && setInfo(section)
+  }
+
   return (
-    <Main className={"bg-sixth pt-[200px] text-fourth items-center"}>
-      <h1 className="text-7xl">UF: 501</h1>
-      <section className="w-full h-full flex flex-col items-center gap-y-[50px] mt-[50px] px-24">
-        <ul className="border-4 rounded text-4xl text-center p-0 flex flex-row gap-y-[0px] justify-between">
-          <li className={"px-[25px] py-[20px] duration-300 hover:bg-third"} onClick={() => handleCategoryClick("estado")}>Estado</li>
-          <li className={liClassName}>Metros</li>
-          <li className={liClassName}>Foto</li>
-          <li className={liClassName}>Video</li>
-          <li className={liClassName}>Plano</li>
-          <li className={liClassName}>Inquilino</li>
-          <li className={liClassName}>Historial</li>
-          <li className="px-[25px] py-[20px] duration-300 hover:bg-third">Documentos</li>
-        </ul>
-        {info && (
-          <table className="text-5xl bg-fourth h-full">
-            <tbody className="flex flex-col gap-y-[3px]">
-              <tr className="flex gap-x-[40px] py-5 px-7 bg-third">
-                <td>Dueño:</td>
-                <td className="w-full text-end">ARSA S.A.</td>
-              </tr>
-              <tr className="flex gap-x-[40px] py-5 px-7 bg-third">
-                <td>Estado:</td>
-                <td className="w-full text-end">Vendido</td>
-              </tr>
-              <tr className="flex gap-x-[40px] py-5 px-7 bg-third">
-                <td>Alquilado:</td>
-                <td className="w-full text-end">No</td>
-              </tr>
-              <tr className="flex gap-x-[40px] py-5 px-7 bg-third">
-                <td>Estado:</td>
-                <td className="w-full text-end">En venta y alquilado</td>
-              </tr>
-            </tbody>
-          </table>
-        )}
-      </section>
+    <Main className={"pt-[200px] items-center bg-sixth gap-y-[80px]"}>
+      {apartment ? (
+        <>
+          <section className="flex flex-col gap-y-[40px]">
+            <h1 className="text-fourth text-6xl text-center font-bold">{apartment?.project?.title}</h1>
+            <h2 className="text-fourth text-6xl text-center font-bold">UF: {apartment.unit}</h2>
+          </section>
+          <section className="w-full h-full flex flex-col gap-y-[80px] p-24 items-center">
+            <ul className="flex text-fourth text-4xl flex-wrap items-center justify-center">
+              {ulButtons.map((button,i) => {
+                return <li key={i} className={`px-8 py-6 duration-300 hover:bg-fourth/40 text-center border-4 `} onClick={() => handleSectionClick(button)}>{button}</li>
+              })}
+            </ul>
+            {info && <ApartmentInfoTable info={info} apartment={apartment} onChangeFunction={onChangeFunction} carouselIndex={carouselIndex} setCarouselIndex={setCarouselIndex}/>}
+          </section>
+        </>
+      ) : (
+        <BounceLoader size={100} />
+      )}
     </Main>
   )
 }

@@ -40,9 +40,7 @@ const FloorEdit = () => {
       )}
       <section className="grid grid-cols-6 gap-x-[50px] gap-y-[30px]">
         {apartments ? (apartments.map((a,i) => {
-          return <Link key={i} to={`/inmueble/${a._id}/edit`} className="text-fourth">
-            <ApartmentCard apartment={a}/>
-          </Link>
+          return <ApartmentCard apartment={a} key={i} edit/>
         })) : (
           <BounceLoader/>
         )}
