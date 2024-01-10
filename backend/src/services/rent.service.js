@@ -4,7 +4,10 @@ class RentService {
   constructor(){}
 
   createRent = async (data) => {
-    const result = await rentModel.create(data)
+    const filter = {}
+    data._id && (filter._id = data._id)
+    let result = await rentModel.findOneAndUpdate(filter,{...data},{upsert: true})
+    result == null && (result = await rentModel.findOne({apartment: data?.apartment}))
     return result
   }
 

@@ -38,7 +38,7 @@ const Project = () => {
           </section>
           <section className="grid grid-cols-4 gap-x-[70px] gap-y-[35px]">
             {floors.length ? floors.map(f => {
-              return <Link to={`/floors/${f._id}/edit`} className="text-fourth bg-[#444] flex flex-col h-[150px] w-[250px] shadow-xl shadow-[#000] duration-300 hover:scale-[1.1]" key={f.index}>
+              return <Link to={`/floors/${f._id}`} className="text-fourth bg-[#444] flex flex-col h-[150px] w-[250px] shadow-xl shadow-[#000] duration-300 hover:scale-[1.1]" key={f.index}>
                 <h3 className="text-3xl font-semibold border-b-2 border-fourth px-5 py-2 text-center">{f.title}</h3>
               </Link>
             }) : (

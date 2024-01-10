@@ -19,7 +19,7 @@ const ApartmentEdit = () => {
   useEffect(() => {
     fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/" + inmueble)
       .then(res => res.json())
-      .then(json => setApartment(json.payload))
+      .then(json => (setApartment(json.payload), setRented(json.payload.rent ? true : false)))
   }, [])
 
   const onSubmit = handleSubmit(async data => {
@@ -28,9 +28,11 @@ const ApartmentEdit = () => {
     
     if (data.rented) {
       const tenantData = {"tenantName": data.tenantName, "tenantNumber": data.tenantNumber}
+      apartment?.rent?.tenant?._id && (tenantData._id = apartment?.rent?.tenant?._id)
       const rentData = {"apartment": inmueble, "fromDate": data.fromDate, "toDate": data.toDate, "intermediary": data.intermediary}
 
       const {payload: tenant} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/tenant", {method: "POST", body: JSON.stringify(tenantData), headers: {"Content-Type": "application/json"}})).json()
+      console.log(tenant)
       rentData.tenant = tenant._id
 
       const {payload: rent} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/rent", {method: "POST", body: JSON.stringify(rentData), headers: {"Content-Type": "application/json"}})).json()
@@ -38,7 +40,7 @@ const ApartmentEdit = () => {
       apartmentData.owner = owner._id
       apartmentData.rent = rent._id
       const {payload: apartmentRes} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/apartments/"+inmueble, {method: "PUT", body: JSON.stringify(apartmentData), headers: {"Content-Type": "application/json"}})).json()
-      console.log(apartment)
+      navigate("/floors/"+apartmentRes.floor)
     } else {
       const {payload: owner} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/owner", {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(ownerData)})).json()
       apartmentData.owner = owner._id
@@ -61,6 +63,7 @@ const ApartmentEdit = () => {
       name: "unit",
       label: "UNIDAD FUNCIONAL:",
       className: "justify-self-center w-1/6",
+      value: apartment?.unit || "",
       stateFunc: setUf
     },
     {
@@ -72,38 +75,45 @@ const ApartmentEdit = () => {
         "2 ambientes",
         "3 ambientes",
         "4 ambientes",
-        "5 ambientes"
-      ]
+        "5 ambientes",
+        "Local"
+      ],
+      value: apartment?.rooms || "",
     },
     {
       type: "select",
       name: "orientation",
       label: "Orientacion:",
-      options: ["Frente", "Contrafrente", "Izquierda", "Derecha"]
+      options: ["Frente", "Contrafrente", "Izquierda", "Derecha"],
+      value: apartment?.orientation || "",
     },
     {
       type: "text",
       name: "covered",
       label: "Metros cubiertos:",
-      className: "w-[250px]"
+      className: "w-[250px]",
+      value: apartment?.meters?.covered || 0,
     },
     {
       type: "text",
       name: "balcony",
       label: "Metros balcon:",
-      className: "w-[250px]"
+      className: "w-[250px]",
+      value: apartment?.meters?.balcony || 0,
     },
     {
       type: "text",
       name: "uncovered",
       label: "Metros descubiertos:",
-      className: "w-[250px]"
+      className: "w-[250px]",
+      value: apartment?.meters?.uncovered || 0,
     },
     {
       type: "text",
       name: "amenities",
       label: "Metros amenities:",
-      className: "w-[250px]"
+      className: "w-[250px]",
+      value: apartment?.meters?.amenities || 0,
     }
   ]
 
@@ -111,7 +121,8 @@ const ApartmentEdit = () => {
     {
       type: "text",
       name: "name",
-      label: "Nombre del titular:"
+      label: "Nombre del titular:",
+      value: apartment?.owner?.name || "",
     },
     {
       type: "select",
@@ -122,60 +133,74 @@ const ApartmentEdit = () => {
         "Accionista",
         "Sociedad",
         "Gremio"
-      ]
+      ],
+      value: apartment?.owner?.ownerType || "Particular",
     },
     {
       type: "text",
       name: "number",
-      label: "Numero de telefono (opcional):"
+      label: "Numero de telefono:",
+      value: apartment?.owner?.number || "",
     },
     {
       type: "text",
       name: "email",
-      label: "Email (opcional):"
+      label: "Email:",
+      value: apartment?.owner?.email || "",
     },
     {
       type: "checkbox",
       name: "forSale",
       multiOptions: true,
-      label: "Disponible para la venta: "
+      label: "Disponible para la venta: ",
+      value: apartment?.forSale || "",
     },
   ]
-
+  
   let thirdFields = [
     {
       type: "checkbox",
       name: "rented",
       multiOptions: true,
       label: "Alquilado",
-      stateFunc: () => setRented(!rented)
+      value: apartment.rent,
+      stateFunc: (checked) => setRented(checked ? true : false)
     }
   ]
+
+  const getDate = (datetime) => {
+    return datetime?.slice(0,10) || ""
+  }
 
   rented && (thirdFields = [...thirdFields, {
     type: "text",
     name: "intermediary",
-    label: "Intermediario:"
+    label: "Intermediario:",
+    value: apartment?.rent?.intermediary || "",
   },
   {
     type: "text",
     name: "tenantName",
-    label: "Nombre del inquilino:"
+    label: "Nombre del inquilino:",
+    value: apartment?.rent?.tenant?.tenantName || "",
   },
   {
     type: "text",
     name: "tenantNumber",
-    label: "Telefono del inquilino:"
+    label: "Telefono del inquilino:",
+    value: apartment?.rent?.tenant?.tenantNumber || "",
   },
   {
     type: "date",
     name: "fromDate",
-    label: "Fecha de inicio:"
+    label: "Fecha de inicio:",
+    value: getDate(apartment?.rent?.fromDate) || "",
   },
   {
     type: "date",
     name: "toDate",
-    label: "Fecha de vencimiento:"
+    label: "Fecha de vencimiento:",
+    value: getDate(apartment?.rent?.toDate) || "",
   },
   ])
 

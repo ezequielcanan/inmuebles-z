@@ -4,6 +4,7 @@ import { FaPlus } from "react-icons/fa"
 import { BounceLoader } from "react-spinners"
 import { Link } from "react-router-dom"
 import Main from "../containers/Main"
+import ApartmentCard from "../components/ApartmentCard"
 
 
 const FloorEdit = () => {
@@ -32,12 +33,15 @@ const FloorEdit = () => {
   return (
     <Main className={"pt-[200px] bg-sixth items-center gap-y-[100px]"}>
       {floor && (
-        <h1 className="text-6xl text-fourth">{floor.title.toUpperCase()}</h1>
+        <div className="flex flex-col gap-y-[40px]">
+          <h1 className="text-6xl text-fourth text-center">{floor.title.toUpperCase()}</h1>
+          <h2 className="text-4xl text-fourth text-center">Pagina de edicion</h2>
+        </div>
       )}
       <section className="grid grid-cols-6 gap-x-[50px] gap-y-[30px]">
         {apartments ? (apartments.map((a,i) => {
-          return <Link key={i} to={`/inmueble/${a._id}/edit`} className="text-fourth py-8 px-8 h-[250px] w-[150px] bg-[#444] flex flex-col items-center justify-center">
-            <h3 className="text-2xl text-fourth text-center">{a.unit}</h3>
+          return <Link key={i} to={`/inmueble/${a._id}/edit`} className="text-fourth">
+            <ApartmentCard apartment={a}/>
           </Link>
         })) : (
           <BounceLoader/>

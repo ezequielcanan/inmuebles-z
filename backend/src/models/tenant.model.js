@@ -4,7 +4,7 @@ const tenantsCollection = "tenants"
 
 const tenantsSchema = new mongoose.Schema({
   tenantName: String,
-  tenantNumber: { type: Number, unique: true },
+  tenantNumber: String,
   tenantThumbnail: String
 })
 

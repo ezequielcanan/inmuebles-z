@@ -13,4 +13,16 @@ const rentsSchema = new mongoose.Schema({
   rentThumbnail: String
 })
 
+rentsSchema.pre("find", function() {
+  this.populate("tenant")
+})
+
+rentsSchema.pre("findOne", function() {
+  this.populate("tenant")
+})
+
+rentsSchema.pre("findById", function() {
+  this.populate("tenant")
+})
+
 export default mongoose.model(rentsCollection, rentsSchema)

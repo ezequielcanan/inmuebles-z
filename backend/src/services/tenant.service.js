@@ -4,7 +4,10 @@ class TenantService {
   constructor() {}
 
   createTentant = async (data) => {
-    const result = await tenantModel.create(data)
+    const filter = {}
+    data._id && (filter._id = data._id)
+    let result = await tenantModel.findOneAndUpdate(filter,{...data},{upsert: true})
+    result == null && (result = await tenantModel.findOne({tenantNumber: data?.tenantNumber}))
     return result
   }
 

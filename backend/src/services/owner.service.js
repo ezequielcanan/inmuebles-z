@@ -5,7 +5,8 @@ class OwnerService {
   constructor() { }
 
   createOwner = async (data) => {
-    const result = await ownerModel.findOneAndUpdate({ name: data.name }, { $set: { ...data } }, { upsert: true })
+    let result = await ownerModel.findOneAndUpdate({ name: data.name }, { $set: { ...data } }, { upsert: true })
+    result == null && (result = await ownerModel.findOne({number: data?.number}))
     return result
   }
 
