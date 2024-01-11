@@ -8,6 +8,7 @@ import FloorEdit from "../pages/FloorEdit"
 import ApartmentEdit from "../pages/ApartmentEdit"
 import Floor from "../pages/Floor"
 import Apartment from "../pages/Apartment"
+import Transaction from "../pages/Transaction"
 
 const Router = () => {
   return (
@@ -23,6 +24,7 @@ const Router = () => {
         <Route path="/floors/:floor" element={<Floor/>}/>
         <Route path="/floors/:floor/edit" element={<FloorEdit/>}/>
         <Route path="/inmueble/:inmueble" element={<Apartment/>}/>
+        <Route path="/inmueble/:inmueble/transaction" element={<Transaction/>}/>
         <Route path="/inmueble/:inmueble/edit" element={<ApartmentEdit/>}/>
         <Route path="/login" />
         <Route path="/register" />

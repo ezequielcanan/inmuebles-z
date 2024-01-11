@@ -18,16 +18,20 @@ const NewProject = () => {
     setImage(e.target.files[0])
   }
 
-  const onSubmit = handleSubmit(data => {
+  const onSubmit = handleSubmit(async data => {
     data.type = selected
-    data.folder = `projects/${data.title}`
-    data.thumbnail = `projects/${data.title}/${data.title}${image.name.substring(image.name.lastIndexOf('.'), image.name.length)}`
+    data.ext = image.name.substring(image.name.lastIndexOf('.'), image.name.length)
     const formData = new FormData()
-    formData.append("data", JSON.stringify(data))
+    
+    const result = await (await fetch(import.meta.env.VITE_REACT_API_URL + "/api/projects", {method: "POST", body: JSON.stringify({...data}), headers: {"Content-Type": "application/json"}})).json()
+    data.folder = `projects/${result.payload._id}`
+    data.thumbnail = result.payload.thumbnail
+    data.id = result.payload._id
+    formData.append("data",JSON.stringify(data))
     formData.append("file", image)
 
-    fetch(import.meta.env.VITE_REACT_API_URL + "/api/projects", {method: "POST", body: formData})
-      .then(res => res.json()).then(json => navigate("/projects"))
+    const uploadImage = await (await fetch(import.meta.env.VITE_REACT_API_URL + "/api/projects/file", {method: "POST", body: formData})).json()
+    navigate("/projects")
   })
 
   const fields = [

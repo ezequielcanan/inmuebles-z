@@ -7,7 +7,7 @@ export default class ProjectsRouter extends Z_Router {
     this.get("/", getProjects)
     this.get("/:pid", getProject)
 
-
-    this.post("/", uploader.single("file"), createProject)
+    this.post("/", createProject)
+    this.post("/file", uploader.single("file"), (req, res) => res.sendSuccess("OK"))
   }
 }

@@ -3,8 +3,8 @@ import {
   BsFillArrowLeftCircleFill,
 } from "react-icons/bs";
 
-import { FaImage } from "react-icons/fa";
-export default function Carousel({ children: slides, setState: setCurrent, state: current, onChangeFunction }) {
+import { FaImage, FaFilePdf } from "react-icons/fa";
+export default function Carousel({ children: slides, setState: setCurrent, state: current, onChangeFunction, fileType = "photo" }) {
 
   let previousSlide = () => {
     if (current === 0) setCurrent(slides.length);
@@ -20,17 +20,23 @@ export default function Carousel({ children: slides, setState: setCurrent, state
     <div className="relative w-3/5">
       <div className="overflow-hidden">
         <div
-          className={`flex transition ease-out duration-400`}
+          className={`flex transition ease-out duration-400 ${!slides.length && "justify-center"}`}
           style={{
             transform: `translateX(-${current * 100}%)`,
           }}
         >
           {slides}
-          <form className="w-full flex-shrink-0 flex justify-center items-center border-4 border-dashed">
+          <form className={`${fileType != "PDF" ? "border-4 border-dashed" : ""} flex-shrink-0 flex justify-center items-center w-full`}>
             <input type="file" name="file" id="file" hidden onChange={e => onChangeFunction(e)} />
-            <label htmlFor="file" className="cursor-pointer w-full h-full flex items-center justify-center">
-              <FaImage size={200} className="text-fourth" />
-            </label>
+            {(fileType != "PDF") ? (
+              <label htmlFor="file" className="cursor-pointer w-full h-full flex items-center justify-center">
+                <FaImage size={200} className="text-fourth" />
+              </label>
+            ) : (
+              <label htmlFor="file" className="cursor-pointer w-full h-full flex items-center justify-center">
+                <FaFilePdf size={200} className="text-fourth" />
+              </label>
+            )}
           </form>
         </div>
       </div>

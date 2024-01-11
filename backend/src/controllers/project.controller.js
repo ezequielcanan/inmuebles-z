@@ -29,9 +29,10 @@ export const getAllFromProject = async (req, res) => {
 
 export const createProject = async (req, res) => {
   try {
-    const data = req.data
+    const data = req.body
     const result = await projectService.createProject(data)
-    res.sendSuccess(result)
+    const thumbnailResult = await projectService.updateProject(result._id, { $set: { thumbnail: `projects/${result._id}/${result._id}${data.ext}` } })
+    res.sendSuccess(thumbnailResult)
   }
   catch (e) {
     console.log(e)

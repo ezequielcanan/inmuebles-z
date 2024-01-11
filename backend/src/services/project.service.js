@@ -8,8 +8,9 @@ class ProjectService {
     return result
   }
 
-  updateProject = async (pid) => {
-    const result = projectModel.updateOne({ _id: pid }, {})
+  updateProject = async (pid, update) => {
+    const result = projectModel.findOneAndUpdate({ _id: pid }, update)
+    return result
   }
 
   getProjects = async () => {

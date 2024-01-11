@@ -21,7 +21,7 @@ const ApartmentEdit = () => {
       .then(res => res.json())
       .then(json => (setApartment(json.payload), setRented(json.payload?.rent ? true : false)))
   }, [])
-
+  
   const onSubmit = handleSubmit(async data => {
     const apartmentData = {"unit": data.unit, "forSale": data.forSale, "meters": {covered: data.covered, uncovered: data.uncovered, balcony: data.balcony, amenities: data.amenities, total: Number(data.covered) + Number(data.uncovered) + Number(data.balcony) + Number(data.amenities)}, "rooms": data.rooms, "orientation": data.orientation}
     const ownerData = {"name": data.name, "number": data.number || "", "email": data.email || "", "ownerType": data.ownerType}
@@ -32,7 +32,6 @@ const ApartmentEdit = () => {
       const rentData = {"apartment": inmueble, "fromDate": data.fromDate, "toDate": data.toDate, "intermediary": data.intermediary}
 
       const {payload: tenant} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/tenant", {method: "POST", body: JSON.stringify(tenantData), headers: {"Content-Type": "application/json"}})).json()
-      console.log(tenant)
       rentData.tenant = tenant._id
 
       const {payload: rent} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/rent", {method: "POST", body: JSON.stringify(rentData), headers: {"Content-Type": "application/json"}})).json()

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const transactionsCollection = "transactions";
 
 const transactionsSchema = new mongoose.Schema({
-  fastTransaction: Boolean,
+  apartment: { type: mongoose.Schema.Types.ObjectId, ref: "apartments" },
   seller: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "owners",
@@ -12,15 +12,24 @@ const transactionsSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "owners",
   },
-  boleto: {type: Boolean, default: this.fastTransaction ? false : true},
+  boleto: Boolean,
   booking: Number,
-  sellados: {type: {
-    boleto: {type: {
-      necessary: Boolean,
-      value: {type: Number, default: !this.necessary && 0},
-      paid: Boolean
-    }}
-  }}
+  sellados: {
+    type: {
+      boleto: {
+        type: {
+          necessary: Boolean,
+          value: Number,
+          paid: Boolean
+        }
+      }
+    }
+  }
 });
+
+transactionsSchema.pre("find", function () {
+  this.populate("seller")
+  this.populate("buyer")
+})
 
 export default mongoose.model(transactionsCollection, transactionsSchema)

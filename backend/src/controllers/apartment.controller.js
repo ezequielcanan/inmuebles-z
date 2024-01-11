@@ -47,11 +47,11 @@ export const updateApartment = async (req, res) => {
   }
 }
 
-export const getPhotos = async (req, res) => {
+export const getFiles = async (req, res) => {
   try {
     const project = req.query?.project
     const apartment = req.query?.apartment
-    const fileType = req.query?.fileType || "photos"
+    const fileType = req.params?.type || "photos"
     const files = apartmentService.getFiles(fileType, project, apartment)
     res.sendSuccess(files)
   }
