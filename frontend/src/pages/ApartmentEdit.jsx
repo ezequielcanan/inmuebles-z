@@ -23,7 +23,7 @@ const ApartmentEdit = () => {
   }, [])
   
   const onSubmit = handleSubmit(async data => {
-    const apartmentData = {"unit": data.unit, "forSale": data.forSale, "meters": {covered: data.covered, uncovered: data.uncovered, balcony: data.balcony, amenities: data.amenities, total: Number(data.covered) + Number(data.uncovered) + Number(data.balcony) + Number(data.amenities)}, "rooms": data.rooms, "orientation": data.orientation}
+    const apartmentData = {"unit": data.unit, "forSale": data.forSale, "meters": {covered: data.covered, uncovered: data.uncovered, balcony: data.balcony, amenities: data.amenities, total: Number(data.covered) + Number(data.uncovered) + Number(data.balcony) + Number(data.amenities)}, "rooms": data.rooms, "orientation": data.orientation, "price": data.price}
     const ownerData = {"name": data.name, "number": data.number || "", "email": data.email || "", "ownerType": data.ownerType}
     
     if (data.rented) {
@@ -113,6 +113,13 @@ const ApartmentEdit = () => {
       label: "Metros amenities:",
       className: "w-[250px]",
       value: apartment?.meters?.amenities || 0,
+    },
+    {
+      type: "text",
+      name: "price",
+      label: "Precio por metro:",
+      value: apartment?.price,
+      className: "w-[300px]"
     }
   ]
 

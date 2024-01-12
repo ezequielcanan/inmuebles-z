@@ -51,7 +51,8 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
       { head: "Metros descubiertos", value: apartment.meters?.uncovered },
       { head: "Metros balcon", value: apartment.meters?.balcony },
       { head: "Metros amenities", value: apartment.meters?.amenities },
-      { head: "Metros totales", value: apartment.meters?.total }
+      { head: "TOTALES", value: apartment.meters?.total },
+      { head: "Precio total", value: apartment?.meters?.total * apartment?.price }
     ],
     "Inquilino": [
       { head: "Nombre", value: apartment.rent?.tenant?.tenantName },

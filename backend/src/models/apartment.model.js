@@ -24,7 +24,8 @@ const apartmentsSchema = new mongoose.Schema({
   },
   rooms: String,
   rent: { type: mongoose.Schema.Types.ObjectId, ref: "rents" },
-  orientation: { type: String, enum: ["Frente", "Contrafrente", "Izquierda", "Derecha"] }
+  orientation: { type: String, enum: ["Frente", "Contrafrente", "Izquierda", "Derecha"] },
+  price: Number
 });
 
 apartmentsSchema.pre("findOne", function () {
