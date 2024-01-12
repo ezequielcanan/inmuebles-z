@@ -5,8 +5,8 @@ class OwnerService {
   constructor() { }
 
   createOwner = async (data) => {
-    let result = await ownerModel.create({ ...data })
-    result == null && (result = await ownerModel.findOne({ number: data?.number }))
+    let result = await ownerModel.findOneAndUpdate({ name: data.name }, { $set: { ...data } }, { upsert: true })
+    result == null && (result = await ownerModel.findOne({ name: data?.name }))
     return result
   }
 
@@ -22,6 +22,11 @@ class OwnerService {
 
   updateOwner = async (oid, data) => {
     const result = await ownerModel.updateOne({ _id: oid }, { $set: { ...data } })
+    return result
+  }
+
+  textSearch = async (text) => {
+    const result = await ownerModel.find({ $text: { $search: text, $caseSensitive: false } }, { score: { $meta: "textScore" } }).sort({ score: { $meta: "textScore" } })
     return result
   }
 }

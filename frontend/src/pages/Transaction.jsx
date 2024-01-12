@@ -55,6 +55,42 @@ const Transaction = () => {
     }
   ]
 
+  const secondFields = [
+    {
+      type: "number",
+      name: "cac",
+      label: "A: CAC"
+    },
+    {
+      type: "number",
+      name: "quotas",
+      label: "Cuotas totales:"
+    },
+    {
+      type: "number",
+      name: "baseQuota",
+      label: "Cuota base:"
+    }
+  ]
+
+  const thirdFields = [
+    {
+      type: "number",
+      name: "cac",
+      label: "B: CAC"
+    },
+    {
+      type: "number",
+      name: "quotas",
+      label: "Cuotas totales:"
+    },
+    {
+      type: "number",
+      name: "baseQuota",
+      label: "Cuota base:"
+    }
+  ]
+
   return (
     <Main className={"pt-[200px] items-center bg-sixth"}>
       {apartment ? (
@@ -65,8 +101,11 @@ const Transaction = () => {
             <FaArrowRight size={50}/>
           </div>
           <div className="flex relative">
-            {!formIndex ? <Form fields={fields} onSubmit={onSubmit} register={register} className={"mr-auto !text-4xl px-16"}/> : null}
-            {formIndex ? <Form fields={secondFields} className={"mr-auto !text-4xl px-16"}/> : null}
+            {!formIndex ? <Form fields={fields} onSubmit={onSubmit} register={register} className={"mr-auto !text-4xl px-16"} enter={false}/> : null}
+            {formIndex == 1 ? <Form fields={secondFields} className={"mr-auto !text-4xl px-16"} enter={false}/> : null}
+            {formIndex == 2 ? <Form fields={thirdFields} className={"mr-auto !text-4xl px-16"}/> : null}
+            {formIndex ? <FaArrowLeft className="text-fourth absolute top-[50%] left-[1%]" size={30} onClick={() => setFormIndex(formIndex - 1)}/> : null}
+            {formIndex < 2 ? <FaArrowRight className="text-fourth absolute top-[50%] right-[1%]" size={30} onClick={() => setFormIndex(formIndex + 1)}/> : null}
           </div>
         </section>
       ) : (

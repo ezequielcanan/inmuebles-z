@@ -12,17 +12,20 @@ const transactionsSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "owners",
   },
-  boleto: Boolean,
-  booking: Number,
-  sellados: {
+  black: {
     type: {
-      boleto: {
-        type: {
-          necessary: Boolean,
-          value: Number,
-          paid: Boolean
-        }
-      }
+      cac: Number,
+      quotas: Number,
+      baseQuota: Number,
+      updatedQuota: Number
+    }
+  },
+  white: {
+    type: {
+      cac: Number,
+      quotas: Number,
+      baseQuota: Number,
+      updatedQuota: Number
     }
   }
 });

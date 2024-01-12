@@ -35,4 +35,11 @@ apartmentsSchema.pre("findOne", function () {
   this.populate("rent")
 })
 
+apartmentsSchema.pre("find", function () {
+  this.populate("project")
+  this.populate("floor")
+  this.populate("owner")
+  this.populate("rent")
+})
+
 export default mongoose.model(apartmentsCollection, apartmentsSchema)

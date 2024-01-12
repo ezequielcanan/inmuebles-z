@@ -12,15 +12,22 @@ const ApartmentEdit = () => {
   const [apartment, setApartment] = useState(false)
   const [rented, setRented] = useState(false)
   const [uf,setUf] = useState("")
+  const [ownerSuggestions, setOwnerSuggestions] = useState([])
+  const [suggestedOwner, setSuggestedOwner] = useState(false)
+
   const { register, handleSubmit } = useForm()
   const navigate = useNavigate()
-
 
   useEffect(() => {
     fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/" + inmueble)
       .then(res => res.json())
       .then(json => (setApartment(json.payload), setRented(json.payload?.rent ? true : false)))
   }, [])
+
+  const ownerTextSearch = async (text) => {
+    const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/owner?query=${text}`)).json()
+    setOwnerSuggestions(result.payload)
+  }
   
   const onSubmit = handleSubmit(async data => {
     const apartmentData = {"unit": data.unit, "forSale": data.forSale, "meters": {covered: data.covered, uncovered: data.uncovered, balcony: data.balcony, amenities: data.amenities, total: Number(data.covered) + Number(data.uncovered) + Number(data.balcony) + Number(data.amenities)}, "rooms": data.rooms, "orientation": data.orientation, "price": data.price}
@@ -35,13 +42,13 @@ const ApartmentEdit = () => {
       rentData.tenant = tenant._id
 
       const {payload: rent} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/rent", {method: "POST", body: JSON.stringify(rentData), headers: {"Content-Type": "application/json"}})).json()
-      const {payload: owner} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/owner", {method: "POST", body: JSON.stringify(ownerData), headers: {"Content-Type": "application/json"}})).json()
+      const {payload: owner} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/owner", {method: "POST", body: JSON.stringify(suggestedOwner || ownerData), headers: {"Content-Type": "application/json"}})).json()
       apartmentData.owner = owner._id
       apartmentData.rent = rent._id
       const {payload: apartmentRes} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/apartments/"+inmueble, {method: "PUT", body: JSON.stringify(apartmentData), headers: {"Content-Type": "application/json"}})).json()
       navigate("/floors/"+apartmentRes.floor)
     } else {
-      const {payload: owner} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/owner", {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(ownerData)})).json()
+      const {payload: owner} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/owner", {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(suggestedOwner || ownerData)})).json()
       apartmentData.owner = owner._id
       const {payload: apartmentRes} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/apartments/"+inmueble, {method: "PUT", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(apartmentData)})).json()
       navigate("/floors/"+apartmentRes.floor)
@@ -87,35 +94,35 @@ const ApartmentEdit = () => {
       value: apartment?.orientation || "",
     },
     {
-      type: "text",
+      type: "number",
       name: "covered",
       label: "Metros cubiertos:",
       className: "w-[250px]",
       value: apartment?.meters?.covered || 0,
     },
     {
-      type: "text",
+      type: "number",
       name: "balcony",
       label: "Metros balcon:",
       className: "w-[250px]",
       value: apartment?.meters?.balcony || 0,
     },
     {
-      type: "text",
+      type: "number",
       name: "uncovered",
       label: "Metros descubiertos:",
       className: "w-[250px]",
       value: apartment?.meters?.uncovered || 0,
     },
     {
-      type: "text",
+      type: "number",
       name: "amenities",
       label: "Metros amenities:",
       className: "w-[250px]",
       value: apartment?.meters?.amenities || 0,
     },
     {
-      type: "text",
+      type: "number",
       name: "price",
       label: "Precio por metro:",
       value: apartment?.price,
@@ -129,6 +136,11 @@ const ApartmentEdit = () => {
       name: "name",
       label: "Nombre del titular:",
       value: apartment?.owner?.name || "",
+      disabled: apartment?.owner && true,
+      onChange: ownerTextSearch,
+      suggestions: ownerSuggestions,
+      setOwner: setSuggestedOwner,
+      suggestedOwner
     },
     {
       type: "select",
@@ -141,18 +153,21 @@ const ApartmentEdit = () => {
         "Gremio"
       ],
       value: apartment?.owner?.ownerType || "Particular",
+      disabled: (apartment?.owner || suggestedOwner) && true
     },
     {
       type: "text",
       name: "number",
       label: "Numero de telefono:",
       value: apartment?.owner?.number || "",
+      disabled: (apartment?.owner || suggestedOwner) && true
     },
     {
       type: "text",
       name: "email",
       label: "Email:",
       value: apartment?.owner?.email || "",
+      disabled: (apartment?.owner || suggestedOwner) && true
     },
     {
       type: "checkbox",

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useParams, Link } from "react-router-dom"
+import { useParams, Link, useLocation } from "react-router-dom"
 import { FaChevronLeft } from "react-icons/fa"
 import { BounceLoader } from "react-spinners"
 import {BiTransferAlt} from "react-icons/bi"
@@ -8,6 +8,8 @@ import ApartmentInfoTable from "../components/ApartmentInfoTable"
 
 const Apartment = () => {
   const { inmueble } = useParams()
+  const location = useLocation()
+
   const [apartment, setApartment] = useState()
   const [info, setInfo] = useState()
   const [carouselIndex, setCarouselIndex] = useState(0)
@@ -40,7 +42,7 @@ const Apartment = () => {
       {apartment ? (
         <>
           <section className="flex w-full justify-between">
-            <Link to={"/floors/" + apartment?.floor?._id}><FaChevronLeft className="text-6xl text-fourth" /></Link>
+            <Link to={location?.state?.from || "/floors/" + apartment?.floor?._id}><FaChevronLeft className="text-6xl text-fourth" /></Link>
             <div className="flex flex-col items-center gap-y-[40px]">
               <h1 className="text-fourth text-6xl text-center font-bold">{apartment?.project?.title}</h1>
               <h2 className="text-fourth text-6xl text-center font-bold">UF: {apartment.unit}</h2>

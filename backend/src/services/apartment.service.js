@@ -35,6 +35,11 @@ class ApartmentService {
     fs.readdirSync(__dirname + "/public/projects/" + project + "/" + apartment + "/" + fileType).forEach(file => files.push(file))
     return files
   }
+
+  getApartmentsByOwner = async (oid) => {
+    const result = await apartmentModel.find({ owner: oid }).lean().exec()
+    return result
+  }
 }
 
 export default ApartmentService
