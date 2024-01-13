@@ -1,6 +1,7 @@
-import { FaRegFilePdf, FaTrash } from "react-icons/fa"
-import Carousel from "./Carousel"
+import { FaRegFilePdf, FaTrash, FaArrowRight } from "react-icons/fa"
 import { useEffect, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import Carousel from "./Carousel"
 
 const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, setCarouselIndex }) => {
   const [images, setImages] = useState([])
@@ -8,6 +9,7 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
   const [plano, setPlano] = useState([])
   const [docs, setDocs] = useState([])
   const [transactions, setTransactions] = useState([])
+  const navigate = useNavigate()
 
   const trClassName = `flex gap-x-[100px] py-5 px-7 ${apartment.forSale ? "bg-fifth" : "bg-red-500"} ${apartment.rent && "bg-[#fcba03]"} justify-between text-fourth text-4xl`
   useEffect(() => {
@@ -58,12 +60,23 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
       { head: "Nombre", value: apartment.rent?.tenant?.tenantName },
       { head: "Telefono", value: apartment.rent?.tenant?.tenantNumber }
     ],
-    "Historial": [...(transactions?.map((t, i) => {
-      return {
-        head: t?.seller?.name,
-        value: t?.buyer?.name
-      }
-    }))],
+    "Historial": () => {
+      let owners = []
+      transactions && transactions.forEach(t => (owners.push(t.seller), owners.push(t.buyer)))
+      owners = owners.filter((owner, i) => owners.indexOf(owner) == i)
+      return (
+        transactions ? (
+          <div className="flex flex-col border-2 border-fourth overflow-hidden">
+            {owners.map((owner, i) => {
+              return <div key={i}  className="flex text-fourth gap-x-[30px] items-center bg-cyan-600 duration-300 hover:bg-second py-2 px-3 border-2 border-fourth">
+                <FaArrowRight size={50} />
+                <p className="text-4xl">{owner.name}</p>
+              </div>
+            })}
+          </div>
+        ) : null
+      )
+    },
     "Fotos": () => {
       return images.map((image, i) => {
         return <div className="w-full flex-shrink-0 relative" key={i}>
@@ -106,10 +119,13 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
           </a>
         </div>
       })
+    },
+    "Estado": () => {
+      transactions.length && navigate("/transaction/"+transactions[transactions.length - 1]?._id)
     }
   }
   return (
-    (info != "Fotos" && info != "Plano" && info != "Videos" && info != "PDF") ? (
+    (info != "Fotos" && info != "Plano" && info != "Videos" && info != "PDF" && info != "Historial" && info != "Estado") ? (
       <table className="border-4">
         <tbody className="flex flex-col gap-y-[3px] bg-fourth">
           {infoSections[info].map(row => {
@@ -121,9 +137,11 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
         </tbody>
       </table>
     ) : (
-      <Carousel state={carouselIndex} setState={setCarouselIndex} onChangeFunction={(e) => onChangeFunction(e, fileTypes[info].fileType)} fileType={info}>
+      info != "Historial" && info != "Estado" ? <Carousel state={carouselIndex} setState={setCarouselIndex} onChangeFunction={(e) => onChangeFunction(e, fileTypes[info].fileType)} fileType={info}>
         {infoSections[info]()}
-      </Carousel>
+      </Carousel> : (
+        infoSections[info]()
+      )
     )
   )
 }

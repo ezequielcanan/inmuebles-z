@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { BounceLoader } from "react-spinners";
 import { FaArrowRight, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useForm } from "react-hook-form";
+import moment from "moment"
 import Form from "../components/Form";
 import Main from "../containers/Main";
 import ApartmentCard from "../components/ApartmentCard";
@@ -43,19 +44,28 @@ const NewTransaction = () => {
           headers: { "Content-Type": "application/json" },
         }
       )
-    ).json();
+    ).json()
+    const today = moment().format("DD-MM-YYYY")
     const transactionBody = {
-      apartment: apartment?._id,
-      seller: apartment?.owner,
-      buyer: ownerResult.payload._id,
-      booking: data.booking,
-      white: { cac: data.cac, quotas: data.quotas, baseQuota: data.baseQuota },
-      black: {
-        cac: data["b-cac"],
-        quotas: data["b-quotas"],
-        baseQuota: data["b-baseQuota"],
+      transaction: {
+        apartment: apartment?._id,
+        seller: apartment?.owner,
+        buyer: ownerResult.payload._id,
+        booking: data.booking,
+        white: { quotas: data.quotas, baseQuota: data.baseQuota},
+        black: {
+          quotas: data["b-quotas"],
+          baseQuota: data["b-baseQuota"]
+        },
       },
+      black: {
+        cac: data["b-cac"], total: Number(data["b-baseQuota"]) + Number(data["b-baseQuota"]) * Number(data["b-cac"]) / 100, quota: 1, type: "black", date: today
+      },
+      white: {
+        cac: data["cac"], total: Number(data["baseQuota"]) + Number(data["baseQuota"]) * Number(data["cac"]) / 100, quota: 1, type: "white", date: today
+      }
     };
+
     const transactionRes = await (
       await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction`, {
         method: "POST",
@@ -63,6 +73,7 @@ const NewTransaction = () => {
         headers: { "Content-Type": "application/json" },
       })
     ).json();
+    console.log(transactionRes)
     navigate("/inmueble/" + inmueble);
   });
 

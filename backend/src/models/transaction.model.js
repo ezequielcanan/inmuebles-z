@@ -18,7 +18,7 @@ const transactionsSchema = new mongoose.Schema({
       quotas: Number,
       baseQuota: Number,
       updatedQuota: Number,
-      lastQuota: {type: mongoose.Schema.Types.ObjectId, ref: "quotas"}
+      lastQuota: { type: mongoose.Schema.Types.ObjectId, ref: "quotas" }
     }
   },
   white: {
@@ -26,7 +26,7 @@ const transactionsSchema = new mongoose.Schema({
       quotas: Number,
       baseQuota: Number,
       updatedQuota: Number,
-      lastQuota: {type: mongoose.Schema.Types.ObjectId, ref: "quotas"}
+      lastQuota: { type: mongoose.Schema.Types.ObjectId, ref: "quotas" }
     }
   }
 });
@@ -40,6 +40,8 @@ transactionsSchema.pre("findOne", function () {
   this.populate("seller")
   this.populate("buyer")
   this.populate("apartment")
+  this.populate("black.lastQuota")
+  this.populate("white.lastQuota")
 })
 
 export default mongoose.model(transactionsCollection, transactionsSchema)

@@ -13,7 +13,7 @@ const Apartment = () => {
   const [apartment, setApartment] = useState()
   const [info, setInfo] = useState()
   const [carouselIndex, setCarouselIndex] = useState(0)
-  let ulButtons = ["Titular", "Ficha", "Fotos", "Videos", "Plano", "Historial", "PDF"]
+  let ulButtons = ["Titular", "Ficha", "Fotos", "Videos", "Plano", "Historial", "PDF", "Estado"]
 
   const onChangeFunction = (e, fileType = "photos", fileEndpoint = "file") => {
     setCarouselIndex(0)

@@ -1,20 +1,33 @@
-import quotaModel from "../models/quota.model"
+import quotaModel from "../models/quota.model.js"
+import transactionModel from "../models/transaction.model.js"
 
 class QuotaService {
-  constructor() {}
+  constructor() { }
 
   createQuota = async (data) => {
     const result = await quotaModel.create(data)
+    const update = { $set: {} }
+    update["$set"][result.type + ".lastQuota"] = result._id
+    update["$set"][result.type + ".updatedQuota"] = result.total
+    const updateLastQuota = await transactionModel.updateOne({ _id: result.transaction }, update)
     return result
   }
 
+  createQuotas = async (white, black) => {
+    const result = await quotaModel.insertMany([white, black])
+    return { white: result[0], black: result[1] }
+  }
+
   getQuotaById = async (qid) => {
-    const result = await quotaModel.findOne({_id: qid})
+    const result = await quotaModel.findOne({ _id: qid })
     return result
   }
 
   getTransactionQuotas = async (tid) => {
-    const result = await quotaModel.find({transaction:tid})
+    const result = await quotaModel.find({ transaction: tid })
     return result
   }
+
 }
+
+export default QuotaService
