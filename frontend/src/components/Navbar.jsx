@@ -36,8 +36,7 @@ const Navbar = () => {
           <img src="/logo.svg" alt="" />
         </Link>
         <div className="flex gap-x-[20px] relative items-center">
-          <FaSearch className="text-third" size={30}/>
-          <input type="text" className="outline-none text-2xl px-4 py-2 rounded duration-200 focus:shadow-lg focus:shadow-third w-[250px]" onChange={handleChange} onFocus={() => setFocus(true)} onBlur={(e) => !e?.relatedTarget?.className?.includes("owner") && setFocus(false) }/>
+          <input type="text" className="outline-none text-2xl px-2 py-1 rounded duration-200 focus:shadow-lg focus:shadow-third w-[200px]" onChange={handleChange} onFocus={() => setFocus(true)} onBlur={(e) => !e?.relatedTarget?.className?.includes("owner") && setFocus(false) }/>
           {(focus && input) && ((owners.length) ? (
             <div className="absolute w-[250px] flex flex-col text-xl top-[100%] right-0 bg-second shadow-lg shadow-first text-fourth">
               {owners.map((o,i) => {
@@ -52,7 +51,7 @@ const Navbar = () => {
             </div>
           ))}
         </div>
-        <ul className="flex justify-between text-fourth text-2xl gap-x-[70px]">
+        <ul className="flex justify-between text-fourth text-xl gap-x-[70px]">
           {buttons.map((b, i) => {
             return <NavLi text={b.text} path={b.path} key={i} />
           })}

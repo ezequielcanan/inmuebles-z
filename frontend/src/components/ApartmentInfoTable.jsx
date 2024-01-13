@@ -15,7 +15,7 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
     fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/files/videos?project=" + apartment?.project?._id + "&apartment=" + apartment._id).then(res => res.json()).then(json => setVideos(json.payload || []))
     fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/files/plano?project=" + apartment?.project?._id + "&apartment=" + apartment._id).then(res => res.json()).then(json => setPlano(json.payload || []))
     fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/files/docs?project=" + apartment?.project?._id + "&apartment=" + apartment._id).then(res => res.json()).then(json => setDocs(json.payload || []))
-    fetch(import.meta.env.VITE_REACT_API_URL + "/api/transaction/" + apartment?._id).then(res => res.json()).then(json => setTransactions(json.payload || []))
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/transaction/apartment/" + apartment?._id).then(res => res.json()).then(json => setTransactions(json.payload || []))
   }, [info])
 
   const fileTypes = {

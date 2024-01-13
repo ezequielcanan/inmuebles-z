@@ -21,7 +21,7 @@ const Floor = () => {
   }, [])
 
   return (
-    <Main className={"pt-[200px] items-center mb-auto bg-sixth gap-y-[20px]"}>
+    <Main className={"pt-[200px] pb-[100px] items-center mb-auto bg-sixth gap-y-[20px]"}>
       {floor ? (
         <>
           <section className="flex justify-between items-center w-full">

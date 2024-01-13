@@ -12,20 +12,21 @@ const transactionsSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "owners",
   },
+  booking: Number,
   black: {
     type: {
-      cac: Number,
       quotas: Number,
       baseQuota: Number,
-      updatedQuota: Number
+      updatedQuota: Number,
+      lastQuota: {type: mongoose.Schema.Types.ObjectId, ref: "quotas"}
     }
   },
   white: {
     type: {
-      cac: Number,
       quotas: Number,
       baseQuota: Number,
-      updatedQuota: Number
+      updatedQuota: Number,
+      lastQuota: {type: mongoose.Schema.Types.ObjectId, ref: "quotas"}
     }
   }
 });
@@ -33,6 +34,12 @@ const transactionsSchema = new mongoose.Schema({
 transactionsSchema.pre("find", function () {
   this.populate("seller")
   this.populate("buyer")
+})
+
+transactionsSchema.pre("findOne", function () {
+  this.populate("seller")
+  this.populate("buyer")
+  this.populate("apartment")
 })
 
 export default mongoose.model(transactionsCollection, transactionsSchema)

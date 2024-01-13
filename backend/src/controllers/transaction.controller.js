@@ -22,3 +22,14 @@ export const getApartmentTransactions = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const getTransactionById = async (req,res) => {
+  try {
+    const transaction = await transactionService.getTransactionById(req.params?.tid)
+    res.sendSuccess(transaction)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}

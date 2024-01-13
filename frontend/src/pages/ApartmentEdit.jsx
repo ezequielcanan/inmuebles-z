@@ -26,7 +26,7 @@ const ApartmentEdit = () => {
 
   const ownerTextSearch = async (text) => {
     const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/owner?query=${text}`)).json()
-    setOwnerSuggestions(result.payload)
+    setOwnerSuggestions(text.split(" ").length > 1 ? [] : result.payload)
   }
   
   const onSubmit = handleSubmit(async data => {

@@ -1,118 +1,48 @@
-import { useEffect, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
-import { BounceLoader } from "react-spinners"
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa"
-import { useForm } from "react-hook-form"
-import Form from "../components/Form"
-import Main from "../containers/Main"
-import ApartmentCard from "../components/ApartmentCard"
+import { useParams } from "react-router-dom";
+import Main from "../containers/Main";
+import { useEffect, useState } from "react";
+import { BounceLoader } from "react-spinners";
 
 const Transaction = () => {
-  const [apartment, setApartment] = useState(false)
-  const [formIndex, setFormIndex] = useState(0)
-  const navigate = useNavigate()
-  const {register, handleSubmit} = useForm()
-  const { inmueble } = useParams()
+  const { tid } = useParams();
+  const [transaction, setTransaction] = useState(false)
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/apartments/${inmueble}`).then(res => res.json()).then(json => setApartment(json.payload))
-  }, [])
-
-  const onSubmit = handleSubmit(async data => {
-    const buyer = JSON.stringify(data)
-    const ownerResult = await(await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/owner`, {method: "POST", body: buyer, headers: {"Content-Type": "application/json"}})).json()
-    const apartmentRes = await(await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/apartments/${inmueble}`, {method: "PUT", body: JSON.stringify({owner: ownerResult.payload._id}), headers: {"Content-Type": "application/json"}})).json()
-    const transactionRes = await(await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction`, {method: "POST", body: JSON.stringify({apartment: apartment?._id, seller: apartment?.owner, buyer: ownerResult.payload._id}), headers: {"Content-Type": "application/json"}})).json()
-    navigate("/inmueble/"+inmueble)
-  })
-
-  const fields = [
-    {
-      type: "text",
-      name: "name",
-      label: "Nuevo titular"
-    },
-    {
-      type: "select",
-      name: "ownerType",
-      label: "Tipo de titular:",
-      options: [
-        "Particular",
-        "Accionista",
-        "Sociedad",
-        "Gremio"
-      ],
-    },
-    {
-      type: "text",
-      name: "number",
-      label: "Numero de telefono",
-    },
-    {
-      type: "text",
-      name: "email",
-      label: "Email",
-    }
-  ]
-
-  const secondFields = [
-    {
-      type: "number",
-      name: "cac",
-      label: "A: CAC"
-    },
-    {
-      type: "number",
-      name: "quotas",
-      label: "Cuotas totales:"
-    },
-    {
-      type: "number",
-      name: "baseQuota",
-      label: "Cuota base:"
-    }
-  ]
-
-  const thirdFields = [
-    {
-      type: "number",
-      name: "cac",
-      label: "B: CAC"
-    },
-    {
-      type: "number",
-      name: "quotas",
-      label: "Cuotas totales:"
-    },
-    {
-      type: "number",
-      name: "baseQuota",
-      label: "Cuota base:"
-    }
-  ]
+    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction/${tid}`)
+      .then((res) => res.json())
+      .then((json) => setTransaction(json.payload));
+  }, []);
 
   return (
-    <Main className={"pt-[200px] items-center bg-sixth"}>
-      {apartment ? (
-        <section className="flex w-full h-full items-center text-fourth gap-x-[20px] justify-between">
-          <div className="flex gap-x-[20px] items-center">
-            <ApartmentCard apartment={apartment} className={"mr-auto"} />
-            <h1 className="text-4xl">Venta y/o transferencia</h1>
-            <FaArrowRight size={50}/>
-          </div>
-          <div className="flex relative">
-            {!formIndex ? <Form fields={fields} onSubmit={onSubmit} register={register} className={"mr-auto !text-4xl px-16"} enter={false}/> : null}
-            {formIndex == 1 ? <Form fields={secondFields} className={"mr-auto !text-4xl px-16"} enter={false}/> : null}
-            {formIndex == 2 ? <Form fields={thirdFields} className={"mr-auto !text-4xl px-16"}/> : null}
-            {formIndex ? <FaArrowLeft className="text-fourth absolute top-[50%] left-[1%]" size={30} onClick={() => setFormIndex(formIndex - 1)}/> : null}
-            {formIndex < 2 ? <FaArrowRight className="text-fourth absolute top-[50%] right-[1%]" size={30} onClick={() => setFormIndex(formIndex + 1)}/> : null}
-          </div>
-        </section>
+    <Main className={"items-center pt-[200px] pb-[100px] bg-sixth gap-y-[50px]"}>
+      {transaction ? (
+        <>
+          <h1 className="text-6xl text-fourth font-black">
+            {transaction.apartment?.project?.title} - UF:{" "}
+            {transaction.apartment?.unit}
+          </h1>
+          <section className="flex justify-evenly w-full">
+            {[{type: "white", white: transaction.white}, {type: "black", black: transaction.black}].map((t,i) => {
+               return <div className="bg-cyan-600 flex flex-col gap-y-4 items-center px-3 py-4 rounded-lg text-fourth">
+                <h2 className="text-3xl border-b-4 w-full text-center">{t.type == "white" ? "A" : "B"}</h2>
+                <p className="text-2xl">Cuota base: {t[t.type]?.baseQuota}</p>
+                <p className="text-2xl">Cuotas totales: {t[t.type]?.quotas}</p>
+                <p className="text-2xl">N° Cuota: {t[t.type]?.lastQuota}</p>
+                <p className="text-2xl">Cuota actualizada: {t[t.type]?.updatedQuota || t[t.type]?.baseQuota}</p>
+                <div className="flex gap-x-4 items-center">
+                  <label htmlFor="cac">CAC</label>
+                  <input type="number" name="cac" className="text-first focus:outline-none px-3 py-1"/>
+                </div>
+                <button className="bg-second rounded py-2 px-3">Agregar cuota</button>
+              </div>
+            })}
+          </section>
+        </>
       ) : (
-        <BounceLoader/>
+        <BounceLoader size={100} />
       )}
     </Main>
-  )
-}
+  );
+};
 
-export default Transaction
+export default Transaction;

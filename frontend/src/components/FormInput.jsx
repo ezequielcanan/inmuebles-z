@@ -45,7 +45,7 @@ const FormInput = ({ field, register = (a) => { }, i }) => {
             <>
               <input type={type} {...register(name)} className={`${inputClassName} ${className}`} onChange={stateFunc ? ((e) => (stateFunc(e.target.value))) : (e) => onChange(e.target.value)} defaultValue={value} disabled={disabled || false} />
               {suggestions?.length ? (
-                <div className="absolute top-5 right-5 bg-second text-first rounded text-3xl flex flex-col overflow-y-scroll h-[52px]">
+                <div className="absolute top-0 right-0 bg-second text-first rounded text-3xl flex flex-col overflow-y-scroll h-[52px]">
                   {suggestions.map((s, i) => {
                     return <span key={i} className="w-full flex items-center justify-center h-[52px] py-2 px-2 text-fourth duration-300 hover:bg-third" onClick={() => setOwner(s)}>{s.name}</span>
                   })}
@@ -62,7 +62,7 @@ const FormInput = ({ field, register = (a) => { }, i }) => {
     number: (({ type, name, label, checkedState, className, disabled, value }, i) => {
       return <div className="flex items-center justify-between w-full gap-x-[40px]" key={i}>
         <label className={labelClassName} htmlFor={name}>{label}</label>
-        <input type={type}  {...register(name)} disabled={checkedState ? "disabled" : disabled} onWheel={e => e.target.blur()} className={`${inputClassName} w-1/6 appareance-none ${checkedState && "text-transparent"} ${className}`} defaultValue={value} />
+        <input type={type} step={0.01} {...register(name)} disabled={checkedState ? "disabled" : disabled} onWheel={e => e.target.blur()} className={`${inputClassName} w-1/6 appareance-none ${checkedState && "text-transparent"} ${className}`} defaultValue={value} />
       </div>
     }),
     date: (({ type, name, label, className, value }, i) => {
