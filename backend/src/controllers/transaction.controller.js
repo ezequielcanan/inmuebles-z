@@ -41,3 +41,14 @@ export const getTransactionById = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const createTransactionXlsx = async (req, res) => {
+  try {
+    const quotas = await transactionService.getTransactionQuotas(req?.params?.tid)
+    const transaction = await transactionService.getTransactionById(req?.params?.tid)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}

@@ -1,4 +1,5 @@
 import transactionModel from "../models/transaction.model.js"
+import quotaModel from "../models/quota.model.js"
 
 class TransactionService {
   constructor() { }
@@ -14,13 +15,18 @@ class TransactionService {
   }
 
   getTransactionById = async (tid) => {
-    const result = await transactionModel.findOne({ _id: tid })
+    const result = await transactionModel.findOne({ _id: tid }).lean().exec()
     return result
   }
 
   updateTransactionTypes = async (black, white, tid) => {
     const result = await transactionModel.updateOne({ _id: tid }, { $set: { "black.updatedQuota": black.updatedQuota, "black.lastQuota": black.lastQuota, "white.updatedQuota": white.updatedQuota, "white.lastQuota": white.lastQuota } })
     return result
+  }
+
+  getTransactionQuotas = async (tid) => {
+    const quotas = await quotaModel.find({ transaction: tid }).lean().exec()
+    return quotas
   }
 }
 
