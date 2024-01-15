@@ -43,7 +43,7 @@ const FormInput = ({ field, register = (a) => { }, i }) => {
         {!suggestedOwner ?
           (
             <>
-              <input type={type} {...register(name)} className={`${inputClassName} ${className}`} onChange={stateFunc ? ((e) => (stateFunc(e.target.value))) : (e) => onChange(e.target.value)} defaultValue={value} disabled={disabled || false} />
+              <input type={type} {...register(name)} className={`${inputClassName} ${className}`} onChange={stateFunc ? ((e) => (stateFunc(e.target.value))) : (e) => onChange(e.target.value)} defaultValue={value || ""} disabled={disabled || false} />
               {suggestions?.length ? (
                 <div className="absolute top-0 right-0 bg-second text-first rounded text-3xl flex flex-col overflow-y-scroll h-[52px]">
                   {suggestions.map((s, i) => {

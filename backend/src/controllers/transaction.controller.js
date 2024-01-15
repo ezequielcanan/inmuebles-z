@@ -1,5 +1,6 @@
 import TransactionService from "../services/transaction.service.js"
 import QuotaService from "../services/quota.service.js"
+import { createTransactionExcel } from "../excel/index.js"
 
 const quotaService = new QuotaService()
 const transactionService = new TransactionService()
@@ -44,8 +45,12 @@ export const getTransactionById = async (req, res) => {
 
 export const createTransactionXlsx = async (req, res) => {
   try {
-    const quotas = await transactionService.getTransactionQuotas(req?.params?.tid)
+    const white = await transactionService.getTransactionWhiteQuotas(req?.params?.tid)
+    const black = await transactionService.getTransactionBlackQuotas(req?.params?.tid)
+
     const transaction = await transactionService.getTransactionById(req?.params?.tid)
+    const wb = createTransactionExcel(transaction, {white,black})
+    wb.write("excel.xlsx", res)
   }
   catch (e) {
     console.log(e)

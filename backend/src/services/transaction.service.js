@@ -24,8 +24,13 @@ class TransactionService {
     return result
   }
 
-  getTransactionQuotas = async (tid) => {
-    const quotas = await quotaModel.find({ transaction: tid }).lean().exec()
+  getTransactionWhiteQuotas = async (tid) => {
+    const quotas = await quotaModel.find({ transaction: tid, type: "white" }).lean().exec()
+    return quotas
+  }
+
+  getTransactionBlackQuotas = async (tid) => {
+    const quotas = await quotaModel.find({ transaction: tid, type: "black" }).lean().exec()
     return quotas
   }
 }

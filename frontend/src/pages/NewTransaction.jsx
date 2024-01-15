@@ -46,23 +46,28 @@ const NewTransaction = () => {
       )
     ).json()
     const today = moment().format("DD-MM-YYYY")
+    const whiteBaseQuota = ((Number(data.total) * 60 / 100) - Number(data.booking)) / Number(data["quotas"])
+    const blackBaseQuota = ((Number(data.total) * 40 / 100) - Number(data.bookingB)) / Number(data["b-quotas"])
+
     const transactionBody = {
       transaction: {
         apartment: apartment?._id,
         seller: apartment?.owner,
         buyer: ownerResult.payload._id,
+        total: data.total,
         booking: data.booking,
-        white: { quotas: data.quotas, baseQuota: data.baseQuota},
+        bookingB: data.bookingB,
+        white: { quotas: data.quotas, baseQuota: whiteBaseQuota},
         black: {
           quotas: data["b-quotas"],
-          baseQuota: data["b-baseQuota"]
+          baseQuota: blackBaseQuota
         },
       },
       black: {
-        cac: data["b-cac"], total: Number(data["b-baseQuota"]) + Number(data["b-baseQuota"]) * Number(data["b-cac"]) / 100, quota: 1, type: "black", date: today
+        cac: data["b-cac"], total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0
       },
       white: {
-        cac: data["cac"], total: Number(data["baseQuota"]) + Number(data["baseQuota"]) * Number(data["cac"]) / 100, quota: 1, type: "white", date: today
+        cac: data["cac"], total: whiteBaseQuota, quota: 1, type: "white", date: today, adjustment: 0, extraAdjustment: 0
       }
     };
 
@@ -104,8 +109,14 @@ const NewTransaction = () => {
   const secondFields = [
     {
       type: "number",
-      name: "baseQuota",
-      label: "Cuota base:",
+      name: "total",
+      label: "TOTAL:",
+      className: "w-[200px]",
+    },
+    {
+      type: "number",
+      name: "booking",
+      label: "Adelanto:",
       className: "w-[200px]",
     },
     {
@@ -125,14 +136,8 @@ const NewTransaction = () => {
   const thirdFields = [
     {
       type: "number",
-      name: "booking",
+      name: "bookingB",
       label: "Adelanto B:",
-      className: "w-[200px]",
-    },
-    {
-      type: "number",
-      name: "b-baseQuota",
-      label: "Cuota base B:",
       className: "w-[200px]",
     },
     {

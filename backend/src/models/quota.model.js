@@ -8,10 +8,16 @@ const quotaSchema = new mongoose.Schema({
   quota: Number,
   type: { type: String, enum: ["white", "black"] },
   transaction: { type: mongoose.Schema.Types.ObjectId, ref: "transactions" },
+  adjustment: Number,
+  extraAdjustment: Number,
   date: String
 })
 
 quotaSchema.pre("findOne", function () {
+  this.populate("transaction")
+})
+
+quotaSchema.pre("find", function () {
   this.populate("transaction")
 })
 

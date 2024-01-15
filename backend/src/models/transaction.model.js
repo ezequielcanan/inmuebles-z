@@ -13,6 +13,8 @@ const transactionsSchema = new mongoose.Schema({
     ref: "owners",
   },
   booking: Number,
+  bookingB: Number,
+  total: Number,
   black: {
     type: {
       quotas: Number,
