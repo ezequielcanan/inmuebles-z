@@ -1,4 +1,6 @@
 import { Router } from "express"
+import jwt from "jsonwebtoken"
+import { jwtSign } from "../utils.js"
 
 export default class Z_Router {
 
@@ -40,12 +42,29 @@ export default class Z_Router {
     })
   }
 
+  handlePolicies = policies => (req, res, next) => {
+    if (policies.length > 0) {
+      const token = req.cookies.jwt
+      if (!token) return res.sendNoAuthenticatedError('No token')
+      const user = jwt.verify(token, jwtSign)
+
+      if (!policies.includes(user.role.toUpperCase())) {
+        return res.sendNoAuthorizedError()
+      }
+
+      req.user = user
+      return next()
+    }
+
+    return res.sendNoAuthenticatedError('This resource is private ')
+  }
+
   generateCustomResponse = (req, res, next) => {
     res.sendSuccess = payload => res.json({ status: 'success', payload })
     res.sendServerError = error => res.status(500).json({ status: 'error', error })
     res.sendUserError = error => res.status(400).json({ status: 'error', error })
     res.sendNoAuthenticatedError = (error = 'No auth') => res.status(401).json({ status: 'error', error })
-    res.sendNoAuthorizadError = (error = 'No authorized') => res.status(403).json({ status: 'error', error })
+    res.sendNoAuthorizedError = (error = 'No authorized') => res.status(403).json({ status: 'error', error })
 
     next()
   }

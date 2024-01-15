@@ -46,8 +46,8 @@ const NewTransaction = () => {
       )
     ).json()
     const today = moment().format("DD-MM-YYYY")
-    const whiteBaseQuota = ((Number(data.total) * 60 / 100) - Number(data.booking)) / Number(data["quotas"])
-    const blackBaseQuota = ((Number(data.total) * 40 / 100) - Number(data.bookingB)) / Number(data["b-quotas"])
+    const whiteBaseQuota = ((Number(data.total) * 60 / 100) - Number(data.booking)) / Number(data["quotas"]).toFixed(2)
+    const blackBaseQuota = ((Number(data.total) * 40 / 100) - Number(data.bookingB)) / Number(data["b-quotas"]).toFixed(2)
 
     const transactionBody = {
       transaction: {
@@ -78,7 +78,6 @@ const NewTransaction = () => {
         headers: { "Content-Type": "application/json" },
       })
     ).json();
-    console.log(transactionRes)
     navigate("/inmueble/" + inmueble);
   });
 

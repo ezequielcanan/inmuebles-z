@@ -10,14 +10,17 @@ import OwnerRouter from "./routes/owner.router.js"
 import TenantRouter from "./routes/tenant.router.js"
 import TransactionRouter from "./routes/transaction.router.js"
 import QuotaRouter from "./routes/quotas.router.js"
+import SessionRouter from "./routes/session.router.js"
 import cors from "cors"
 import __dirname from "./utils.js"
+import initializePassport from "./config/passport.config.js"
+import passport from "passport"
 
 dotenv.config() // .env config
 const app = express()
 
 // POST AND COOKIES
-app.use(cors())
+app.use(cors({ credentials: true, origin: true }))
 app.use(cookieParser())
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -31,6 +34,10 @@ const rentRouter = new RentRouter()
 const ownerRouter = new OwnerRouter()
 const transactionRouter = new TransactionRouter()
 const quotaRouter = new QuotaRouter()
+const sessionRouter = new SessionRouter()
+
+initializePassport()
+app.use(passport.initialize())
 
 app.use("/api/projects", projectsRouter.getRouter())
 app.use("/api/floor", floorRouter.getRouter())
@@ -40,6 +47,7 @@ app.use("/api/rent", rentRouter.getRouter())
 app.use("/api/owner", ownerRouter.getRouter())
 app.use("/api/transaction", transactionRouter.getRouter())
 app.use("/api/quota", quotaRouter.getRouter())
+app.use("/api/session", sessionRouter.getRouter())
 
 // MONGO CONNECTION AND RUNNING SERVER
 mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGO_DB })

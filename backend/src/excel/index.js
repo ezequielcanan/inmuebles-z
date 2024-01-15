@@ -5,7 +5,7 @@ export const createTransactionExcel = (transaction, quotas) => {
   const wb = new xl.Workbook()
   const ws = wb.addWorksheet()
 
-  const {black, white} = quotas
+  const { black, white } = quotas
 
   const { apartment } = transaction
 
@@ -212,8 +212,8 @@ export const createTransactionExcel = (transaction, quotas) => {
   ws.column(11).setWidth(20);
   ws.column(12).setWidth(20);
 
-  ws.cell(1, 1, 1, 11, true).string(apartment?.project?.title).style(styles["project"])
-  
+  ws.cell(1, 1, 1, 12, true).string(apartment?.project?.title).style(styles["project"])
+
   ws.cell(2, 1).string("UF").style(styles["apartmentInfoHead"])
   ws.cell(2, 2).string("m2 Cubiertos").style(styles["apartmentInfoHead"])
   ws.cell(2, 3).string("m2 Balcon").style(styles["apartmentInfoHead"])
@@ -230,7 +230,8 @@ export const createTransactionExcel = (transaction, quotas) => {
   ws.cell(5, 9).string("40%").style(styles["apartmentInfoHead"])
   ws.cell(5, 10).string("Adelanto").style(styles["apartmentInfoHead"])
   ws.cell(5, 11).string("Saldo").style(styles["apartmentInfoHead"])
-  
+  ws.cell(5, 12).string("Cuotas").style(styles["apartmentInfoHead"])
+
   ws.cell(3, 1).string(apartment?.unit).style(styles["apartmentInfoCell"])
   ws.cell(3, 2).number(apartment?.meters?.covered).style(styles["apartmentInfoCell"])
   ws.cell(3, 3).number(apartment?.meters?.balcony).style(styles["apartmentInfoCell"])
@@ -239,15 +240,16 @@ export const createTransactionExcel = (transaction, quotas) => {
   ws.cell(3, 6).number(apartment?.meters?.total).style(styles["apartmentInfoCell"])
   ws.cell(3, 7).string(apartment?.rooms).style(styles["apartmentInfoCell"])
   ws.cell(3, 8).number(transaction?.total).style(styles["apartmentInfoCell"])
-  ws.cell(3, 9).formula(`${xl.getExcelCellRef(3,8)} * 60%`).style(styles["apartmentInfoCell"])
+  ws.cell(3, 9).formula(`${xl.getExcelCellRef(3, 8)} * 60%`).style(styles["apartmentInfoCell"])
   ws.cell(3, 10).number(transaction?.booking).style(styles["apartmentInfoCell"])
-  ws.cell(3, 11).formula(`${xl.getExcelCellRef(3,9)} - ${xl.getExcelCellRef(3,10)}`).style(styles["apartmentInfoCell"])
+  ws.cell(3, 11).formula(`${xl.getExcelCellRef(3, 9)} - ${xl.getExcelCellRef(3, 10)}`).style(styles["apartmentInfoCell"])
   ws.cell(3, 12).number(transaction?.white?.quotas).style(styles["apartmentInfoCell"])
 
-  ws.cell(6, 9).formula(`${xl.getExcelCellRef(3,8)} * 40%`).style(styles["apartmentInfoCell"])
+  ws.cell(6, 9).formula(`${xl.getExcelCellRef(3, 8)} * 40%`).style(styles["apartmentInfoCell"])
   ws.cell(6, 10).number(transaction?.bookingB).style(styles["apartmentInfoCell"])
-  ws.cell(6, 11).formula(`${xl.getExcelCellRef(6,9)} - ${xl.getExcelCellRef(6,10)}`).style(styles["apartmentInfoCell"])
-  
+  ws.cell(6, 11).formula(`${xl.getExcelCellRef(6, 9)} - ${xl.getExcelCellRef(6, 10)}`).style(styles["apartmentInfoCell"])
+  ws.cell(6, 12).number(transaction?.black?.quotas).style(styles["apartmentInfoCell"])
+
   ws.cell(5, 1, 5, 8, true).string("A").style(styles["sectionHead"])
   ws.cell(6, 1).string("Nombre").style(styles["sectionInfoHead"])
   ws.cell(6, 2).string("N° Cuota").style(styles["sectionInfoHead"])
@@ -257,42 +259,91 @@ export const createTransactionExcel = (transaction, quotas) => {
   ws.cell(6, 6).string("Cuota actual").style(styles["sectionInfoHead"])
   ws.cell(6, 7).string("Fecha").style(styles["sectionInfoHead"])
   ws.cell(6, 8).string("Total Abonado").style(styles["sectionInfoHead"])
-  
+
   let lastRow = 7
-  white.forEach((quota,i) => {
+  white.forEach((quota, i) => {
     if (i) {
       if (quota?.extraAdjustment > 0) {
-        ws.cell(lastRow+i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
-        ws.cell(lastRow+i, 2).string("REAJUSTE").style(styles["quota"])
-        ws.cell(lastRow+i, 3).string("").style(styles["quota"])
-        ws.cell(lastRow+i, 4).number(quota?.extraAdjustment).style(styles["quota"])
-        ws.cell(lastRow+i, 5).formula(`${xl.getExcelCellRef(lastRow+i,4)} * ${xl.getExcelCellRef(lastRow+i-1,3)} / 100`).style(styles["quota"])
-        ws.cell(lastRow+i, 6).string("").style(styles["quota"])
-        ws.cell(lastRow+i, 7).string("").style(styles["quota"])
-        ws.cell(lastRow+i, 8).string("").style(styles["quota"])
+        ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
+        ws.cell(lastRow + i, 2).string("REAJUSTE").style(styles["quota"])
+        ws.cell(lastRow + i, 3).string("").style(styles["quota"])
+        ws.cell(lastRow + i, 4).number(quota?.extraAdjustment).style(styles["quota"])
+        ws.cell(lastRow + i, 5).formula(`${xl.getExcelCellRef(lastRow + i, 4)} * ${xl.getExcelCellRef(lastRow + i - 1, 3)} / 100`).style(styles["quota"])
+        ws.cell(lastRow + i, 6).string("").style(styles["quota"])
+        ws.cell(lastRow + i, 7).string("").style(styles["quota"])
+        ws.cell(lastRow + i, 8).string("").style(styles["quota"])
         lastRow++
       }
-      ws.cell(lastRow+i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
-      ws.cell(lastRow+i, 2).string("AJUSTE").style(styles["quota"])
-      ws.cell(lastRow+i, 3).string("").style(styles["quota"])
-      ws.cell(lastRow+i, 4).number(Number(quota?.adjustment)).style(styles["quota"])
-      ws.cell(lastRow+i, 5).formula(`${xl.getExcelCellRef(lastRow+i,4)} * ${xl.getExcelCellRef(lastRow+i-(quota.extraAdjustment > 0 ? 2 : 1),3)} / 100`).style(styles["quota"])
-      ws.cell(lastRow+i, 6).string("").style(styles["quota"])
-      ws.cell(lastRow+i, 7).string("").style(styles["quota"])
-      ws.cell(lastRow+i, 8).string("").style(styles["quota"])
+      ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
+      ws.cell(lastRow + i, 2).string("AJUSTE").style(styles["quota"])
+      ws.cell(lastRow + i, 3).string("").style(styles["quota"])
+      ws.cell(lastRow + i, 4).number(Number(quota?.adjustment)).style(styles["quota"])
+      ws.cell(lastRow + i, 5).formula(`${xl.getExcelCellRef(lastRow + i, 4)} * ${xl.getExcelCellRef(lastRow + i - (quota.extraAdjustment > 0 ? 2 : 1), 3)} / 100`).style(styles["quota"])
+      ws.cell(lastRow + i, 6).string("").style(styles["quota"])
+      ws.cell(lastRow + i, 7).string("").style(styles["quota"])
+      ws.cell(lastRow + i, 8).string("").style(styles["quota"])
+      lastRow++
+    }
+    ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
+    ws.cell(lastRow + i, 2).number(quota?.quota).style(styles["quota"])
+    ws.cell(lastRow + i, 3).formula(!i ? xl.getExcelCellRef(3, 11) + "/" + xl.getExcelCellRef(3, 12) : xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 8) + "+" + (quota.extraAdjustment > 0 ? xl.getExcelCellRef(lastRow - 2 + i, 5) : "") + "+" + xl.getExcelCellRef(lastRow - 1 + i, 5)).style(styles["quota"])
+    ws.cell(lastRow + i, 4).number(quota?.cac || 0).style(styles["quota"])
+    const totalCell = xl.getExcelCellRef(lastRow + i, 3)
+    const cacCell = xl.getExcelCellRef(lastRow + i, 4)
+    ws.cell(lastRow + i, 5).formula(`${totalCell} * ${cacCell} / 100`).style(styles["quota"])
+    ws.cell(lastRow + i, 6).formula(`${totalCell} + ${xl.getExcelCellRef(lastRow + i, 5)}`).style(styles["quota"])
+    ws.cell(lastRow + i, 7).string(quota?.date).style(styles["quota"])
+    ws.cell(lastRow + i, 8).formula(`${xl.getExcelCellRef(lastRow + i, 6)}`).style(styles["quota"])
+  })
+
+  lastRow += 5
+
+  ws.cell(lastRow, 1, lastRow, 8, true).string("B").style(styles["sectionHead"])
+  lastRow++
+  ws.cell(lastRow, 1).string("Nombre").style(styles["sectionInfoHead"])
+  ws.cell(lastRow, 2).string("N° Cuota").style(styles["sectionInfoHead"])
+  ws.cell(lastRow, 3).string("Cuota").style(styles["sectionInfoHead"])
+  ws.cell(lastRow, 4).string("Indice").style(styles["sectionInfoHead"])
+  ws.cell(lastRow, 5).string("Ajuste").style(styles["sectionInfoHead"])
+  ws.cell(lastRow, 6).string("Cuota actual").style(styles["sectionInfoHead"])
+  ws.cell(lastRow, 7).string("Fecha").style(styles["sectionInfoHead"])
+  ws.cell(lastRow, 8).string("Total Abonado").style(styles["sectionInfoHead"])
+  lastRow++
+
+  black.forEach((quota, i) => {
+    if (i) {
+      if (quota?.extraAdjustment > 0) {
+        ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
+        ws.cell(lastRow + i, 2).string("REAJUSTE").style(styles["quota"])
+        ws.cell(lastRow + i, 3).string("").style(styles["quota"])
+        ws.cell(lastRow + i, 4).number(quota?.extraAdjustment).style(styles["quota"])
+        ws.cell(lastRow + i, 5).formula(`${xl.getExcelCellRef(lastRow + i, 4)} * ${xl.getExcelCellRef(lastRow + i - 1, 3)} / 100`).style(styles["quota"])
+        ws.cell(lastRow + i, 6).string("").style(styles["quota"])
+        ws.cell(lastRow + i, 7).string("").style(styles["quota"])
+        ws.cell(lastRow + i, 8).string("").style(styles["quota"])
+        lastRow++
+      }
+      ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
+      ws.cell(lastRow + i, 2).string("AJUSTE").style(styles["quota"])
+      ws.cell(lastRow + i, 3).string("").style(styles["quota"])
+      ws.cell(lastRow + i, 4).number(Number(quota?.adjustment)).style(styles["quota"])
+      ws.cell(lastRow + i, 5).formula(`${xl.getExcelCellRef(lastRow + i, 4)} * ${xl.getExcelCellRef(lastRow + i - (quota.extraAdjustment > 0 ? 2 : 1), 3)} / 100`).style(styles["quota"])
+      ws.cell(lastRow + i, 6).string("").style(styles["quota"])
+      ws.cell(lastRow + i, 7).string("").style(styles["quota"])
+      ws.cell(lastRow + i, 8).string("").style(styles["quota"])
       lastRow++
     }
 
-    ws.cell(lastRow+i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
-    ws.cell(lastRow+i, 2).number(quota?.quota).style(styles["quota"])
-    ws.cell(lastRow+i, 3).formula(!i ? xl.getExcelCellRef(3,9)+"/"+xl.getExcelCellRef(3,12) : xl.getExcelCellRef(lastRow-(quota.extraAdjustment > 0 ? 3 : 2)+i, 8) + "+" + (quota.extraAdjustment > 0 ? xl.getExcelCellRef(lastRow-2+i,5) : "") + "+" + xl.getExcelCellRef(lastRow-1+i,5)).style(styles["quota"])
-    ws.cell(lastRow+i, 4).number(quota?.cac || 0).style(styles["quota"])
-    const totalCell = xl.getExcelCellRef(lastRow+i,3)
-    const cacCell = xl.getExcelCellRef(lastRow+i,4)
-    ws.cell(lastRow+i, 5).formula(`${totalCell} * ${cacCell} / 100`).style(styles["quota"])
-    ws.cell(lastRow+i, 6).formula(`${totalCell} + ${xl.getExcelCellRef(lastRow+i,5)}`).style(styles["quota"])
-    ws.cell(lastRow+i, 7).string(quota?.date).style(styles["quota"])
-    ws.cell(lastRow+i, 8).formula(`${xl.getExcelCellRef(lastRow+i,6)}`).style(styles["quota"])
+    ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
+    ws.cell(lastRow + i, 2).number(quota?.quota).style(styles["quota"])
+    ws.cell(lastRow + i, 3).formula(!i ? xl.getExcelCellRef(6, 11) + "/" + xl.getExcelCellRef(6, 12) : xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 8) + "+" + (quota.extraAdjustment > 0 ? xl.getExcelCellRef(lastRow - 2 + i, 5) : "") + "+" + xl.getExcelCellRef(lastRow - 1 + i, 5)).style(styles["quota"])
+    ws.cell(lastRow + i, 4).number(quota?.cac || 0).style(styles["quota"])
+    const totalCell = xl.getExcelCellRef(lastRow + i, 3)
+    const cacCell = xl.getExcelCellRef(lastRow + i, 4)
+    ws.cell(lastRow + i, 5).formula(`${totalCell} * ${cacCell} / 100`).style(styles["quota"])
+    ws.cell(lastRow + i, 6).formula(`${totalCell} + ${xl.getExcelCellRef(lastRow + i, 5)}`).style(styles["quota"])
+    ws.cell(lastRow + i, 7).string(quota?.date).style(styles["quota"])
+    ws.cell(lastRow + i, 8).formula(`${xl.getExcelCellRef(lastRow + i, 6)}`).style(styles["quota"])
   })
 
   return wb

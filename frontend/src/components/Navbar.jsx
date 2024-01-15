@@ -1,14 +1,25 @@
-import { Link } from "react-router-dom"
-import { FaSearch } from "react-icons/fa"
-import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { useEffect, useState, useContext } from "react"
+import { FaUserCircle } from "react-icons/fa"
+import {FiLogOut} from "react-icons/fi"
+import { UserContext } from "../context/userContext"
 import NavLi from "./NavLi"
 
-const Navbar = () => {
-  const [owners,setOwners] = useState([])
+const Navbar = ({ type }) => {
+  const [owners, setOwners] = useState([])
   const [focus, setFocus] = useState(false)
   const [input, setInput] = useState("")
+  const [user, setUser] = useState({})
+  const [viewUser, setViewUser] = useState(false)
+  const {setUser: logout} = useContext(UserContext)
+  const navigate = useNavigate()
 
-  const buttons = [
+
+  const onClickViewUser = () => {
+    setViewUser(!viewUser)
+  }
+
+  const buttons = type == "default" ? [
     {
       path: "/",
       text: "De pozo"
@@ -21,7 +32,20 @@ const Navbar = () => {
       path: "/",
       text: "Finalizados"
     }
+  ] : [
+    {
+      path: "/login",
+      text: "Iniciar sesion"
+    },
+    {
+      path: "/register",
+      text: "Registrarse"
+    },
   ]
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/session/auth`, { credentials: "include" }).then(res => res.json()).then(json => setUser(json.payload))
+  }, [])
 
   const handleChange = async (e) => {
     setInput(e.target.value)
@@ -35,27 +59,42 @@ const Navbar = () => {
         <Link to={"/"}>
           <img src="/logo.svg" alt="" />
         </Link>
-        <div className="flex gap-x-[20px] relative items-center">
-          <input type="text" className="outline-none text-2xl px-2 py-1 rounded duration-200 focus:shadow-lg focus:shadow-third w-[200px]" onChange={handleChange} onFocus={() => setFocus(true)} onBlur={(e) => !e?.relatedTarget?.className?.includes("owner") && setFocus(false) }/>
-          {(focus && input) && ((owners.length) ? (
-            <div className="absolute w-[250px] flex flex-col text-xl top-[100%] right-0 bg-second shadow-lg shadow-first text-fourth">
-              {owners.map((o,i) => {
-                return <Link to={`/owners/${o._id}`} className="h-full w-full px-3 py-3 duration-300 hover:bg-third cursor-pointer owner" key={i} onClick={() => setFocus(false)}>
-                  <p>{o.name}</p>
-                </Link>
+        {(type == "default" && user)? (
+          <>
+            <div className="flex gap-x-[20px] relative items-center">
+              <input type="text" className="outline-none text-2xl px-2 py-1 rounded duration-200 focus:shadow-lg focus:shadow-third w-[200px]" onChange={handleChange} onFocus={() => setFocus(true)} onBlur={(e) => !e?.relatedTarget?.className?.includes("owner") && setFocus(false)} />
+              {(focus && input) && ((owners.length) ? (
+                <div className="absolute w-[250px] flex flex-col text-xl top-[100%] right-0 bg-second shadow-lg shadow-first text-fourth">
+                  {owners.map((o, i) => {
+                    return <Link to={`/owners/${o._id}`} className="h-full w-full px-3 py-3 duration-300 hover:bg-third cursor-pointer owner" key={i} onClick={() => setFocus(false)}>
+                      <p>{o.name}</p>
+                    </Link>
+                  })}
+                </div>
+              ) : (
+                <div className="absolute w-[250px] text-xl top-[100%] shadow-lg shadow-first right-0 bg-second text-fourth px-3 py-3">
+                  <p>No hay resultados</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex h-full items-center gap-x-[40px] relative">
+              <p className="text-fourth text-2xl">{user?.name}</p>
+              <FaUserCircle size={40} className="text-fourth !outline-none" tabIndex={0} onBlur={() => setTimeout(() => setViewUser(false), 100)} onClick={onClickViewUser}/>
+              {viewUser && (
+                <div className="absolute top-[75%] bg-fourth duration-300 hover:bg-[#ddd] text-xl flex items-center justify-between gap-x-[20px] py-3 rounded px-4" onClick={() => (setViewUser(false), logout(""), navigate("/"))}>
+                  <button>Cerrar sesion</button>
+                  <FiLogOut/>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+            <ul className="flex justify-between text-fourth text-xl gap-x-[70px]">
+              {buttons.map((b, i) => {
+                return <NavLi text={b.text} path={b.path} key={i} />
               })}
-            </div>
-          ) : (
-            <div className="absolute w-[250px] text-xl top-[100%] shadow-lg shadow-first right-0 bg-second text-fourth px-3 py-3">
-              <p>No hay resultados</p>
-            </div>
-          ))}
-        </div>
-        <ul className="flex justify-between text-fourth text-xl gap-x-[70px]">
-          {buttons.map((b, i) => {
-            return <NavLi text={b.text} path={b.path} key={i} />
-          })}
-        </ul>
+            </ul>
+        )}
       </nav>
     </header>
   )

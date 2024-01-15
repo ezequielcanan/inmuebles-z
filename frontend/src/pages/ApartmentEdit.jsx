@@ -90,7 +90,7 @@ const ApartmentEdit = () => {
       type: "select",
       name: "orientation",
       label: "Orientacion:",
-      options: ["Frente", "Contrafrente", "Izquierda", "Derecha"],
+      options: ["Frente", "Contrafrente"],
       value: apartment?.orientation || "",
     },
     {

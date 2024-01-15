@@ -59,6 +59,28 @@ const FormInput = ({ field, register = (a) => { }, i }) => {
           )}
       </div>
     }),
+    password: (({ type, name, label, className, stateFunc, value, disabled, onChange = () => { }, suggestions, setOwner, suggestedOwner }, i) => {
+      return <div className="flex items-center justify-between w-full gap-x-[40px] relative" key={i}>
+        <label className={labelClassName} htmlFor={name}>{label}</label>
+        {!suggestedOwner ?
+          (
+            <>
+              <input type={type} {...register(name)} className={`${inputClassName} ${className}`} onChange={stateFunc ? ((e) => (stateFunc(e.target.value))) : (e) => onChange(e.target.value)} defaultValue={value || ""} disabled={disabled || false} />
+              {suggestions?.length ? (
+                <div className="absolute top-0 right-0 bg-second text-first rounded text-3xl flex flex-col overflow-y-scroll h-[52px]">
+                  {suggestions.map((s, i) => {
+                    return <span key={i} className="w-full flex items-center justify-center h-[52px] py-2 px-2 text-fourth duration-300 hover:bg-third" onClick={() => setOwner(s)}>{s.name}</span>
+                  })}
+                </div>
+              ) : null}
+            </>
+          ) : (
+           <div className="bg-second">
+              <h3 className="text-6xl text-fourth py-3 px-3 flex gap-x-[20px] items-center">{suggestedOwner.name} <RxCross1 onClick={() => setOwner(false)}/></h3>
+           </div>
+          )}
+      </div>
+    }),
     number: (({ type, name, label, checkedState, className, disabled, value }, i) => {
       return <div className="flex items-center justify-between w-full gap-x-[40px]" key={i}>
         <label className={labelClassName} htmlFor={name}>{label}</label>
