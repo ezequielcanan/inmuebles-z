@@ -3,6 +3,7 @@ import { useEffect, useState, useContext } from "react"
 import { FaUserCircle } from "react-icons/fa"
 import {FiLogOut} from "react-icons/fi"
 import { UserContext } from "../context/userContext"
+import Cookies from "js-cookie"
 import NavLi from "./NavLi"
 
 const Navbar = ({ type }) => {
@@ -11,7 +12,7 @@ const Navbar = ({ type }) => {
   const [input, setInput] = useState("")
   const [user, setUser] = useState({})
   const [viewUser, setViewUser] = useState(false)
-  const {setUser: logout} = useContext(UserContext)
+  const {user: userStateContext, setUser: logout} = useContext(UserContext)
   const navigate = useNavigate()
 
 
@@ -45,7 +46,7 @@ const Navbar = ({ type }) => {
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_REACT_API_URL}/api/session/auth`, { credentials: "include" }).then(res => res.json()).then(json => setUser(json.payload))
-  }, [])
+  }, [userStateContext])
 
   const handleChange = async (e) => {
     setInput(e.target.value)
@@ -79,9 +80,9 @@ const Navbar = ({ type }) => {
             </div>
             <div className="flex h-full items-center gap-x-[40px] relative">
               <p className="text-fourth text-2xl">{user?.name}</p>
-              <FaUserCircle size={40} className="text-fourth !outline-none" tabIndex={0} onBlur={() => setTimeout(() => setViewUser(false), 100)} onClick={onClickViewUser}/>
+              <FaUserCircle size={40} className="text-fourth !outline-none" tabIndex={0} onBlur={() => setTimeout(() => setViewUser(false), 150)} onClick={onClickViewUser}/>
               {viewUser && (
-                <div className="absolute top-[75%] bg-fourth duration-300 hover:bg-[#ddd] text-xl flex items-center justify-between gap-x-[20px] py-3 rounded px-4" onClick={() => (setViewUser(false), logout(""), navigate("/"))}>
+                <div className="absolute top-[75%] bg-fourth duration-300 hover:bg-[#ddd] text-xl flex items-center justify-between gap-x-[20px] py-3 rounded px-4" onClick={() => (setViewUser(false), Cookies.set("jwt", ""), logout(""), navigate("/"))}>
                   <button>Cerrar sesion</button>
                   <FiLogOut/>
                 </div>

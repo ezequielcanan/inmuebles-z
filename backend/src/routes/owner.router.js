@@ -3,8 +3,8 @@ import { createOwner, ownerTextSearch, getOwnerApartments } from "../controllers
 
 export default class OwnerRouter extends Z_Router {
   init() {
-    this.get("/apartments/:oid", getOwnerApartments)
-    this.get("/", ownerTextSearch)
-    this.post("/", createOwner)
+    this.get("/apartments/:oid", ["ADMIN","SECRETARY","USER"], getOwnerApartments)
+    this.get("/", ["ADMIN","SECRETARY","USER"], ownerTextSearch)
+    this.post("/", ["ADMIN","SECRETARY"], createOwner)
   }
 }

@@ -3,9 +3,9 @@ import { createTransaction, getApartmentTransactions, getTransactionById, create
 
 export default class TransactionRouter extends Z_Router {
   init() {
-    this.get("/apartment/:aid", getApartmentTransactions)
-    this.get("/:tid", getTransactionById)
-    this.get("/excel/:tid", createTransactionXlsx)
-    this.post("/", createTransaction)
+    this.get("/apartment/:aid",["ADMIN","SECRETARY","USER"], getApartmentTransactions)
+    this.get("/:tid",["ADMIN","SECRETARY","USER"], getTransactionById)
+    this.get("/excel/:tid",["ADMIN","SECRETARY","USER"], createTransactionXlsx)
+    this.post("/", ["ADMIN","SECRETARY"], createTransaction)
   }
 }

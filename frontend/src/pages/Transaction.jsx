@@ -16,7 +16,7 @@ const Transaction = () => {
   const input = useRef()
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction/${tid}`)
+    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction/${tid}`, {credentials: "include"})
       .then((res) => res.json())
       .then((json) => setTransaction(json.payload));
   }, []);
@@ -29,7 +29,7 @@ const Transaction = () => {
       data.type = type
       data.transaction = transaction?._id
       data.date = moment().format("DD-MM-YYYY")
-      const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/quota`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })).json()
+      const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/quota`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })).json()
       navigate("/inmueble/" + transaction?.apartment?._id)
     }) : submitWhite(async data => {
       data.total = data.cac * transaction[type]?.updatedQuota / 100 + transaction[type]?.updatedQuota
@@ -37,7 +37,7 @@ const Transaction = () => {
       data.type = type
       data.transaction = transaction?._id
       data.date = moment().format("DD-MM-YYYY")
-      const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/quota`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })).json()
+      const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/quota`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })).json()
       navigate("/inmueble/" + transaction?.apartment?._id)
     })
     onSubmit()
@@ -57,7 +57,7 @@ const Transaction = () => {
           </div>
           <section className="flex justify-evenly items-start w-full">
             {[{ type: "white", white: transaction.white }, { type: "black", black: transaction.black }].map((t, i) => {
-              return <div className="bg-cyan-600 flex flex-col gap-y-4 px-3 py-4 rounded-lg text-fourth">
+              return <div className="bg-cyan-600 flex flex-col gap-y-4 px-3 py-4 rounded-lg text-fourth" key={i}>
                 <h2 className="text-3xl border-b-4 w-full text-center">{t.type == "white" ? "A" : "B"}</h2>
                 <p className="text-2xl">Cuota base: {t[t.type]?.baseQuota}</p>
                 <p className="text-2xl">Cuotas totales: {t[t.type]?.quotas}</p>

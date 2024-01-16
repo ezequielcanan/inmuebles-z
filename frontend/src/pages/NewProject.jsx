@@ -23,14 +23,14 @@ const NewProject = () => {
     data.ext = image.name.substring(image.name.lastIndexOf('.'), image.name.length)
     const formData = new FormData()
     
-    const result = await (await fetch(import.meta.env.VITE_REACT_API_URL + "/api/projects", {method: "POST", body: JSON.stringify({...data}), headers: {"Content-Type": "application/json"}})).json()
+    const result = await (await fetch(import.meta.env.VITE_REACT_API_URL + "/api/projects", {method: "POST", body: JSON.stringify({...data}), headers: {"Content-Type": "application/json"}, credentials: "include"})).json()
     data.folder = `projects/${result.payload._id}`
     data.thumbnail = result.payload.thumbnail
     data.id = result.payload._id
     formData.append("data",JSON.stringify(data))
     formData.append("file", image)
 
-    const uploadImage = await (await fetch(import.meta.env.VITE_REACT_API_URL + "/api/projects/file", {method: "POST", body: formData})).json()
+    const uploadImage = await (await fetch(import.meta.env.VITE_REACT_API_URL + "/api/projects/file", {method: "POST", body: formData, credentials: "include"})).json()
     navigate("/projects")
   })
 

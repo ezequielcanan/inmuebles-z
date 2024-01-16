@@ -56,6 +56,7 @@ export const getFiles = async (req, res) => {
     res.sendSuccess(files)
   }
   catch (e) {
+    if (e.code == "ENOENT") return res.sendNotFoundError()
     console.log(e)
     res.sendServerError(e)
   }

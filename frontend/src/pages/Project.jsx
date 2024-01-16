@@ -10,19 +10,19 @@ const Project = () => {
   const [floors, setFloors] = useState([])
   const { project: pid } = useParams()
   useEffect(() => {
-    fetch("http://localhost:3000/api/projects/" + pid)
+    fetch("http://localhost:3000/api/projects/" + pid, {credentials: "include"})
       .then(res => res.json())
-      .then(json => setProject(json.payload))
+      .then(json => (console.log(json), setProject(json.payload)))
   }, [])
 
   useEffect(() => {
-    fetch(import.meta.env.VITE_REACT_API_URL +  "/api/floor/project/" + pid)
+    fetch(import.meta.env.VITE_REACT_API_URL +  "/api/floor/project/" + pid, {credentials: "include"})
       .then(res => res.json())
       .then(json => setFloors(json.payload))
   }, [floors])
 
   const handleClick = () => {
-    fetch(import.meta.env.VITE_REACT_API_URL + "/api/floor/project/" + pid, { method: "POST" })
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/floor/project/" + pid, { method: "POST", credentials: "include" })
       .then(res => res.json())
       .then(json => (setFloors(floors)))
   }

@@ -3,6 +3,6 @@ import { createRent } from "../controllers/rent.controller.js"
 
 export default class RentRouter extends Z_Router {
   init() {
-    this.post("/", createRent)
+    this.post("/", ["ADMIN","SECRETARY"], createRent)
   }
 }

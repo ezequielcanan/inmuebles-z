@@ -3,6 +3,6 @@ import { createTenant } from "../controllers/tenant.controller.js"
 
 export default class TenantRouter extends Z_Router {
   init() {
-    this.post("/", createTenant)
+    this.post("/", ["ADMIN","SECRETARY"], createTenant)
   }
 }

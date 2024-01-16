@@ -20,10 +20,10 @@ const Apartment = () => {
     const imageForm = new FormData()
     imageForm.append("data", JSON.stringify({ folder: `projects/${apartment.project?._id || ""}/${apartment._id || ""}/${fileType}` }))
     imageForm.append("file", e.target.files[0])
-    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/" + fileEndpoint, { method: "POST", body: imageForm }).then(res => res.json()).then(json => setInfo(""))
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/" + fileEndpoint, { method: "POST", credentials: "include", body: imageForm }).then(res => res.json()).then(json => setInfo(""))
   }
   useEffect(() => {
-    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/" + inmueble)
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/" + inmueble, {credentials: "include"})
       .then(res => res.json())
       .then(json => {
         setApartment(json.payload)

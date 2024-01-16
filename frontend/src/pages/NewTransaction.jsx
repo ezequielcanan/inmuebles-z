@@ -16,7 +16,7 @@ const NewTransaction = () => {
   const { inmueble } = useParams();
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/apartments/${inmueble}`)
+    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/apartments/${inmueble}`, {credentials: "include"})
       .then((res) => res.json())
       .then((json) => setApartment(json.payload));
   }, []);
@@ -33,6 +33,7 @@ const NewTransaction = () => {
         method: "POST",
         body: buyer,
         headers: { "Content-Type": "application/json" },
+        credentials: "include"
       })
     ).json();
     const apartmentRes = await (
@@ -42,6 +43,7 @@ const NewTransaction = () => {
           method: "PUT",
           body: JSON.stringify({ owner: ownerResult.payload._id }),
           headers: { "Content-Type": "application/json" },
+          credentials: "include"
         }
       )
     ).json()
@@ -76,6 +78,7 @@ const NewTransaction = () => {
         method: "POST",
         body: JSON.stringify(transactionBody),
         headers: { "Content-Type": "application/json" },
+        credentials: "include"
       })
     ).json();
     navigate("/inmueble/" + inmueble);

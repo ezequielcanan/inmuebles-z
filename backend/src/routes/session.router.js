@@ -4,7 +4,7 @@ import passport from "passport"
 export default class SessionRouter extends Z_Router {
   init() {
 
-    this.post("/login", passport.authenticate("login", { session: false }), async (req, res) => {
+    this.post("/login", ["ADMIN","SECRETARY","USER", "UNKNOW"], passport.authenticate("login", { session: false }), async (req, res) => {
       try {
         if (!req.user) return res.sendUserError("Invalid credentials")
         const { token } = req.user
@@ -16,7 +16,7 @@ export default class SessionRouter extends Z_Router {
       }
     })
 
-    this.post("/register", passport.authenticate("register", { session: false }), async (req, res) => {
+    this.post("/register", ["ADMIN","SECRETARY","USER", "UNKNOW"], passport.authenticate("register", { session: false }), async (req, res) => {
       try {
         return res.sendSuccess(true)
       } catch (e) {
@@ -25,11 +25,11 @@ export default class SessionRouter extends Z_Router {
       }
     })
 
-    this.get("/error", (req, res) => {
+    this.get("/error", ["ADMIN","SECRETARY","USER", "UNKNOW"], (req, res) => {
       res.sendUserError(false)
     })
 
-    this.get("/auth", passport.authenticate("jwt", { session: false }), (req, res) => {
+    this.get("/auth", ["ADMIN","SECRETARY","USER", "UNKNOW"], passport.authenticate("jwt", { session: false }), (req, res) => {
       const { user } = req.user
       res.sendSuccess(user)
     })

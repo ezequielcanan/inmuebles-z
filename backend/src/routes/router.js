@@ -1,6 +1,7 @@
 import { Router } from "express"
-import jwt from "jsonwebtoken"
 import { jwtSign } from "../utils.js"
+import userModel from "../models/user.model.js"
+import jwt from "jsonwebtoken"
 
 export default class Z_Router {
 
@@ -14,20 +15,20 @@ export default class Z_Router {
 
   init() { }
 
-  get = (path, ...callbacks) => {
-    this.router.get(path, this.generateCustomResponse, this.applyCallbacks(callbacks))
+  get = (path, policies, ...callbacks) => {
+    this.router.get(path, this.generateCustomResponse, this.handlePolicies(policies), this.applyCallbacks(callbacks))
   }
 
-  post = (path, ...callbacks) => {
-    this.router.post(path, this.generateCustomResponse, this.applyCallbacks(callbacks))
+  post = (path, policies, ...callbacks) => {
+    this.router.post(path, this.generateCustomResponse, this.handlePolicies(policies), this.applyCallbacks(callbacks))
   }
 
-  put = (path, ...callbacks) => {
-    this.router.put(path, this.generateCustomResponse, this.applyCallbacks(callbacks))
+  put = (path, policies, ...callbacks) => {
+    this.router.put(path, this.generateCustomResponse, this.handlePolicies(policies), this.applyCallbacks(callbacks))
   }
 
-  delete = (path, ...callbacks) => {
-    this.router.delete(path, this.generateCustomResponse, this.applyCallbacks(callbacks))
+  delete = (path, policies, ...callbacks) => {
+    this.router.delete(path, this.generateCustomResponse, this.handlePolicies(policies), this.applyCallbacks(callbacks))
   }
 
   applyCallbacks = callbacks => {
@@ -42,12 +43,13 @@ export default class Z_Router {
     })
   }
 
-  handlePolicies = policies => (req, res, next) => {
-    if (policies.length > 0) {
+  handlePolicies = policies => async (req, res, next) => {
+    if (policies.length > 0 && policies.length < 4) {
       const token = req.cookies.jwt
       if (!token) return res.sendNoAuthenticatedError('No token')
-      const user = jwt.verify(token, jwtSign)
-
+      const {user: jwtUser} = jwt.verify(token, jwtSign)
+      const user = await userModel.findById(jwtUser._id)
+      
       if (!policies.includes(user.role.toUpperCase())) {
         return res.sendNoAuthorizedError()
       }
@@ -56,7 +58,7 @@ export default class Z_Router {
       return next()
     }
 
-    return res.sendNoAuthenticatedError('This resource is private ')
+    return next()
   }
 
   generateCustomResponse = (req, res, next) => {
@@ -65,6 +67,7 @@ export default class Z_Router {
     res.sendUserError = error => res.status(400).json({ status: 'error', error })
     res.sendNoAuthenticatedError = (error = 'No auth') => res.status(401).json({ status: 'error', error })
     res.sendNoAuthorizedError = (error = 'No authorized') => res.status(403).json({ status: 'error', error })
+    res.sendNotFoundError = (error = 'Not found') => res.status(404).json({ status: 'error', error })
 
     next()
   }

@@ -19,13 +19,13 @@ const ApartmentEdit = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/" + inmueble)
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/" + inmueble, {credentials: "include"})
       .then(res => res.json())
       .then(json => (setApartment(json.payload), setRented(json.payload?.rent ? true : false)))
   }, [])
 
   const ownerTextSearch = async (text) => {
-    const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/owner?query=${text}`)).json()
+    const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/owner?query=${text}`, {credentials: "include"})).json()
     setOwnerSuggestions(text.split(" ").length > 1 ? [] : result.payload)
   }
   
@@ -38,19 +38,19 @@ const ApartmentEdit = () => {
       apartment?.rent?.tenant?._id && (tenantData._id = apartment?.rent?.tenant?._id)
       const rentData = {"apartment": inmueble, "fromDate": data.fromDate, "toDate": data.toDate, "intermediary": data.intermediary}
 
-      const {payload: tenant} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/tenant", {method: "POST", body: JSON.stringify(tenantData), headers: {"Content-Type": "application/json"}})).json()
+      const {payload: tenant} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/tenant", {method: "POST", credentials: "include", body: JSON.stringify(tenantData), headers: {"Content-Type": "application/json"}})).json()
       rentData.tenant = tenant._id
 
-      const {payload: rent} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/rent", {method: "POST", body: JSON.stringify(rentData), headers: {"Content-Type": "application/json"}})).json()
-      const {payload: owner} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/owner", {method: "POST", body: JSON.stringify(suggestedOwner || ownerData), headers: {"Content-Type": "application/json"}})).json()
+      const {payload: rent} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/rent", {method: "POST", credentials: "include", body: JSON.stringify(rentData), headers: {"Content-Type": "application/json"}})).json()
+      const {payload: owner} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/owner", {method: "POST", credentials: "include", body: JSON.stringify(suggestedOwner || ownerData), headers: {"Content-Type": "application/json"}})).json()
       apartmentData.owner = owner._id
       apartmentData.rent = rent._id
-      const {payload: apartmentRes} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/apartments/"+inmueble, {method: "PUT", body: JSON.stringify(apartmentData), headers: {"Content-Type": "application/json"}})).json()
+      const {payload: apartmentRes} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/apartments/"+inmueble, {method: "PUT", credentials: "include", body: JSON.stringify(apartmentData), headers: {"Content-Type": "application/json"}})).json()
       navigate("/floors/"+apartmentRes.floor)
     } else {
-      const {payload: owner} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/owner", {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(suggestedOwner || ownerData)})).json()
+      const {payload: owner} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/owner", {method: "POST", credentials: "include", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(suggestedOwner || ownerData)})).json()
       apartmentData.owner = owner._id
-      const {payload: apartmentRes} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/apartments/"+inmueble, {method: "PUT", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(apartmentData)})).json()
+      const {payload: apartmentRes} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/apartments/"+inmueble, {method: "PUT", credentials: "include", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(apartmentData)})).json()
       navigate("/floors/"+apartmentRes.floor)
     }
   })

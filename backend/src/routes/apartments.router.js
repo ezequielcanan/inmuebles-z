@@ -4,15 +4,15 @@ import { getAllFromFloor, createApartment, getApartmentById, updateApartment, ge
 
 export default class ApartmentRouter extends Z_Router {
   init() {
-    this.get("/floor/:fid", getAllFromFloor)
-    this.get("/:aid", getApartmentById)
-    this.get("/files/:type", getFiles)
+    this.get("/floor/:fid", ["ADMIN","SECRETARY","USER"], getAllFromFloor)
+    this.get("/:aid", ["ADMIN","SECRETARY","USER"], getApartmentById)
+    this.get("/files/:type", ["ADMIN","SECRETARY","USER"], getFiles)
 
-    this.post("/", createApartment)
-    this.post("/file", uploader.single("file"), (req, res) => res.sendSuccess(true))
+    this.post("/", ["ADMIN","SECRETARY"], createApartment)
+    this.post("/file", ["ADMIN","SECRETARY"], uploader.single("file"), (req, res) => res.sendSuccess(true))
 
-    this.put("/:aid", updateApartment)
+    this.put("/:aid", ["ADMIN","SECRETARY"], updateApartment)
 
-    this.delete("/files", deleteFile)
+    this.delete("/files", ["ADMIN","SECRETARY"], deleteFile)
   }
 }

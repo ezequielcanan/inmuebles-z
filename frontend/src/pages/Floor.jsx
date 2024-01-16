@@ -12,10 +12,10 @@ const Floor = () => {
 
 
   useEffect(() => {
-    fetch(import.meta.env.VITE_REACT_API_URL + "/api/floor/" + fid)
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/floor/" + fid, {credentials: "include"})
       .then(res => res.json())
       .then(json => setFloor(json.payload))
-    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/floor/" + fid)
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/floor/" + fid, {credentials: "include"})
       .then(res => res.json())
       .then(json => setApartments(json.payload))
   }, [])

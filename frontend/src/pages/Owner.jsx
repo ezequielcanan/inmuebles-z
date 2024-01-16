@@ -8,7 +8,7 @@ const Owner = () => {
   const [apartments, setApartments] = useState([])
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/owner/apartments/${owner}`).then(res => res.json()).then(json => setApartments(json.payload))
+    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/owner/apartments/${owner}`, {credentials: "include"}).then(res => res.json()).then(json => setApartments(json.payload))
   }, [])
 
 

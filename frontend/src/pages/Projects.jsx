@@ -10,7 +10,7 @@ const Projects = () => {
   const sections = ["De pozo", "En desarrollo", "Finalizados"]
 
   useEffect(() => {
-    fetch(import.meta.env.VITE_REACT_API_URL + "/api/projects")
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/projects", {credentials: "include"})
       .then(res => res.json())
       .then(json => (setProjects(json.payload)))
   }, [])

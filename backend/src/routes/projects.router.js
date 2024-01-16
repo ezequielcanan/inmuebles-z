@@ -4,10 +4,10 @@ import { uploader } from "../utils.js"
 
 export default class ProjectsRouter extends Z_Router {
   init() {
-    this.get("/", getProjects)
-    this.get("/:pid", getProject)
+    this.get("/", ["ADMIN","SECRETARY","USER"], getProjects)
+    this.get("/:pid", ["ADMIN","SECRETARY","USER"], getProject)
 
-    this.post("/", createProject)
-    this.post("/file", uploader.single("file"), (req, res) => res.sendSuccess("OK"))
+    this.post("/", ["ADMIN","SECRETARY"], createProject)
+    this.post("/file", ["ADMIN","SECRETARY"], uploader.single("file"), (req, res) => res.sendSuccess("OK"))
   }
 }

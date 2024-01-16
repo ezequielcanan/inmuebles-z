@@ -18,7 +18,7 @@ import { useContext } from "react"
 
 const Router = () => {
   const { getUser } = useContext(UserContext)
-  console.log(getUser())
+  
   return (
     <BrowserRouter>
       <Navbar type={getUser() ? "default" : "login"} />

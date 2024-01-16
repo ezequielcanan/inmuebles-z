@@ -13,19 +13,19 @@ const FloorEdit = () => {
   const { floor: fid } = useParams()
 
   const handleClick = () => {
-    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments", { method: "POST", body: JSON.stringify({ project: floor.project, floor: floor._id }), headers: { "Content-Type": "application/json" } })
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments", { method: "POST", body: JSON.stringify({ project: floor.project, floor: floor._id }), headers: { "Content-Type": "application/json" }, credentials: "include" })
       .then(res => res.json())
       .then(json => setApartments(apartments))
   }
 
   useEffect(() => {
-    fetch(import.meta.env.VITE_REACT_API_URL + "/api/floor/" + fid)
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/floor/" + fid, {credentials: "include"})
       .then(res => res.json())
       .then(json => setFloor(json.payload))
   }, [])
 
   useEffect(() => {
-    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/floor/" + fid)
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/floor/" + fid, {credentials: "include"})
       .then(res => res.json())
       .then(json => setApartments(json.payload))
   }, [apartments])
