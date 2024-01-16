@@ -1,8 +1,9 @@
 import { Router } from "express"
 import { jwtSign } from "../utils.js"
-import userModel from "../models/user.model.js"
+import UserService from "../services/user.service.js"
 import jwt from "jsonwebtoken"
 
+const userService = new UserService()
 export default class Z_Router {
 
   constructor() {
@@ -47,9 +48,9 @@ export default class Z_Router {
     if (policies.length > 0 && policies.length < 4) {
       const token = req.cookies.jwt
       if (!token) return res.sendNoAuthenticatedError('No token')
-      const {user: jwtUser} = jwt.verify(token, jwtSign)
-      const user = await userModel.findById(jwtUser._id)
-      
+      const { user: jwtUser } = jwt.verify(token, jwtSign)
+      const user = await userService.getUserById(jwtUser._id)
+
       if (!policies.includes(user.role.toUpperCase())) {
         return res.sendNoAuthorizedError()
       }

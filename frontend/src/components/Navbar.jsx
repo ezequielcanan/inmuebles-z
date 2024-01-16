@@ -45,12 +45,12 @@ const Navbar = ({ type }) => {
   ]
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/session/auth`, { credentials: "include" }).then(res => res.json()).then(json => setUser(json.payload))
+    type == "default" && fetch(`${import.meta.env.VITE_REACT_API_URL}/api/session/auth`, { credentials: "include" }).then(res => res.json()).then(json => setUser(json.payload))
   }, [userStateContext])
 
   const handleChange = async (e) => {
     setInput(e.target.value)
-    const owners = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/owner/?query=${e.target.value}`)).json()
+    const owners = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/owner/?query=${e.target.value}`, {credentials:"include"})).json()
     setOwners(owners.payload || [])
   }
 
@@ -67,7 +67,7 @@ const Navbar = ({ type }) => {
               {(focus && input) && ((owners.length) ? (
                 <div className="absolute w-[250px] flex flex-col text-xl top-[100%] right-0 bg-second shadow-lg shadow-first text-fourth">
                   {owners.map((o, i) => {
-                    return <Link to={`/owners/${o._id}`} className="h-full w-full px-3 py-3 duration-300 hover:bg-third cursor-pointer owner" key={i} onClick={() => setFocus(false)}>
+                    return <Link reloadDocument to={`/owners/${o._id}`} className="h-full w-full px-3 py-3 duration-300 hover:bg-third cursor-pointer owner" key={i} onClick={() => (setFocus(false))}>
                       <p>{o.name}</p>
                     </Link>
                   })}
@@ -78,6 +78,9 @@ const Navbar = ({ type }) => {
                 </div>
               ))}
             </div>
+            {user.role == "admin" ? (
+              <Link to={"/admin"} className="text-2xl text-fourth duration-300 hover:text-third">Administrar usuarios</Link>
+            ) : null}
             <div className="flex h-full items-center gap-x-[40px] relative">
               <p className="text-fourth text-2xl">{user?.name}</p>
               <FaUserCircle size={40} className="text-fourth !outline-none" tabIndex={0} onBlur={() => setTimeout(() => setViewUser(false), 150)} onClick={onClickViewUser}/>
