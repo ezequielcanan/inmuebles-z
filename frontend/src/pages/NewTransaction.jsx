@@ -11,6 +11,8 @@ import ApartmentCard from "../components/ApartmentCard";
 const NewTransaction = () => {
   const [apartment, setApartment] = useState(false);
   const [formIndex, setFormIndex] = useState(0);
+  const [ownerSuggestions, setOwnerSuggestions] = useState([]) 
+  const [suggestedOwner, setSuggestedOwner] = useState(false)
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
   const { inmueble } = useParams();
@@ -21,8 +23,13 @@ const NewTransaction = () => {
       .then((json) => setApartment(json.payload));
   }, []);
 
+  const ownerTextSearch = async (text) => {
+    const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/owner?query=${text}`, {credentials: "include"})).json()
+    setOwnerSuggestions(text.split(" ").length > 1 ? [] : result.payload)
+  }
+
   const onSubmit = handleSubmit(async (data) => {
-    const buyer = JSON.stringify({
+    const buyer = JSON.stringify(suggestedOwner || {
       name: data.name,
       number: data.number,
       ownerType: data.ownerType,
@@ -67,18 +74,20 @@ const NewTransaction = () => {
       },
     }
 
-    if (!data["cac"]) {
+    if (data["cac"] == "") {
       fetch("https://prestamos.ikiwi.net.ar/api/cacs").then(res => res.json()).then(async json => {
         const cacHistory = json
+        const cacIndex = cacHistory.find((cac,i) => cac.period == (moment().subtract(2, "months").format("YYYY-MM")).toString() + "-01").general
+        console.log(cacIndex)
         transactionBody.black = {
-          indexCac: cacHistory[cacHistory.length - 1].general, total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0
+          indexCac: cacIndex, total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0
         }
         transactionBody.white = {
-          indexCac: cacHistory[cacHistory.length - 1].general, total: whiteBaseQuota, quota: 1, type: "white", date: today, adjustment: 0, extraAdjustment: 0
+          indexCac: cacIndex, total: whiteBaseQuota, quota: 1, type: "white", date: today, adjustment: 0, extraAdjustment: 0
         }
 
-        transactionBody.transaction.white.baseIndex = cacHistory[cacHistory.length - 1].general
-        transactionBody.transaction.black.baseIndex = cacHistory[cacHistory.length - 1].general
+        transactionBody.transaction.white.baseIndex = cacIndex
+        transactionBody.transaction.black.baseIndex = cacIndex
 
         const transactionRes = await (
           await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction`, {
@@ -116,22 +125,29 @@ const NewTransaction = () => {
       type: "text",
       name: "name",
       label: "Nuevo titular",
+      onChange: ownerTextSearch,
+      suggestions: ownerSuggestions,
+      setOwner: setSuggestedOwner,
+      suggestedOwner
     },
     {
       type: "select",
       name: "ownerType",
       label: "Tipo de titular:",
       options: ["Particular", "Accionista", "Sociedad", "Gremio"],
+      disabled: suggestedOwner && true
     },
     {
       type: "text",
       name: "number",
       label: "Numero de telefono",
+      disabled: suggestedOwner && true
     },
     {
       type: "text",
       name: "email",
       label: "Email",
+      disabled: suggestedOwner && true
     },
   ];
 

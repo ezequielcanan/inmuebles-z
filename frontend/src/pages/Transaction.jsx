@@ -28,6 +28,7 @@ const Transaction = () => {
     }
     else {
       const cacHistory = await (await fetch("https://prestamos.ikiwi.net.ar/api/cacs")).json()
+      data.indexCac = cacHistory.find((cac,i) => cac.period == (moment().subtract(2, "months").format("YYYY-MM")).toString() + "-01").general
       data.total = (transaction[type].baseQuota * (100 - (transaction[type].baseIndex * 100 / cacHistory[cacHistory.length - 1].general)) / 100) + transaction[type].baseQuota
     }
 
