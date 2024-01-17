@@ -4,6 +4,7 @@ const quotaCollection = "quotas"
 
 const quotaSchema = new mongoose.Schema({
   cac: Number,
+  indexCac: Number,
   total: Number,
   quota: Number,
   type: { type: String, enum: ["white", "black"] },

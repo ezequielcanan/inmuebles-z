@@ -16,30 +16,32 @@ const Transaction = () => {
   const input = useRef()
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction/${tid}`, {credentials: "include"})
+    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction/${tid}`, { credentials: "include" })
       .then((res) => res.json())
       .then((json) => setTransaction(json.payload));
   }, []);
 
+  const handleSubmitFunc = async (formData, type) => {
+    const data = formData
+    if (!transaction[type].baseIndex) {
+      data.total = data.cac * transaction[type]?.updatedQuota / 100 + transaction[type]?.updatedQuota
+    }
+    else {
+      const cacHistory = await (await fetch("https://prestamos.ikiwi.net.ar/api/cacs")).json()
+      data.total = (transaction[type].baseQuota * (100 - (transaction[type].baseIndex * 100 / cacHistory[cacHistory.length - 1].general)) / 100) + transaction[type].baseQuota
+    }
+
+    data.quota = transaction[type]?.lastQuota?.quota + 1
+    data.type = type
+    data.transaction = transaction?._id
+    data.date = moment().format("DD-MM-YYYY")
+    const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/quota`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })).json()
+    navigate("/inmueble/" + transaction?.apartment?._id)
+  }
+
   const addQuota = async (e, type) => {
     e.preventDefault()
-    const onSubmit = type == "black" ? submitBlack(async data => {
-      data.total = data.cac * transaction[type]?.updatedQuota / 100 + transaction[type]?.updatedQuota
-      data.quota = transaction[type]?.lastQuota?.quota + 1
-      data.type = type
-      data.transaction = transaction?._id
-      data.date = moment().format("DD-MM-YYYY")
-      const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/quota`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })).json()
-      navigate("/inmueble/" + transaction?.apartment?._id)
-    }) : submitWhite(async data => {
-      data.total = data.cac * transaction[type]?.updatedQuota / 100 + transaction[type]?.updatedQuota
-      data.quota = transaction[type]?.lastQuota?.quota + 1
-      data.type = type
-      data.transaction = transaction?._id
-      data.date = moment().format("DD-MM-YYYY")
-      const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/quota`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })).json()
-      navigate("/inmueble/" + transaction?.apartment?._id)
-    })
+    const onSubmit = type == "black" ? submitBlack(async (data) => handleSubmitFunc(data, type)) : submitWhite(async (data) => handleSubmitFunc(data, type))
     onSubmit()
   }
 
@@ -63,7 +65,7 @@ const Transaction = () => {
                 <p className="text-2xl">Cuotas totales: {t[t.type]?.quotas}</p>
                 <p className="text-2xl">N° Cuota: {t[t.type]?.lastQuota?.quota}</p>
                 <p className="text-2xl">Cuota actualizada: {t[t.type]?.updatedQuota || t[t.type]?.baseQuota}</p>
-                {t[t.type]?.quotas == t[t.type]?.lastQuota?.quota ? <h3 className="text-4xl text-center bg-cyan-500/60">SALDADO</h3> : <Form register={t.type == "black" ? black : white} fields={[{ type: "number", name: "cac", label: "CAC" }, { type: "number", name: "adjustment", label: "Ajuste" }, { type: "number", name: "extraAdjustment", label: "Re Ajuste" }]} className={"!bg-gradient-to-t from-cyan-500 to-transparent"} onSubmit={(e) => addQuota(e, t.type)} />}
+                {t[t.type]?.quotas == t[t.type]?.lastQuota?.quota ? <h3 className="text-4xl text-center bg-cyan-500/60">SALDADO</h3> : (<Form register={t.type == "black" ? black : white} fields={!transaction?.white?.baseIndex ? [{ type: "number", name: "cac", label: "CAC" }, { type: "number", name: "adjustment", label: "Ajuste" }, { type: "number", name: "extraAdjustment", label: "Re Ajuste" }] : []} className={"!bg-gradient-to-t from-cyan-500 to-transparent"} onSubmit={(e) => addQuota(e, t.type)} />)}
               </div>
             })}
           </section>

@@ -16,7 +16,7 @@ const NewTransaction = () => {
   const { inmueble } = useParams();
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/apartments/${inmueble}`, {credentials: "include"})
+    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/apartments/${inmueble}`, { credentials: "include" })
       .then((res) => res.json())
       .then((json) => setApartment(json.payload));
   }, []);
@@ -59,29 +59,56 @@ const NewTransaction = () => {
         total: data.total,
         booking: data.booking,
         bookingB: data.bookingB,
-        white: { quotas: data.quotas, baseQuota: whiteBaseQuota},
+        white: { quotas: data.quotas, baseQuota: whiteBaseQuota },
         black: {
           quotas: data["b-quotas"],
           baseQuota: blackBaseQuota
         },
       },
-      black: {
+    }
+
+    if (!data["cac"]) {
+      fetch("https://prestamos.ikiwi.net.ar/api/cacs").then(res => res.json()).then(async json => {
+        const cacHistory = json
+        transactionBody.black = {
+          indexCac: cacHistory[cacHistory.length - 1].general, total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0
+        }
+        transactionBody.white = {
+          indexCac: cacHistory[cacHistory.length - 1].general, total: whiteBaseQuota, quota: 1, type: "white", date: today, adjustment: 0, extraAdjustment: 0
+        }
+
+        transactionBody.transaction.white.baseIndex = cacHistory[cacHistory.length - 1].general
+        transactionBody.transaction.black.baseIndex = cacHistory[cacHistory.length - 1].general
+
+        const transactionRes = await (
+          await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction`, {
+            method: "POST",
+            body: JSON.stringify(transactionBody),
+            headers: { "Content-Type": "application/json" },
+            credentials: "include"
+          })
+        ).json();
+        navigate("/inmueble/" + inmueble);
+
+      })
+    } else {
+      transactionBody.black = {
         cac: data["b-cac"], total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0
-      },
-      white: {
+      }
+      transactionBody.white = {
         cac: data["cac"], total: whiteBaseQuota, quota: 1, type: "white", date: today, adjustment: 0, extraAdjustment: 0
       }
-    };
 
-    const transactionRes = await (
-      await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction`, {
-        method: "POST",
-        body: JSON.stringify(transactionBody),
-        headers: { "Content-Type": "application/json" },
-        credentials: "include"
-      })
-    ).json();
-    navigate("/inmueble/" + inmueble);
+      const transactionRes = await (
+        await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction`, {
+          method: "POST",
+          body: JSON.stringify(transactionBody),
+          headers: { "Content-Type": "application/json" },
+          credentials: "include"
+        })
+      ).json();
+      navigate("/inmueble/" + inmueble);
+    }
   });
 
   const fields = [

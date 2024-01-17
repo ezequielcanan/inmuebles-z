@@ -21,7 +21,7 @@ class UserService {
   }
 
   updateUser = async (id, user) => {
-    const result = await userModel.updateOne({ _id: id }, { $set: user })
+    const result = await userModel.updateOne({_id: id}, { $set: user })
     return result
   }
 }

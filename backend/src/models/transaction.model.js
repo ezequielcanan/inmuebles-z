@@ -19,6 +19,7 @@ const transactionsSchema = new mongoose.Schema({
     type: {
       quotas: Number,
       baseQuota: Number,
+      baseIndex: Number,
       updatedQuota: Number,
       lastQuota: { type: mongoose.Schema.Types.ObjectId, ref: "quotas" }
     }
@@ -27,6 +28,7 @@ const transactionsSchema = new mongoose.Schema({
     type: {
       quotas: Number,
       baseQuota: Number,
+      baseIndex: Number,
       updatedQuota: Number,
       lastQuota: { type: mongoose.Schema.Types.ObjectId, ref: "quotas" }
     }

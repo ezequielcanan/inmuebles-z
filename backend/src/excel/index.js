@@ -211,8 +211,10 @@ export const createTransactionExcel = (transaction, quotas) => {
   ws.column(10).setWidth(20);
   ws.column(11).setWidth(20);
   ws.column(12).setWidth(20);
+  ws.column(13).setWidth(20);
 
-  ws.cell(1, 1, 1, 12, true).string(apartment?.project?.title).style(styles["project"])
+  
+  ws.cell(1, 1, 1, transaction?.white?.baseIndex ? 13 : 12, true).string(apartment?.project?.title).style(styles["project"])
 
   ws.cell(2, 1).string("UF").style(styles["apartmentInfoHead"])
   ws.cell(2, 2).string("m2 Cubiertos").style(styles["apartmentInfoHead"])
@@ -226,6 +228,7 @@ export const createTransactionExcel = (transaction, quotas) => {
   ws.cell(2, 10).string("Adelanto").style(styles["apartmentInfoHead"])
   ws.cell(2, 11).string("Saldo").style(styles["apartmentInfoHead"])
   ws.cell(2, 12).string("Cuotas").style(styles["apartmentInfoHead"])
+  transaction?.white?.baseIndex && ws.cell(2, 13).string("Indice base").style(styles["apartmentInfoHead"])
 
   ws.cell(5, 9).string("40%").style(styles["apartmentInfoHead"])
   ws.cell(5, 10).string("Adelanto").style(styles["apartmentInfoHead"])
