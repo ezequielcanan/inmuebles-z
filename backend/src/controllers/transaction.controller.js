@@ -1,6 +1,7 @@
 import TransactionService from "../services/transaction.service.js"
 import QuotaService from "../services/quota.service.js"
-import { createTransactionExcel } from "../excel/index.js"
+import moment from "moment"
+import { createFutureQuotasExcel, createTransactionExcel } from "../excel/index.js"
 
 const quotaService = new QuotaService()
 const transactionService = new TransactionService()
@@ -49,8 +50,23 @@ export const createTransactionXlsx = async (req, res) => {
     const black = await transactionService.getTransactionBlackQuotas(req?.params?.tid)
 
     const transaction = await transactionService.getTransactionById(req?.params?.tid)
-    const wb = createTransactionExcel(transaction, {white,black})
-    wb.write("excel.xlsx", res)
+    const wb = createTransactionExcel(transaction, { white, black })
+    wb.write(`Detalle ${transaction?.apartment?.project?.title || ""} UF ${transaction?.apartment?.unit || ""}.xlsx`, res)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
+
+export const createFutureQuotasXlsx = async (req, res) => {
+  try {
+    const transactions = await transactionService.getAllProjectTransactions(req.params?.pid)
+    const cacHistory = await (await fetch("https://prestamos.ikiwi.net.ar/api/cacs")).json()
+    const lastIndexCac = cacHistory.find((cac, i) => cac.period == (moment().subtract(3, "months").format("YYYY-MM")).toString() + "-01").general
+    const indexCac = cacHistory.find((cac, i) => cac.period == (moment().subtract(2, "months").format("YYYY-MM")).toString() + "-01").general
+    const wb = createFutureQuotasExcel(transactions, lastIndexCac, indexCac)
+    wb.write(`Cuotas ${transactions[0]?.apartment?.project?.title || ""}.xlsx`, res)
   }
   catch (e) {
     console.log(e)

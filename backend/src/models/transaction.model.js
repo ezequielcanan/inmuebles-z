@@ -36,6 +36,7 @@ const transactionsSchema = new mongoose.Schema({
 });
 
 transactionsSchema.pre("find", function () {
+  this.populate("apartment")
   this.populate("seller")
   this.populate("buyer")
 })
@@ -44,6 +45,7 @@ transactionsSchema.pre("findOne", function () {
   this.populate("seller")
   this.populate("buyer")
   this.populate("apartment")
+  this.populate("apartment.project")
   this.populate("black.lastQuota")
   this.populate("white.lastQuota")
 })

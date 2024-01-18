@@ -14,7 +14,7 @@ const textCenterStyle = {
     vertical: 'center',
     wrapText: true
   },
-  
+
 }
 
 const boldBorder = {
@@ -369,10 +369,11 @@ export const createProjectExcel = (floors, project) => {
     project: wb.createStyle({
       ...fontHeadStyle, ...textCenterStyle, ...boldBorder, ...bgHead
     }),
-  
+
     floorInfoHead: wb.createStyle({
       font: {
-        bold: true
+        bold: true,
+        size: 16
       },
       ...textCenterStyle,
       ...boldBorder,
@@ -384,7 +385,8 @@ export const createProjectExcel = (floors, project) => {
     }),
     floorInfoCell: wb.createStyle({
       font: {
-        bold: true
+        bold: true,
+        size: 14
       },
       ...textCenterStyle,
       ...thinBorder
@@ -410,42 +412,152 @@ export const createProjectExcel = (floors, project) => {
   }
 
   ws.cell(1, 1, 1, 30, true).string(project.title).style(styles["project"])
-  ws.cell(2, 2, 2, 10).string("Frente").style(styles["sectionHead"])
-  ws.cell(2, 2, 2, 9).string("Frente").style(styles["sectionHead"])
 
-  ws.cell(2, 2, 2, 9, true).string("Frente").style(styles["sectionHead"])
-  ws.cell(2, 21, 2, 29, true).string("Contrafrente").style(styles["sectionHead"])
+  ws.cell(2, 2, 2, 12, true).string("Frente").style(styles["sectionHead"])
+  ws.cell(2, 21, 2, 31, true).string("Contrafrente").style(styles["sectionHead"])
 
-  const writeApartmentsHeaders = (col=2, row=3) => {
-    ws.cell(row, col).string("ESTADO").style({...styles["sectionInfoHead"], fill: {type: "pattern",patternType: "solid",bgColor: "#ffff00",fgColor: "#ffff00"}})
-    ws.cell(row, col+1).string("UF").style(styles["sectionInfoHead"])
-    ws.cell(row, col+2).string("m2 cubiertos").style(styles["sectionInfoHead"])
-    ws.cell(row, col+3).string("m2 balcon").style(styles["sectionInfoHead"])
-    ws.cell(row, col+4).string("m2 descubiertos").style(styles["sectionInfoHead"])
-    ws.cell(row, col+5).string("Amenities").style(styles["sectionInfoHead"])
-    ws.cell(row, col+6).string("Total m2").style(styles["sectionInfoHead"])
-    ws.cell(row, col+7).string("Precio m2").style(styles["sectionInfoHead"])
-    ws.cell(row, col+8).string("Precio total").style(styles["sectionInfoHead"])
+  const writeApartmentsHeaders = (col = 2, row = 3) => {
+    ws.cell(row, col).string("ESTADO").style({ ...styles["sectionInfoHead"], fill: { type: "pattern", patternType: "solid", bgColor: "#ffff00", fgColor: "#ffff00" } })
+    ws.cell(row, col + 1).string("UF").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 2).string("M2 Cubiertos").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 3).string("M2 Balcon").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 4).string("M2 Descubiertos").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 5).string("Amenities").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 6).string("Total M2").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 7).string("Precio M2").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 8).string("Precio total").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 9).string("Ambientes").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 10).string("Dueño").style(styles["sectionInfoHead"])
   }
 
   writeApartmentsHeaders()
   writeApartmentsHeaders(21)
-
+  ws.column(12).setWidth(45)
+  ws.column(31).setWidth(45)
   let lastRow = 4
-  floors.forEach((floor,i) => {
-    ws.cell(lastRow, 1, (floor.apartments.length || 1) + lastRow - 1, 1, true).string(floor.title).style(styles["floorInfoHead"])
+  floors.forEach((floor, i) => {
+    const frenteLength = floor.apartments.reduce((acc, apartment) => (apartment.orientation == "Frente" && apartment.unit) && acc + 1, 0)
+    const contrafrenteLength = floor.apartments.reduce((acc, apartment) => (apartment.orientation == "Contrafrente" && apartment.unit) && acc + 1, 0)
+    const totalRows = frenteLength > contrafrenteLength ? frenteLength : contrafrenteLength
+
+    ws.cell(lastRow, 1, (totalRows || 1) + lastRow - 1, 1, true).string("Frente\n" + floor.title).style({ ...styles["floorInfoHead"], fill: { type: "pattern", patternType: "solid", bgColor: "#ffff00", fgColor: "#ffff00" } })
+    ws.cell(lastRow, 20, (totalRows || 1) + lastRow - 1, 20, true).string("Contrafrente\n" + floor.title).style({ ...styles["floorInfoHead"], fill: { type: "pattern", patternType: "solid", bgColor: "#ffff00", fgColor: "#ffff00" } })
+    let skippedAapartments = 0
     floor.apartments.forEach((apartment, i) => {
-      ws.cell(lastRow+i, 2).string(apartment.forSale ? "DISPONIBLE" : "VENDIDO").style({...styles["floorInfoCell"], fill: {type: "pattern",patternType: "solid",bgColor: apartment.forSale ? "#88ff88" : "#ff7777", fgColor: apartment.forSale ? "#88ff88" : "#ff7777"}})
-      ws.cell(lastRow+i, 3).string(apartment.unit || "").style(styles["floorInfoCell"])
-      ws.cell(lastRow+i, 4).number(apartment.meters?.covered || 0).style(styles["floorInfoCell"])
-      ws.cell(lastRow+i, 5).number(apartment.meters?.balcony || 0).style(styles["floorInfoCell"])
-      ws.cell(lastRow+i, 6).number(apartment.meters?.uncovered || 0).style(styles["floorInfoCell"])
-      ws.cell(lastRow+i, 7).number(apartment.meters?.amenities || 0).style(styles["floorInfoCell"])
-      ws.cell(lastRow+i, 8).number(apartment.meters?.total || 0).style(styles["floorInfoCell"])
-      ws.cell(lastRow+i, 9).number(apartment.price || 0).style(styles["floorInfoCell"])
-      ws.cell(lastRow+i, 10).formula(`${xl.getExcelCellRef(lastRow+i,9)} * ${xl.getExcelCellRef(lastRow+i,8)}`).style(styles["floorInfoCell"])
+      if (!apartment.unit) return skippedAapartments++
+      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 2 : 21).string(apartment.forSale ? "DISPONIBLE" : "VENDIDO").style({ ...styles["floorInfoCell"], fill: { type: "pattern", patternType: "solid", bgColor: apartment.forSale ? "#88ff88" : "#ff7777", fgColor: apartment.forSale ? "#88ff88" : "#ff7777" } })
+      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 3 : 22).string(apartment.unit || "").style(styles["floorInfoCell"])
+      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 4 : 23).number(apartment.meters?.covered || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 5 : 24).number(apartment.meters?.balcony || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 6 : 25).number(apartment.meters?.uncovered || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 7 : 26).number(apartment.meters?.amenities || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 8 : 27).number(apartment.meters?.total || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 9 : 28).number(apartment.price || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 10 : 29).formula(`${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 9 : 28)} * ${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 8 : 27)}`).style(styles["floorInfoCell"])
+      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 11 : 30).string(apartment?.rooms).style(styles["floorInfoCell"])
+      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 12 : 31).string(apartment?.owner?.name).style(styles["floorInfoCell"])
     })
-    lastRow += floor.apartments.length + 4
+    lastRow += totalRows + 4
+  })
+
+  return wb
+}
+
+export const createFutureQuotasExcel = (transactions, lastIndexCac, indexCac) => {
+  const wb = new xl.Workbook()
+  const ws = wb.addWorksheet("Cuotas", {
+    sheetFormat: {
+      'defaultColWidth': 20,
+    }
+  })
+
+  const styles = {
+    project: wb.createStyle({
+      ...fontHeadStyle, ...textCenterStyle, ...boldBorder, ...bgHead
+    }),
+
+    subsectionInfoHead: wb.createStyle({
+      font: {
+        bold: true,
+        size: 16
+      },
+      ...textCenterStyle,
+      ...boldBorder,
+      alignment: {
+        wrapText: true,
+        textRotation: 90,
+        vertical: 'center',
+      }
+    }),
+    subsectionInfoCell: wb.createStyle({
+      font: {
+        bold: true,
+        size: 14
+      },
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#.00; -#.00; -'
+    }),
+    sectionHead: wb.createStyle({
+      font: {
+        size: 14,
+        bold: true,
+        color: "#FFFFFF"
+      },
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgSectionHead
+    }),
+    sectionInfoHead: wb.createStyle({
+      font: {
+        bold: true
+      },
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgSectionInfo
+    })
+  }
+
+  ws.cell(1, 1, 1, 6, true).string("CUOTAS PESOS: A - " + transactions[0]?.apartment?.project?.title || "").style(styles["project"])
+  ws.cell(1, 10, 1, 15, true).string("CUOTAS PESOS: B - " + transactions[0]?.apartment?.project?.title || "").style(styles["project"])
+
+  ws.cell(1, 17).string("ANTERIOR").style(styles["sectionHead"])
+  ws.cell(1, 18).string("ACTUAL").style(styles["sectionHead"])
+  ws.cell(2, 17).number(lastIndexCac).style(styles["sectionInfoHead"])
+  ws.cell(2, 18).number(indexCac).style(styles["sectionInfoHead"])
+
+
+  const writeSectionHead = (row = 3, col = 1) => {
+    ws.cell(row - 1, col, row - 1, col + 5, true).string("INFORMACION").style(styles["sectionHead"])
+    ws.cell(row, col).string("UF").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 1).string("PISO").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 2).string("CLIENTE").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 3).string("CUOTA").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 4).string("CUOTA ANTERIOR").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 5).string("CUOTA ACTUAL").style(styles["sectionInfoHead"])
+  }
+
+  writeSectionHead()
+  writeSectionHead(3, 10)
+
+  const lastRow = 4
+  transactions.forEach((t, i) => {
+    if (t.white) {
+      ws.cell(lastRow + i, 1).string(t.apartment?.unit).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 2).string(t.apartment?.floor?.title).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 3).string(t.buyer?.name).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 4).number(t.white?.lastQuota?.quota + 1).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 5).number(t.white?.lastQuota?.total).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 6).formula(`${t.white?.baseIndex ? "R2 / " + t.white?.baseIndex + "% - 100 + " + t.white?.baseQuota : "(R2 / Q2% - 100)% * " + xl.getExcelCellRef(lastRow + i, 5) + " + " + xl.getExcelCellRef(lastRow + i, 5)}`).style(styles["subsectionInfoCell"])
+    }
+    if (t.black) {
+      ws.cell(lastRow + i, 10).string(t.apartment?.unit).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 11).string(t.apartment?.floor?.title).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 12).string(t.buyer?.name).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 13).number(t.black?.lastQuota?.quota + 1).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 14).number(t.black?.lastQuota?.total).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 15).formula(`${t.black?.baseIndex ? "R2 / " + t.black?.baseIndex + "% - 100 + " + t.black?.baseQuota : "(R2 / Q2% - 100)% * " + xl.getExcelCellRef(lastRow + i, 14) + " + " + xl.getExcelCellRef(lastRow + i, 14)}`).style(styles["subsectionInfoCell"])
+    }
   })
 
   return wb

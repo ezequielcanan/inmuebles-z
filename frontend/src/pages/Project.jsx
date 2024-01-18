@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { BounceLoader } from "react-spinners"
-import { FaPlus } from "react-icons/fa"
+import { FaPlus, FaChevronLeft, FaFileExcel, FaDollarSign } from "react-icons/fa"
 import { Link } from "react-router-dom"
 import Main from "../containers/Main"
 
@@ -10,13 +10,13 @@ const Project = () => {
   const [floors, setFloors] = useState([])
   const { project: pid } = useParams()
   useEffect(() => {
-    fetch("http://localhost:3000/api/projects/" + pid, {credentials: "include"})
+    fetch("http://localhost:3000/api/projects/" + pid, { credentials: "include" })
       .then(res => res.json())
       .then(json => (console.log(json), setProject(json.payload)))
   }, [])
 
   useEffect(() => {
-    fetch(import.meta.env.VITE_REACT_API_URL +  "/api/floor/project/" + pid, {credentials: "include"})
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/floor/project/" + pid, { credentials: "include" })
       .then(res => res.json())
       .then(json => setFloors(json.payload))
   }, [floors])
@@ -33,8 +33,13 @@ const Project = () => {
         <BounceLoader />
       ) : (
         <>
-          <section className="flex flex-col items-center gap-y-[30px]">
+          <section className="flex w-full justify-between items-center gap-y-[30px]">
+            <Link to={"/projects/"}><FaChevronLeft className="text-6xl text-fourth" /></Link>
             <h1 className="text-6xl text-fourth font-black">{project.title}</h1>
+            <div className="flex gap-x-[30px]">
+              <a href={`${import.meta.env.VITE_REACT_API_URL}/api/transaction/excel/project/${pid}`}><FaDollarSign className="text-fourth text-6xl cursor-pointer" /></a>
+              <a href={`${import.meta.env.VITE_REACT_API_URL}/api/projects/excel/${pid}`}><FaFileExcel className="text-fourth text-6xl cursor-pointer" /></a>
+            </div>
           </section>
           <section className="grid grid-cols-4 gap-x-[70px] gap-y-[35px]">
             {floors.length ? floors.map(f => {

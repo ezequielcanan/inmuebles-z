@@ -54,16 +54,16 @@ export const getProject = async (req, res) => {
   }
 }
 
-export const createExcelProject = async (req,res) => {
+export const createExcelProject = async (req, res) => {
   try {
     const floors = await floorService.getProjectFloors(req?.params?.pid)
     const floorsApartments = await Promise.all(floors.map(async (floor, i) => {
       const apartments = await apartmentService.getAllFromFloor(floor._id)
-      return {...floor, apartments}
+      return { ...floor, apartments }
     }))
 
     const wb = createProjectExcel(floorsApartments, floors[0].project)
-    wb.write("excel.xlsx", res)
+    wb.write(`General ${floors[0]?.project?.title || ""}.xlsx`, res)
   }
   catch (e) {
     console.log(e)
