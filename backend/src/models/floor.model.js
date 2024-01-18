@@ -9,4 +9,8 @@ const floorsSchema = new mongoose.Schema({
   index: Number
 })
 
+floorsSchema.pre("find", function() {
+  this.populate("project")
+})
+
 export default mongoose.model(floorsCollection, floorsSchema)

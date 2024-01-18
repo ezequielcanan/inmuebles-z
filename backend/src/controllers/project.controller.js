@@ -1,8 +1,11 @@
 import ApartmentService from "../services/apartment.service.js"
 import ProjectService from "../services/project.service.js"
+import FloorService from "../services/floor.service.js"
+import { createProjectExcel } from "../excel/index.js"
 
 const apartmentService = new ApartmentService()
 const projectService = new ProjectService()
+const floorService = new FloorService()
 
 export const getProjects = async (req, res) => {
   try {
@@ -44,6 +47,23 @@ export const getProject = async (req, res) => {
   try {
     const result = await projectService.getProject(req.params?.pid)
     res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
+
+export const createExcelProject = async (req,res) => {
+  try {
+    const floors = await floorService.getProjectFloors(req?.params?.pid)
+    const floorsApartments = await Promise.all(floors.map(async (floor, i) => {
+      const apartments = await apartmentService.getAllFromFloor(floor._id)
+      return {...floor, apartments}
+    }))
+
+    const wb = createProjectExcel(floorsApartments, floors[0].project)
+    wb.write("excel.xlsx", res)
   }
   catch (e) {
     console.log(e)

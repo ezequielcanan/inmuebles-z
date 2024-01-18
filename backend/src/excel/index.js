@@ -1,106 +1,114 @@
 import xl from "excel4node"
 
+const fontHeadStyle = {
+  font: {
+    size: 18,
+    bold: true,
+    color: "#FFFFFF"
+  }
+}
+
+const textCenterStyle = {
+  alignment: {
+    horizontal: 'center',
+    vertical: 'center',
+    wrapText: true
+  },
+  
+}
+
+const boldBorder = {
+  border: {
+    left: {
+      style: 'medium',
+      color: 'black',
+    },
+    right: {
+      style: 'medium',
+      color: 'black',
+    },
+    top: {
+      style: 'medium',
+      color: 'black',
+    },
+    bottom: {
+      style: 'medium',
+      color: 'black',
+    },
+    outline: false,
+  }
+}
+
+const thinBorder = {
+  border: {
+    left: {
+      style: 'thin',
+      color: 'black',
+    },
+    right: {
+      style: 'thin',
+      color: 'black',
+    },
+    top: {
+      style: 'thin',
+      color: 'black',
+    },
+    bottom: {
+      style: 'thin',
+      color: 'black',
+    },
+    outline: false,
+  }
+}
+
+const bgHead = {
+  fill: {
+    type: "pattern",
+    patternType: "solid",
+    bgColor: "#516480",
+    fgColor: "#516480"
+  }
+}
+
+const bgSectionHead = {
+  fill: {
+    type: "pattern",
+    patternType: "solid",
+    bgColor: "#8497B0",
+    fgColor: "#8497B0"
+  }
+}
+
+const bgSectionInfo = {
+  fill: {
+    type: "pattern",
+    patternType: "solid",
+    bgColor: "#b7daf6",
+    fgColor: "#b7daf6"
+  }
+}
+
 
 export const createTransactionExcel = (transaction, quotas) => {
   const wb = new xl.Workbook()
   const ws = wb.addWorksheet()
   const wsBlack = wb.addWorksheet()
 
-  const { black, white } = quotas
-
-  const { apartment } = transaction
-
   const styles = {
     project: wb.createStyle({
-      font: {
-        size: 18,
-        bold: true,
-        color: "#FFFFFF"
-      },
-      alignment: {
-        horizontal: 'center',
-        vertical: 'center'
-      },
-      border: {
-        left: {
-          style: 'medium',
-          color: 'black',
-        },
-        right: {
-          style: 'medium',
-          color: 'black',
-        },
-        top: {
-          style: 'medium',
-          color: 'black',
-        },
-        bottom: {
-          style: 'medium',
-          color: 'black',
-        },
-        outline: false,
-      },
-      fill: {
-        type: "pattern",
-        patternType: "solid",
-        bgColor: "#516480",
-        fgColor: "#516480"
-      }
+      ...fontHeadStyle, ...textCenterStyle, ...boldBorder, ...bgHead
     }),
+
     apartmentInfoHead: wb.createStyle({
       font: {
         bold: true
       },
-      alignment: {
-        wrapText: true,
-        horizontal: 'center',
-        vertical: 'center'
-      },
-      border: {
-        left: {
-          style: 'medium',
-          color: 'black',
-        },
-        right: {
-          style: 'medium',
-          color: 'black',
-        },
-        top: {
-          style: 'medium',
-          color: 'black',
-        },
-        bottom: {
-          style: 'medium',
-          color: 'black',
-        },
-        outline: false,
-      },
+      ...textCenterStyle,
+      ...boldBorder
     }),
     apartmentInfoCell: wb.createStyle({
-      alignment: {
-        wrapText: true,
-        horizontal: 'center',
-        vertical: 'center'
-      },
-      border: {
-        left: {
-          style: 'thin',
-          color: 'black',
-        },
-        right: {
-          style: 'thin',
-          color: 'black',
-        },
-        top: {
-          style: 'thin',
-          color: 'black',
-        },
-        bottom: {
-          style: 'thin',
-          color: 'black',
-        },
-        outline: false,
-      },
+      ...textCenterStyle,
+      ...thinBorder
     }),
     sectionHead: wb.createStyle({
       font: {
@@ -108,99 +116,28 @@ export const createTransactionExcel = (transaction, quotas) => {
         bold: true,
         color: "#FFFFFF"
       },
-      alignment: {
-        horizontal: 'center',
-        vertical: 'center'
-      },
-      border: {
-        left: {
-          style: 'medium',
-          color: 'black',
-        },
-        right: {
-          style: 'medium',
-          color: 'black',
-        },
-        top: {
-          style: 'medium',
-          color: 'black',
-        },
-        bottom: {
-          style: 'medium',
-          color: 'black',
-        },
-        outline: false,
-      },
-      fill: {
-        type: "pattern",
-        patternType: "solid",
-        bgColor: "#8497B0",
-        fgColor: "#8497B0"
-      }
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgSectionHead
     }),
     sectionInfoHead: wb.createStyle({
       font: {
         bold: true
       },
-      alignment: {
-        wrapText: true,
-        horizontal: 'center',
-        vertical: 'center'
-      },
-      border: {
-        left: {
-          style: 'medium',
-          color: 'black',
-        },
-        right: {
-          style: 'medium',
-          color: 'black',
-        },
-        top: {
-          style: 'medium',
-          color: 'black',
-        },
-        bottom: {
-          style: 'medium',
-          color: 'black',
-        },
-        outline: false,
-      },
-      fill: {
-        type: "pattern",
-        patternType: "solid",
-        bgColor: "#b7daf6",
-        fgColor: "#b7daf6"
-      }
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgSectionInfo
     }),
     quota: wb.createStyle({
-      alignment: {
-        wrapText: true,
-        horizontal: 'center',
-        vertical: 'center'
-      },
-      border: {
-        left: {
-          style: 'thin',
-          color: 'black',
-        },
-        right: {
-          style: 'thin',
-          color: 'black',
-        },
-        top: {
-          style: 'thin',
-          color: 'black',
-        },
-        bottom: {
-          style: 'thin',
-          color: 'black',
-        },
-        outline: false,
-      },
+      ...textCenterStyle,
+      ...thinBorder,
       numberFormat: '#.00; -#.00; -'
     })
   }
+
+  const { black, white } = quotas
+
+  const { apartment } = transaction
 
   ws.column(1).setWidth(20);
   ws.column(2).setWidth(20);
@@ -249,8 +186,6 @@ export const createTransactionExcel = (transaction, quotas) => {
     ws.cell(2, 13).string("Indice base").style(styles["apartmentInfoHead"])
     ws.cell(3, 13).number(transaction?.white?.baseIndex).style(styles["apartmentInfoCell"])
   }
-
-  const indexAdd = transaction?.white?.baseIndex ? 1 : 0
 
   wsBlack.cell(1, 1).string("40%").style(styles["apartmentInfoHead"])
   wsBlack.cell(1, 2).string("Adelanto").style(styles["apartmentInfoHead"])
@@ -416,6 +351,102 @@ export const createTransactionExcel = (transaction, quotas) => {
       wsBlack.cell(lastRow + i, 9).formula(`${xl.getExcelCellRef(lastRow + i, 7)}`).style(styles["quota"])
     })
   }
+
+  return wb
+}
+
+
+export const createProjectExcel = (floors, project) => {
+  const wb = new xl.Workbook()
+  const ws = wb.addWorksheet(project.title, {
+    sheetFormat: {
+      'defaultColWidth': 20,
+      'defaultRowHeight': 30,
+    }
+  })
+
+  const styles = {
+    project: wb.createStyle({
+      ...fontHeadStyle, ...textCenterStyle, ...boldBorder, ...bgHead
+    }),
+  
+    floorInfoHead: wb.createStyle({
+      font: {
+        bold: true
+      },
+      ...textCenterStyle,
+      ...boldBorder,
+      alignment: {
+        wrapText: true,
+        textRotation: 90,
+        vertical: 'center',
+      }
+    }),
+    floorInfoCell: wb.createStyle({
+      font: {
+        bold: true
+      },
+      ...textCenterStyle,
+      ...thinBorder
+    }),
+    sectionHead: wb.createStyle({
+      font: {
+        size: 14,
+        bold: true,
+        color: "#FFFFFF"
+      },
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgSectionHead
+    }),
+    sectionInfoHead: wb.createStyle({
+      font: {
+        bold: true
+      },
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgSectionInfo
+    })
+  }
+
+  ws.cell(1, 1, 1, 30, true).string(project.title).style(styles["project"])
+  ws.cell(2, 2, 2, 10).string("Frente").style(styles["sectionHead"])
+  ws.cell(2, 2, 2, 9).string("Frente").style(styles["sectionHead"])
+
+  ws.cell(2, 2, 2, 9, true).string("Frente").style(styles["sectionHead"])
+  ws.cell(2, 21, 2, 29, true).string("Contrafrente").style(styles["sectionHead"])
+
+  const writeApartmentsHeaders = (col=2, row=3) => {
+    ws.cell(row, col).string("ESTADO").style({...styles["sectionInfoHead"], fill: {type: "pattern",patternType: "solid",bgColor: "#ffff00",fgColor: "#ffff00"}})
+    ws.cell(row, col+1).string("UF").style(styles["sectionInfoHead"])
+    ws.cell(row, col+2).string("m2 cubiertos").style(styles["sectionInfoHead"])
+    ws.cell(row, col+3).string("m2 balcon").style(styles["sectionInfoHead"])
+    ws.cell(row, col+4).string("m2 descubiertos").style(styles["sectionInfoHead"])
+    ws.cell(row, col+5).string("Amenities").style(styles["sectionInfoHead"])
+    ws.cell(row, col+6).string("Total m2").style(styles["sectionInfoHead"])
+    ws.cell(row, col+7).string("Precio m2").style(styles["sectionInfoHead"])
+    ws.cell(row, col+8).string("Precio total").style(styles["sectionInfoHead"])
+  }
+
+  writeApartmentsHeaders()
+  writeApartmentsHeaders(21)
+
+  let lastRow = 4
+  floors.forEach((floor,i) => {
+    ws.cell(lastRow, 1, (floor.apartments.length || 1) + lastRow - 1, 1, true).string(floor.title).style(styles["floorInfoHead"])
+    floor.apartments.forEach((apartment, i) => {
+      ws.cell(lastRow+i, 2).string(apartment.forSale ? "DISPONIBLE" : "VENDIDO").style({...styles["floorInfoCell"], fill: {type: "pattern",patternType: "solid",bgColor: apartment.forSale ? "#88ff88" : "#ff7777", fgColor: apartment.forSale ? "#88ff88" : "#ff7777"}})
+      ws.cell(lastRow+i, 3).string(apartment.unit || "").style(styles["floorInfoCell"])
+      ws.cell(lastRow+i, 4).number(apartment.meters?.covered || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow+i, 5).number(apartment.meters?.balcony || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow+i, 6).number(apartment.meters?.uncovered || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow+i, 7).number(apartment.meters?.amenities || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow+i, 8).number(apartment.meters?.total || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow+i, 9).number(apartment.price || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow+i, 10).formula(`${xl.getExcelCellRef(lastRow+i,9)} * ${xl.getExcelCellRef(lastRow+i,8)}`).style(styles["floorInfoCell"])
+    })
+    lastRow += floor.apartments.length + 4
+  })
 
   return wb
 }

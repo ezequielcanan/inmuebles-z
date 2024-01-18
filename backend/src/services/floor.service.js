@@ -12,12 +12,12 @@ class FloorService {
   }
 
   getProjectFloors = async (pid) => {
-    const result = await floorModel.find({ project: pid })
+    const result = await floorModel.find({ project: pid }).lean().exec()
     return result
   }
 
   getFloor = async (fid) => {
-    const floor = await floorModel.findOne({ _id: fid })
+    const floor = await floorModel.findOne({ _id: fid }).lean().exec()
     return floor
   }
 }
