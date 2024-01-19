@@ -11,3 +11,14 @@ export const createRent = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const deleteRent = async (req, res) => {
+  try {
+    const result = await rentService.deleteRent(req?.params?.rid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}

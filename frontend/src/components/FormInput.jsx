@@ -45,9 +45,9 @@ const FormInput = ({ field, register = (a) => { }, i }) => {
             <>
               <input onKeyDown={(e) => { e.key === 'Enter' && e.preventDefault()}} type={type} {...register(name)} className={`${inputClassName} ${className}`} onChange={stateFunc ? ((e) => (stateFunc(e.target.value))) : (e) => onChange(e.target.value)} defaultValue={value || ""} disabled={disabled || false} />
               {suggestions?.length ? (
-                <div className="absolute top-0 right-0 bg-second text-first rounded text-3xl flex flex-col overflow-y-scroll h-[52px]">
+                <div className="absolute bottom-0 right-0 bg-second text-first rounded text-3xl flex flex-col overflow-y-scroll h-full">
                   {suggestions.map((s, i) => {
-                    return <span key={i} className="w-full flex items-center justify-center h-[52px] py-2 px-2 text-fourth duration-300 hover:bg-third" onClick={() => setOwner(s)}>{s.name}</span>
+                    return <span key={i} className="w-full flex items-center justify-center h-full py-2 px-2 text-fourth duration-300 hover:bg-third" onClick={() => setOwner(s)}>{s.name}</span>
                   })}
                 </div>
               ) : null}

@@ -12,7 +12,7 @@ const Project = () => {
   useEffect(() => {
     fetch("http://localhost:3000/api/projects/" + pid, { credentials: "include" })
       .then(res => res.json())
-      .then(json => (console.log(json), setProject(json.payload)))
+      .then(json => setProject(json.payload))
   }, [])
 
   useEffect(() => {

@@ -193,13 +193,13 @@ export const createTransactionExcel = (transaction, quotas) => {
   wsBlack.cell(1, 4).string("Cuotas").style(styles["apartmentInfoHead"])
 
   ws.cell(3, 1).string(apartment?.unit).style(styles["apartmentInfoCell"])
-  ws.cell(3, 2).number(apartment?.meters?.covered).style(styles["apartmentInfoCell"])
-  ws.cell(3, 3).number(apartment?.meters?.balcony).style(styles["apartmentInfoCell"])
-  ws.cell(3, 4).number(apartment?.meters?.uncovered).style(styles["apartmentInfoCell"])
-  ws.cell(3, 5).number(apartment?.meters?.amenities).style(styles["apartmentInfoCell"])
-  ws.cell(3, 6).number(apartment?.meters?.total).style(styles["apartmentInfoCell"])
+  ws.cell(3, 2).number(apartment?.meters?.covered || 0).style(styles["apartmentInfoCell"])
+  ws.cell(3, 3).number(apartment?.meters?.balcony || 0).style(styles["apartmentInfoCell"])
+  ws.cell(3, 4).number(apartment?.meters?.uncovered || 0).style(styles["apartmentInfoCell"])
+  ws.cell(3, 5).number(apartment?.meters?.amenities || 0).style(styles["apartmentInfoCell"])
+  ws.cell(3, 6).number(apartment?.meters?.total || 0).style(styles["apartmentInfoCell"])
   ws.cell(3, 7).string(apartment?.rooms).style(styles["apartmentInfoCell"])
-  ws.cell(3, 8).number(transaction?.total).style(styles["apartmentInfoCell"])
+  ws.cell(3, 8).number(transaction?.total || 0).style(styles["apartmentInfoCell"])
   ws.cell(3, 9).formula(`${xl.getExcelCellRef(3, 8)} * 60%`).style(styles["apartmentInfoCell"])
   ws.cell(3, 10).number(transaction?.booking).style(styles["apartmentInfoCell"])
   ws.cell(3, 11).formula(`${xl.getExcelCellRef(3, 9)} - ${xl.getExcelCellRef(3, 10)}`).style(styles["apartmentInfoCell"])
@@ -444,23 +444,27 @@ export const createProjectExcel = (floors, project) => {
     const frenteLength = floor.apartments.reduce((acc, apartment) => (apartment.orientation == "Frente" && apartment.unit) ? acc + 1 : acc, 0)
     const contrafrenteLength = floor.apartments.reduce((acc, apartment) => (apartment.orientation == "Contrafrente" && apartment.unit) ? acc + 1 : acc, 0)
     const totalRows = frenteLength > contrafrenteLength ? frenteLength : contrafrenteLength
-    
+
     ws.cell(lastRow, 1, (totalRows || 2) + lastRow - 1, 1, true).string("Frente\n" + floor.title).style({ ...styles["floorInfoHead"], fill: { type: "pattern", patternType: "solid", bgColor: "#ffff00", fgColor: "#ffff00" } })
     ws.cell(lastRow, 20, (totalRows || 2) + lastRow - 1, 20, true).string("Contrafrente\n" + floor.title).style({ ...styles["floorInfoHead"], fill: { type: "pattern", patternType: "solid", bgColor: "#ffff00", fgColor: "#ffff00" } })
     let skippedAapartments = 0
+    let whiteApartments = 0
+    let blackApartments = 0
     floor.apartments.forEach((apartment, i) => {
       if (!apartment.unit) return skippedAapartments++
-      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 2 : 21).string(apartment.forSale ? "DISPONIBLE" : "VENDIDO").style({ ...styles["floorInfoCell"], fill: { type: "pattern", patternType: "solid", bgColor: apartment.forSale ? "#88ff88" : "#ff7777", fgColor: apartment.forSale ? "#88ff88" : "#ff7777" } })
-      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 3 : 22).string(apartment.unit || "").style(styles["floorInfoCell"])
-      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 4 : 23).number(apartment.meters?.covered || 0).style(styles["floorInfoCell"])
-      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 5 : 24).number(apartment.meters?.balcony || 0).style(styles["floorInfoCell"])
-      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 6 : 25).number(apartment.meters?.uncovered || 0).style(styles["floorInfoCell"])
-      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 7 : 26).number(apartment.meters?.amenities || 0).style(styles["floorInfoCell"])
-      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 8 : 27).number(apartment.meters?.total || 0).style(styles["floorInfoCell"])
-      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 9 : 28).number(apartment.price || 0).style(styles["floorInfoCell"])
-      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 10 : 29).formula(`${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 9 : 28)} * ${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 8 : 27)}`).style(styles["floorInfoCell"])
-      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 11 : 30).string(apartment?.rooms).style(styles["floorInfoCell"])
-      ws.cell(lastRow + i - skippedAapartments, apartment.orientation == "Frente" ? 12 : 31).string(apartment?.owner?.name).style(styles["floorInfoCell"])
+      const plusApartments = apartment.orientation == "Frente" ? whiteApartments : blackApartments
+      ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 2 : 21).string(apartment.forSale ? "DISPONIBLE" : "VENDIDO").style({ ...styles["floorInfoCell"], fill: { type: "pattern", patternType: "solid", bgColor: apartment.forSale ? "#88ff88" : "#ff7777", fgColor: apartment.forSale ? "#88ff88" : "#ff7777" } })
+      ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 3 : 22).string(apartment.unit || "").style(styles["floorInfoCell"])
+      ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 4 : 23).number(apartment.meters?.covered || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 5 : 24).number(apartment.meters?.balcony || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 6 : 25).number(apartment.meters?.uncovered || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 7 : 26).number(apartment.meters?.amenities || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 8 : 27).number(apartment.meters?.total || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 9 : 28).number(apartment.price || 0).style(styles["floorInfoCell"])
+      ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 10 : 29).formula(`${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 9 : 28)} * ${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 8 : 27)}`).style(styles["floorInfoCell"])
+      ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 11 : 30).string(apartment?.rooms).style(styles["floorInfoCell"])
+      ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 12 : 31).string(apartment?.owner?.name).style(styles["floorInfoCell"])
+      apartment.orientation == "Frente" ? whiteApartments++ : blackApartments++
     })
     lastRow += totalRows + 4
   })
@@ -555,8 +559,8 @@ export const createFutureQuotasExcel = (transactions, lastIndexCac, indexCac) =>
       ws.cell(lastRow + i, 2).string(t.apartment?.floor?.title).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 3).string(t.buyer?.name).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 4).number(t.white?.lastQuota?.quota + 1).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 5).number(t.white?.lastQuota?.total).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 6).formula(`${t.white?.baseIndex ? "R2 / " + t.white?.baseIndex + "% - 100 + " + t.white?.baseQuota : "(R2 / Q2% - 100)% * " + xl.getExcelCellRef(lastRow + i, 5) + " + " + xl.getExcelCellRef(lastRow + i, 5)}`).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 5).number(t.white?.updatedQuota).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 6).formula(`${t.white?.baseIndex ? "(R2 / " + t.white?.baseIndex + "% - 100) * " + t.white?.baseQuota + "% + " + t.white?.baseQuota : "(R2 / Q2% - 100)% * " + xl.getExcelCellRef(lastRow + i, 5) + " + " + xl.getExcelCellRef(lastRow + i, 5)}`).style(styles["subsectionInfoCell"])
       whiteLastRow++
     }
     if (t.black) {
@@ -564,8 +568,8 @@ export const createFutureQuotasExcel = (transactions, lastIndexCac, indexCac) =>
       ws.cell(lastRow + i, 11).string(t.apartment?.floor?.title).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 12).string(t.buyer?.name).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 13).number(t.black?.lastQuota?.quota + 1).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 14).number(t.black?.lastQuota?.total).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 15).formula(`${t.black?.baseIndex ? "R2 / " + t.black?.baseIndex + "% - 100 + " + t.black?.baseQuota : "(R2 / Q2% - 100)% * " + xl.getExcelCellRef(lastRow + i, 14) + " + " + xl.getExcelCellRef(lastRow + i, 14)}`).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 14).number(t.black?.updatedQuota).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 15).formula(`${t.black?.baseIndex ? "(R2 / " + t.black?.baseIndex + "% - 100) * " + t.black?.baseQuota + "% + " + t.black?.baseQuota : "(R2 / Q2% - 100)% * " + xl.getExcelCellRef(lastRow + i, 14) + " + " + xl.getExcelCellRef(lastRow + i, 14)}`).style(styles["subsectionInfoCell"])
       blackLastRow++
     }
   })

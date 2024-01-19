@@ -13,7 +13,9 @@ export const createTransaction = async (req, res) => {
     white.transaction = tid
     black.transaction = tid
     const { white: whiteRes, black: blackRes } = await quotaService.createQuotas(white, black)
-    const finalResult = await transactionService.updateTransactionTypes({ updatedQuota: blackRes.total, lastQuota: blackRes._id }, { updatedQuota: whiteRes.total, lastQuota: whiteRes._id }, tid)
+    const finalResult = await transactionService.updateTransactionTypes({ updatedQuota: !blackRes.baseIndex ? blackRes.total + (blackRes.total * blackRes.cac / 100) : blackRes.total, lastQuota: blackRes._id }, {
+      updatedQuota: !whiteRes.baseIndex ? whiteRes.total + (whiteRes.total * whiteRes.cac / 100) : whiteRes.total, lastQuota: whiteRes._id
+    }, tid)
     res.sendSuccess(finalResult)
   }
   catch (e) {
@@ -33,9 +35,9 @@ export const getApartmentTransactions = async (req, res) => {
   }
 }
 
-export const updateTransaction = async (req,res) => {
+export const updateTransaction = async (req, res) => {
   try {
-    const transaction = await transactionService.updateTransaction(req?.params?.tid, {"white.baseIndex": req.body?.baseIndex, "black.baseIndex": req.body?.baseIndex})
+    const transaction = await transactionService.updateTransaction(req?.params?.tid, { "white.baseIndex": req.body?.baseIndex, "black.baseIndex": req.body?.baseIndex })
     res.sendSuccess(transaction)
   }
   catch (e) {

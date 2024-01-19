@@ -7,8 +7,9 @@ class QuotaService {
   createQuota = async (data) => {
     const result = await quotaModel.create(data)
     const update = { $set: {} }
+    console.log(result)
     update["$set"][result.type + ".lastQuota"] = result._id
-    update["$set"][result.type + ".updatedQuota"] = result.total
+    result.indexCac ? (update["$set"][result.type + ".updatedQuota"] = result.total) : (update["$set"][result.type + ".updatedQuota"] = result.total + (result.total * result.cac / 100))
     const updateLastQuota = await transactionModel.updateOne({ _id: result.transaction }, update)
     return result
   }

@@ -13,6 +13,7 @@ const NewTransaction = () => {
   const [formIndex, setFormIndex] = useState(0);
   const [ownerSuggestions, setOwnerSuggestions] = useState([]) 
   const [suggestedOwner, setSuggestedOwner] = useState(false)
+  const [baseIndex, setBaseIndex] = useState(false)
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
   const { inmueble } = useParams();
@@ -74,7 +75,7 @@ const NewTransaction = () => {
       },
     }
 
-    if (data["cac"] == "") {
+    if (data["cac"] == "" || baseIndex) {
       fetch("https://prestamos.ikiwi.net.ar/api/cacs").then(res => res.json()).then(async json => {
         const cacHistory = json
         const cacIndex = cacHistory.find((cac,i) => cac.period == (moment().subtract(2, "months").format("YYYY-MM")).toString() + "-01").general
@@ -163,6 +164,15 @@ const NewTransaction = () => {
       name: "cac",
       label: "CAC A",
       className: "w-[200px]",
+      value: 0,
+      disabled: baseIndex
+    },
+    {
+      type: "checkbox",
+      name: "baseIndex",
+      multiOptions: true,
+      label: "Indice base?",
+      stateFunc: (checked) => setBaseIndex(checked ? true : false)
     },
     {
       type: "number",
@@ -183,7 +193,9 @@ const NewTransaction = () => {
       type: "number",
       name: "b-cac",
       label: "CAC B",
+      value: 0,
       className: "w-[200px]",
+      disabled: baseIndex
     },
     {
       type: "number",

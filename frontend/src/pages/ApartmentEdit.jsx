@@ -33,7 +33,7 @@ const ApartmentEdit = () => {
     const apartmentData = {"unit": data.unit, "forSale": data.forSale, "meters": {covered: data.covered, uncovered: data.uncovered, balcony: data.balcony, amenities: data.amenities, total: Number(data.covered) + Number(data.uncovered) + Number(data.balcony) + Number(data.amenities)}, "rooms": data.rooms, "orientation": data.orientation, "price": data.price}
     const ownerData = {"name": data.name, "number": data.number || "", "email": data.email || "", "ownerType": data.ownerType}
     
-    if (data.rented) {
+    if (rented) {
       const tenantData = {"tenantName": data.tenantName, "tenantNumber": data.tenantNumber}
       apartment?.rent?.tenant?._id && (tenantData._id = apartment?.rent?.tenant?._id)
       const rentData = {"apartment": inmueble, "fromDate": data.fromDate, "toDate": data.toDate, "intermediary": data.intermediary}
@@ -46,10 +46,13 @@ const ApartmentEdit = () => {
       apartmentData.owner = apartment?.owner?._id || owner._id
       apartmentData.rent = rent._id
       const {payload: apartmentRes} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/apartments/"+inmueble, {method: "PUT", credentials: "include", body: JSON.stringify(apartmentData), headers: {"Content-Type": "application/json"}})).json()
+      console.log("aaaaaaaaaaaaaaaaaaaaaaaaaa")
       navigate("/floors/"+apartmentRes.floor)
     } else {
       const {payload: owner} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/owner", {method: "POST", credentials: "include", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(suggestedOwner || ownerData)})).json()
       apartmentData.owner = apartment?.owner?._id || owner._id
+      apartment?.rent && await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/rent/${apartment?.rent?._id}`, {method: "DELETE", credentials: "include"})
+      console.log(apartmentData)
       const {payload: apartmentRes} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/apartments/"+inmueble, {method: "PUT", credentials: "include", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(apartmentData)})).json()
       navigate("/floors/"+apartmentRes.floor)
     }
