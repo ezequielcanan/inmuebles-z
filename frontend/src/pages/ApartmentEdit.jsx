@@ -42,14 +42,14 @@ const ApartmentEdit = () => {
       rentData.tenant = tenant._id
 
       const {payload: rent} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/rent", {method: "POST", credentials: "include", body: JSON.stringify(rentData), headers: {"Content-Type": "application/json"}})).json()
-      const {payload: owner} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/owner", {method: "POST", credentials: "include", body: JSON.stringify(suggestedOwner || ownerData), headers: {"Content-Type": "application/json"}})).json()
-      apartmentData.owner = owner._id
+      const {payload: owner} = !apartment?.owner && await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/owner", {method: "POST", credentials: "include", body: JSON.stringify(suggestedOwner || ownerData), headers: {"Content-Type": "application/json"}})).json()
+      apartmentData.owner = apartment?.owner?._id || owner._id
       apartmentData.rent = rent._id
       const {payload: apartmentRes} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/apartments/"+inmueble, {method: "PUT", credentials: "include", body: JSON.stringify(apartmentData), headers: {"Content-Type": "application/json"}})).json()
       navigate("/floors/"+apartmentRes.floor)
     } else {
       const {payload: owner} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/owner", {method: "POST", credentials: "include", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(suggestedOwner || ownerData)})).json()
-      apartmentData.owner = owner._id
+      apartmentData.owner = apartment?.owner?._id || owner._id
       const {payload: apartmentRes} = await(await fetch(import.meta.env.VITE_REACT_API_URL+"/api/apartments/"+inmueble, {method: "PUT", credentials: "include", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(apartmentData)})).json()
       navigate("/floors/"+apartmentRes.floor)
     }

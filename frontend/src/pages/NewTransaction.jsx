@@ -78,8 +78,8 @@ const NewTransaction = () => {
       fetch("https://prestamos.ikiwi.net.ar/api/cacs").then(res => res.json()).then(async json => {
         const cacHistory = json
         const cacIndex = cacHistory.find((cac,i) => cac.period == (moment().subtract(2, "months").format("YYYY-MM")).toString() + "-01").general
-        console.log(cacIndex)
-        transactionBody.black = {
+
+        /*transactionBody.black = {
           indexCac: cacIndex, total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0
         }
         transactionBody.white = {
@@ -87,7 +87,7 @@ const NewTransaction = () => {
         }
 
         transactionBody.transaction.white.baseIndex = cacIndex
-        transactionBody.transaction.black.baseIndex = cacIndex
+        transactionBody.transaction.black.baseIndex = cacIndex*/
 
         const transactionRes = await (
           await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction`, {
@@ -154,26 +154,20 @@ const NewTransaction = () => {
   const secondFields = [
     {
       type: "number",
-      name: "total",
-      label: "TOTAL:",
-      className: "w-[200px]",
-    },
-    {
-      type: "number",
       name: "booking",
-      label: "Adelanto:",
+      label: "Adelanto A:",
       className: "w-[200px]",
     },
     {
       type: "number",
       name: "cac",
-      label: "CAC",
+      label: "CAC A",
       className: "w-[200px]",
     },
     {
       type: "number",
       name: "quotas",
-      label: "Cuotas totales:",
+      label: "Cuotas totales A:",
       className: "w-[200px]",
     },
   ];
@@ -205,30 +199,44 @@ const NewTransaction = () => {
         <section className="flex w-full h-full items-center text-fourth gap-x-[20px] justify-between">
           <div className="flex gap-x-[20px] items-center">
             <ApartmentCard apartment={apartment} className={"mr-auto"} />
-            <h1 className="text-4xl">Venta y/o transferencia</h1>
+            <h1 className="text-4xl">Venta / Cesion</h1>
             <FaArrowRight size={50} />
           </div>
           <div className="flex relative">
             {!formIndex ? (
               <Form
                 fields={fields}
-                className={"!px-16"}
+                className={"!px-16 w-[700px]"}
                 register={register}
                 enter={false}
               />
             ) : null}
             {formIndex == 1 ? (
               <Form
-                fields={secondFields}
-                className={"!px-16"}
+                fields={[{
+                  type: "number",
+                  name: "total",
+                  label: "VALOR TOTAL (A+B):",
+                  className: "w-[200px]",
+                }]}
+                className={"!px-16 w-[700px]"}
                 register={register}
+                onSubmit={onSubmit}
                 enter={false}
               />
             ) : null}
             {formIndex == 2 ? (
               <Form
+                fields={secondFields}
+                className={"!px-16 w-[700px]"}
+                register={register}
+                enter={false}
+              />
+            ) : null}
+            {formIndex == 3 ? (
+              <Form
                 fields={thirdFields}
-                className={"!px-16"}
+                className={"!px-16 w-[700px]"}
                 register={register}
                 onSubmit={onSubmit}
               />
@@ -240,7 +248,7 @@ const NewTransaction = () => {
                 onClick={() => setFormIndex(formIndex - 1)}
               />
             ) : null}
-            {formIndex < 2 ? (
+            {formIndex < 3 ? (
               <FaChevronRight
                 className="text-fourth absolute top-[50%] right-[1%]"
                 size={30}

@@ -20,6 +20,11 @@ class TransactionService {
     return result
   }
 
+  updateTransaction = async (tid, update) => {
+    const result = await transactionModel.updateOne({_id: tid}, update)
+    return result
+  }
+
   updateTransactionTypes = async (black, white, tid) => {
     const result = await transactionModel.updateOne({ _id: tid }, { $set: { "black.updatedQuota": black.updatedQuota, "black.lastQuota": black.lastQuota, "white.updatedQuota": white.updatedQuota, "white.lastQuota": white.lastQuota } })
     return result

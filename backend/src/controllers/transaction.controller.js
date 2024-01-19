@@ -33,6 +33,17 @@ export const getApartmentTransactions = async (req, res) => {
   }
 }
 
+export const updateTransaction = async (req,res) => {
+  try {
+    const transaction = await transactionService.updateTransaction(req?.params?.tid, {"white.baseIndex": req.body?.baseIndex, "black.baseIndex": req.body?.baseIndex})
+    res.sendSuccess(transaction)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
+
 export const getTransactionById = async (req, res) => {
   try {
     const transaction = await transactionService.getTransactionById(req.params?.tid)

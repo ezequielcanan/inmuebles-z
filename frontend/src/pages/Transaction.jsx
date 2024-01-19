@@ -24,19 +24,21 @@ const Transaction = () => {
 
   const handleSubmitFunc = async (formData, type) => {
     const data = formData
+    const wasCac = data.indexCac
     if (!transaction[type].baseIndex) {
       data.total = data.cac * transaction[type]?.updatedQuota / 100 + transaction[type]?.updatedQuota
     }
     else {
       const cacHistory = await (await fetch("https://prestamos.ikiwi.net.ar/api/cacs")).json()
-      data.indexCac = cacHistory.find((cac,i) => cac.period == (moment().subtract(2, "months").format("YYYY-MM")).toString() + "-01").general
-      data.total = (transaction[type].baseQuota * (100 - (transaction[type].baseIndex * 100 / cacHistory[cacHistory.length - 1].general)) / 100) + transaction[type].baseQuota
+      data.indexCac = data.indexCac || cacHistory.find((cac, i) => cac.period == (moment().subtract(2, "months").format("YYYY-MM")).toString() + "-01").general
+      data.total = (transaction[type].baseQuota * (100 - (data.indexCac * 100 / cacHistory[cacHistory.length - 1].general)) / 100) + transaction[type].baseQuota
     }
 
     data.quota = transaction[type]?.lastQuota?.quota + 1
     data.type = type
     data.transaction = transaction?._id
     data.date = moment().format("DD-MM-YYYY")
+    wasCac && await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction/${transaction?._id}`, { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ baseIndex: data.indexCac }) })).json()
     const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/quota`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })).json()
     setReload(!reload)
     Toastify({
@@ -50,7 +52,7 @@ const Transaction = () => {
       style: {
         background: "linear-gradient(to right, #00b09b, #96c93d)",
       },
-      onClick: function(){} // Callback after click
+      onClick: function () { } // Callback after click
     }).showToast();
   }
 
@@ -76,12 +78,13 @@ const Transaction = () => {
             {[{ type: "white", white: transaction.white }, { type: "black", black: transaction.black }].map((t, i) => {
               return <div className="bg-indigo-500 w-4/5 flex flex-col gap-y-8 px-5 w-2/5 py-4 border-4 border-fourth rounded-xl text-fourth" key={i}>
                 <h2 className="text-7xl border-b-4 py-3 drop-shadow-[10px_10px_10px_rgba(0,0,0,1)] w-full text-center">{t.type == "white" ? "A" : "B"}</h2>
-                <p className="text-4xl">Adelanto inicial: ${t[t.type] == "white" ? transaction.booking : transaction.bookingB}</p>
-                <p className="text-4xl">Cuota base: ${t[t.type]?.baseQuota.toFixed(2)}</p>
+                <p className="text-4xl">{t.type == "white" ? `Boleto: $${transaction.total * 60 / 100}` : `Reconocimiento de deuda: $${transaction.total * 40 / 100}`}</p>
+                <p className="text-4xl">Adelanto inicial: ${t.type == "white" ? transaction.booking : transaction.bookingB}</p>
+                <p className="text-4xl">Cuota base: ${t[t.type]?.baseQuota?.toFixed(2) || ""}</p>
                 <p className="text-4xl">Cuotas totales: {t[t.type]?.quotas}</p>
                 <p className="text-4xl">Cuotas pagadas: {t[t.type]?.lastQuota?.quota}</p>
-                <p className="text-4xl">Valor cuota {t[t.type]?.lastQuota?.quota}: ${t[t.type]?.updatedQuota.toFixed(2) || t[t.type]?.baseQuota.toFixed(2)}</p>
-                {t[t.type]?.quotas == t[t.type]?.lastQuota?.quota ? <h3 className="text-4xl text-center bg-cyan-500/60">SALDADO</h3> : (<Form register={t.type == "black" ? black : white} fields={!transaction?.white?.baseIndex ? [{ type: "number", name: "cac", label: "CAC" }, { type: "number", name: "adjustment", label: "Ajuste" }, { type: "number", name: "extraAdjustment", label: "Re Ajuste" }] : []} className={"!bg-gradient-to-t from-cyan-500 to-transparent"} onSubmit={(e) => addQuota(e, t.type)} />)}
+                <p className="text-4xl">Valor cuota {t[t.type]?.lastQuota?.quota}: ${t[t.type]?.updatedQuota?.toFixed(2) || t[t.type]?.baseQuota?.toFixed(2) || ""}</p>
+                {t[t.type]?.quotas == t[t.type]?.lastQuota?.quota ? <h3 className="text-4xl text-center bg-cyan-500/60">SALDADO</h3> : (<Form register={t.type == "black" ? black : white} fields={(!transaction?.white?.baseIndex && transaction?.white?.lastQuota?.cac) ? [{ type: "number", name: "cac", label: "CAC %" }, { type: "number", name: "adjustment", label: "Ajuste %" }, { type: "number", name: "extraAdjustment", label: "Re Ajuste %" }] : [{ type: "number", name: "indexCac", label: "INDICE CAC" }]} className={"!bg-gradient-to-t from-cyan-500 to-transparent"} onSubmit={(e) => addQuota(e, t.type)} />)}
               </div>
             })}
           </section>

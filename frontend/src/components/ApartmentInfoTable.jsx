@@ -1,9 +1,10 @@
 import { FaRegFilePdf, FaTrash, FaArrowRight } from "react-icons/fa"
 import { useEffect, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
+import moment from "moment"
 import Carousel from "./Carousel"
 
-const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, setCarouselIndex }) => {
+const ApartmentInfoTable = ({ info, apartment, reload, onChangeFunction, carouselIndex, setCarouselIndex, generatePdf }) => {
   const [images, setImages] = useState([])
   const [videos, setVideos] = useState([])
   const [plano, setPlano] = useState([])
@@ -18,7 +19,7 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
     fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/files/plano?project=" + apartment?.project?._id + "&apartment=" + apartment._id, {credentials: "include"}).then(res => res.json()).then(json => setPlano(json.payload || []))
     fetch(import.meta.env.VITE_REACT_API_URL + "/api/apartments/files/docs?project=" + apartment?.project?._id + "&apartment=" + apartment._id, {credentials: "include"}).then(res => res.json()).then(json => setDocs(json.payload || []))
     fetch(import.meta.env.VITE_REACT_API_URL + "/api/transaction/apartment/" + apartment?._id, {credentials: "include"}).then(res => res.json()).then(json => setTransactions(json.payload || []))
-  }, [info])
+  }, [info, reload])
 
   const fileTypes = {
     "Fotos": { fileType: "photos", setState: setImages },
@@ -35,7 +36,7 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
       fileType: fileTypes[info].fileType
     }
 
-    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/apartments/files`, { method: "DELETE", body: JSON.stringify(body), headers: { "Content-Type": "application/json" } }).then(res => res.json()).then(json => fileTypes[info].setState(json.payload))
+    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/apartments/files`, { method: "DELETE", body: JSON.stringify(body), headers: { "Content-Type": "application/json" }, credentials: "include"}).then(res => res.json()).then(json => fileTypes[info].setState(json.payload))
   }
 
   const infoSections = {
@@ -53,12 +54,14 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
       { head: "Metros descubiertos", value: apartment.meters?.uncovered },
       { head: "Metros balcon", value: apartment.meters?.balcony },
       { head: "Metros amenities", value: apartment.meters?.amenities },
-      { head: "TOTALES", value: apartment.meters?.total },
-      { head: "Precio total", value: apartment?.meters?.total * apartment?.price }
+      { head: "TOTALES", value: apartment.meters?.total?.toFixed(2) || "" },
+      { head: "Precio total", value: (apartment?.meters?.total * apartment?.price).toFixed(2) || "" }
     ],
     "Inquilino": [
       { head: "Nombre", value: apartment.rent?.tenant?.tenantName },
-      { head: "Telefono", value: apartment.rent?.tenant?.tenantNumber }
+      { head: "Telefono", value: apartment.rent?.tenant?.tenantNumber },
+      { head: "Desde", value: moment(apartment.rent?.fromDate).add(1,"days").format("YYYY-MM-DD") || "" },
+      { head: "Hasta", value: moment(apartment.rent?.toDate).add(1,"days").format("YYYY-MM-DD") || "" }
     ],
     "Historial": () => {
       let owners = []
@@ -78,7 +81,7 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
       )
     },
     "Fotos": () => {
-      return images.map((image, i) => {
+      return (images || []).map((image, i) => {
         return <div className="w-full flex-shrink-0 relative" key={i}>
           <button className="absolute top-[5%] right-[5%] bg-first text-fourth rounded-full px-4 py-4" onClick={() => handleTrashClick(image)}>
             <FaTrash size={40} />
@@ -88,7 +91,7 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
       })
     },
     "Videos": () => {
-      return videos.map((video, i) => {
+      return (videos || []).map((video, i) => {
         return <div className="w-full flex-shrink-0 relative" key={i}>
           <button className="absolute top-[5%] right-[5%] bg-first text-fourth rounded-full px-4 py-4 z-20" onClick={() => handleTrashClick(video)}>
             <FaTrash size={40} />
@@ -98,7 +101,7 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
       })
     },
     "Plano": () => {
-      return plano.map((image, i) => {
+      return (plano || []).map((image, i) => {
         return <div className="w-full flex-shrink-0 relative" key={i}>
           <button className="absolute top-[5%] right-[5%] bg-first text-fourth rounded-full px-4 py-4" onClick={() => handleTrashClick(image)}>
             <FaTrash size={40} />
@@ -108,7 +111,7 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
       })
     },
     "PDF": () => {
-      return docs.map((pdf, i) => {
+      return (docs || []).map((pdf, i) => {
         return <div className="w-full flex-shrink-0 relative flex flex-col justify-center items-center" key={i}>
           <button className="absolute top-[5%] right-[5%] bg-first text-fourth rounded-full px-4 py-4" onClick={() => handleTrashClick(pdf)}>
             <FaTrash size={40} />
@@ -124,13 +127,19 @@ const ApartmentInfoTable = ({ info, apartment, onChangeFunction, carouselIndex, 
       transactions.length && navigate("/transaction/"+transactions[transactions.length - 1]?._id)
     }
   }
+
+  if (generatePdf) {
+    infoSections["Ficha"][0].head = null
+    infoSections["Ficha"].splice(1,0,{head: "Direccion", value: apartment?.project?.address || ""})
+  }
+
   return (
     (info != "Fotos" && info != "Plano" && info != "Videos" && info != "PDF" && info != "Historial" && info != "Estado") ? (
-      <table className="border-4">
+      <table className="border-4" id="pdf-input">
         <tbody className="flex flex-col gap-y-[3px] bg-fourth">
-          {infoSections[info].map(row => {
-            return <tr key={row.head} className={trClassName}>
-              <td>{row.head}</td>
+          {infoSections[info].map((row, i) => {
+            return <tr key={row.head} className={trClassName + ` ${(generatePdf && !i) && "!justify-center"}`}>
+              {row.head && <td>{row.head}</td>}
               <td>{row.value}</td>
             </tr>
           })}
