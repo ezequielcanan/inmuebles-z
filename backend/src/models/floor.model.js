@@ -9,7 +9,11 @@ const floorsSchema = new mongoose.Schema({
   index: Number
 })
 
-floorsSchema.pre("find", function() {
+floorsSchema.pre("find", function () {
+  this.populate("project")
+})
+
+floorsSchema.pre("findOne", function () {
   this.populate("project")
 })
 

@@ -29,12 +29,12 @@ const FloorEdit = () => {
       .then(res => res.json())
       .then(json => setApartments(json.payload))
   }, [apartments])
-
+  console.log(floor)
   return (
     <Main className={"pt-[200px] bg-sixth items-center gap-y-[100px]"}>
       {floor && (
         <div className="flex flex-col gap-y-[40px]">
-          <h1 className="text-6xl text-fourth text-center">{floor.title.toUpperCase()}</h1>
+          <h1 className="text-6xl text-fourth text-center">{floor?.project?.title} - {floor.title}</h1>
           <h2 className="text-4xl text-fourth text-center">Pagina de edicion</h2>
         </div>
       )}

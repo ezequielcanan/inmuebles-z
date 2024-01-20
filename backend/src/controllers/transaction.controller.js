@@ -37,7 +37,9 @@ export const getApartmentTransactions = async (req, res) => {
 
 export const updateTransaction = async (req, res) => {
   try {
-    const transaction = await transactionService.updateTransaction(req?.params?.tid, { "white.baseIndex": req.body?.baseIndex, "black.baseIndex": req.body?.baseIndex })
+    const update = {}
+    update[`${req?.params?.type}.baseIndex`] = req?.body?.baseIndex
+    const transaction = await transactionService.updateTransaction(req?.params?.tid, update)
     res.sendSuccess(transaction)
   }
   catch (e) {
@@ -76,9 +78,10 @@ export const createFutureQuotasXlsx = async (req, res) => {
   try {
     const transactions = await transactionService.getAllProjectTransactions(req.params?.pid)
     const cacHistory = await (await fetch("https://prestamos.ikiwi.net.ar/api/cacs")).json()
-    const lastIndexCac = cacHistory.find((cac, i) => cac.period == (moment().subtract(3, "months").format("YYYY-MM")).toString() + "-01").general
-    const indexCac = cacHistory.find((cac, i) => cac.period == (moment().subtract(2, "months").format("YYYY-MM")).toString() + "-01").general
-    const wb = createFutureQuotasExcel(transactions, lastIndexCac, indexCac)
+    const secondIndexCac = cacHistory[cacHistory.length - 3]?.general
+    const lastIndexCac = cacHistory[cacHistory.length - 2]?.general
+    const indexCac = cacHistory[cacHistory.length - 1]?.general
+    const wb = createFutureQuotasExcel(transactions, lastIndexCac, indexCac, secondIndexCac)
     wb.write(`Cuotas ${transactions[0]?.apartment?.project?.title || ""}.xlsx`, res)
   }
   catch (e) {

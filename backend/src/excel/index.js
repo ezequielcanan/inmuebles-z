@@ -191,6 +191,7 @@ export const createTransactionExcel = (transaction, quotas) => {
   wsBlack.cell(1, 2).string("Adelanto").style(styles["apartmentInfoHead"])
   wsBlack.cell(1, 3).string("Saldo").style(styles["apartmentInfoHead"])
   wsBlack.cell(1, 4).string("Cuotas").style(styles["apartmentInfoHead"])
+  transaction?.black?.baseIndex && wsBlack.cell(1, 5).string("Indice base").style(styles["apartmentInfoHead"])
 
   ws.cell(3, 1).string(apartment?.unit).style(styles["apartmentInfoCell"])
   ws.cell(3, 2).number(apartment?.meters?.covered || 0).style(styles["apartmentInfoCell"])
@@ -209,6 +210,7 @@ export const createTransactionExcel = (transaction, quotas) => {
   wsBlack.cell(2, 2).number(transaction?.bookingB).style(styles["apartmentInfoCell"])
   wsBlack.cell(2, 3).formula(`${xl.getExcelCellRef(2, 1)} - ${xl.getExcelCellRef(2, 2)}`).style(styles["apartmentInfoCell"])
   wsBlack.cell(2, 4).number(transaction?.black?.quotas).style(styles["apartmentInfoCell"])
+  transaction?.black?.baseIndex && wsBlack.cell(2, 5).number(transaction?.black?.baseIndex).style(styles["apartmentInfoCell"])
 
   ws.cell(5, 1, 5, 8, true).string("A").style(styles["sectionHead"])
   ws.cell(6, 1).string("Nombre").style(styles["sectionInfoHead"])
@@ -346,7 +348,7 @@ export const createTransactionExcel = (transaction, quotas) => {
         wsBlack.cell(lastRow + i, 3).formula(`C2 / D2`).style(styles["quota"])
         wsBlack.cell(lastRow + i, 4).number(quota?.indexCac).style(styles["quota"])
         const totalCell = xl.getExcelCellRef(lastRow + i, 3)
-        const baseIndexCell = "'Sheet 1'!M3"
+        const baseIndexCell = "E2"
         const cacCell = xl.getExcelCellRef(lastRow + i, 4)
         wsBlack.cell(lastRow + i, 5).formula(`${cacCell} / ${baseIndexCell}% - 100`).style(styles["quota"])
         wsBlack.cell(lastRow + i, 6).formula(`${xl.getExcelCellRef(lastRow + i, 5)} * ${totalCell}%`).style(styles["quota"])
@@ -472,7 +474,7 @@ export const createProjectExcel = (floors, project) => {
   return wb
 }
 
-export const createFutureQuotasExcel = (transactions, lastIndexCac, indexCac) => {
+export const createFutureQuotasExcel = (transactions, lastIndexCac, indexCac, secondIndexCac) => {
   const wb = new xl.Workbook()
   const ws = wb.addWorksheet("Cuotas", {
     sheetFormat: {
@@ -528,6 +530,9 @@ export const createFutureQuotasExcel = (transactions, lastIndexCac, indexCac) =>
     })
   }
 
+  const cac = indexCac / lastIndexCac * 100 - 100
+  const adjustment = cac - (lastIndexCac / secondIndexCac * 100 - 100)
+
   ws.cell(1, 1, 1, 6, true).string("CUOTAS PESOS: A - " + transactions[0]?.apartment?.project?.title || "").style(styles["project"])
   ws.cell(1, 10, 1, 15, true).string("CUOTAS PESOS: B - " + transactions[0]?.apartment?.project?.title || "").style(styles["project"])
 
@@ -560,7 +565,7 @@ export const createFutureQuotasExcel = (transactions, lastIndexCac, indexCac) =>
       ws.cell(lastRow + i, 3).string(t.buyer?.name).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 4).number(t.white?.lastQuota?.quota + 1).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 5).number(t.white?.updatedQuota).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 6).formula(`${t.white?.baseIndex ? "(R2 / " + t.white?.baseIndex + "% - 100) * " + t.white?.baseQuota + "% + " + t.white?.baseQuota : "(R2 / Q2% - 100)% * " + xl.getExcelCellRef(lastRow + i, 5) + " + " + xl.getExcelCellRef(lastRow + i, 5)}`).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 6).number(t.white?.baseIndex ? (indexCac / t.white?.baseIndex * 100 - 100) * t.white?.baseQuota / 100 + t.white?.baseQuota : (adjustment * t.white?.lastQuota?.total / 100 + t.white?.updatedQuota) * cac / 100 + (adjustment * t.white?.lastQuota?.total / 100 + t.white?.updatedQuota)).style(styles["subsectionInfoCell"])
       whiteLastRow++
     }
     if (t.black) {
@@ -569,7 +574,7 @@ export const createFutureQuotasExcel = (transactions, lastIndexCac, indexCac) =>
       ws.cell(lastRow + i, 12).string(t.buyer?.name).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 13).number(t.black?.lastQuota?.quota + 1).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 14).number(t.black?.updatedQuota).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 15).formula(`${t.black?.baseIndex ? "(R2 / " + t.black?.baseIndex + "% - 100) * " + t.black?.baseQuota + "% + " + t.black?.baseQuota : "(R2 / Q2% - 100)% * " + xl.getExcelCellRef(lastRow + i, 14) + " + " + xl.getExcelCellRef(lastRow + i, 14)}`).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 15).number(t.black?.baseIndex ? (indexCac / t.black?.baseIndex * 100 - 100) * t.black?.baseQuota / 100 + t.black?.baseQuota : (adjustment * t.black?.lastQuota?.total / 100 + t.black?.updatedQuota) * cac / 100 + (adjustment * t.black?.lastQuota?.total / 100 + t.black?.updatedQuota)).style(styles["subsectionInfoCell"])
       blackLastRow++
     }
   })

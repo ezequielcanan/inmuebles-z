@@ -34,7 +34,7 @@ const FormInput = ({ field, register = (a) => { }, i }) => {
       return <div key={i} className={"flex items-center justify-between w-full gap-x-[40px] " + justify}>
         {label ? <label className={labelClassName} htmlFor="">{label}</label> : null}
         <input type={type} className="hidden" id={name} {...register(name) || null} onChange={e => onChangeFunction(e)} />
-        <label htmlFor={name} className={(!imageState && ("py-16 px-16 border-dashed ")) + "cursor-pointer text-center flex items-center justify-center border-4 border-sixth " + className}>{!imageState ? <FaImage /> : <img className="w-[200px] h-[200px]" src={URL.createObjectURL(imageState)} />}</label>
+        <label htmlFor={name} className={(!imageState && ("py-16 px-16 border-dashed ")) + "cursor-pointer text-center flex items-center justify-center border-4 border-sixth " + className}>{ (!imageState) ? <FaImage /> : <img className="w-[200px] h-[200px]" src={!imageState ? "" : (!imageState.size ? imageState : URL.createObjectURL(imageState))} />}</label>
       </div>
     }),
     text: (({ type, name, label, className, stateFunc, value, disabled, onChange = () => { }, suggestions, setOwner, suggestedOwner }, i) => {

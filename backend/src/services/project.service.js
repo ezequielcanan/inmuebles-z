@@ -4,7 +4,7 @@ class ProjectService {
   constructor() { }
 
   createProject = async (project) => {
-    const result = await projectModel.create(project)
+    const result = await project?._id ? projectModel.findOneAndUpdate({ _id: project._id }, { $set: { ...project } }) : projectModel.create(project)
     return result
   }
 

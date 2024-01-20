@@ -3,6 +3,18 @@ import __dirname from "../utils.js"
 import fs from "fs"
 
 const apartmentService = new ApartmentService()
+
+export const getAllFromProject = async (req, res) => {
+  try {
+    const apartments = await apartmentService.getAllFromProject(req?.params?.pid)
+    res.sendSuccess(apartments)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
+
 export const getAllFromFloor = async (req, res) => {
   try {
     const apartments = await apartmentService.getAllFromFloor(req.params?.fid)

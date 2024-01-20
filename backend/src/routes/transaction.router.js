@@ -8,6 +8,6 @@ export default class TransactionRouter extends Z_Router {
     this.get("/excel/:tid", ["ADMIN", "SECRETARY", "USER"], createTransactionXlsx)
     this.get("/excel/project/:pid", ["ADMIN", "SECRETARY", "USER"], createFutureQuotasXlsx)
     this.post("/", ["ADMIN", "SECRETARY"], createTransaction)
-    this.put("/:tid", ["ADMIN", "SECRETARY"], updateTransaction)
+    this.put("/:tid/:type", ["ADMIN", "SECRETARY"], updateTransaction)
   }
 }

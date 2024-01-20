@@ -34,3 +34,14 @@ export const getFloor = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const deleteFloor = async (req, res) => {
+  try {
+    const result = await floorService.deleteFloor(req?.params?.fid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}

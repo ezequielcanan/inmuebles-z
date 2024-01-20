@@ -20,6 +20,11 @@ class FloorService {
     const floor = await floorModel.findOne({ _id: fid }).lean().exec()
     return floor
   }
+
+  deleteFloor = async (fid) => {
+    const result = await floorModel.deleteOne({ _id: fid })
+    return result
+  }
 }
 
 export default FloorService

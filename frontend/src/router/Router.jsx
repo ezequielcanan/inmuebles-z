@@ -19,7 +19,7 @@ import Admin from "../pages/Admin"
 
 const Router = () => {
   const { getUser } = useContext(UserContext)
-  
+
   return (
     <BrowserRouter>
       <Navbar type={getUser() ? "default" : "login"} />
@@ -32,11 +32,11 @@ const Router = () => {
           </>
         ) : (
           <>
-            <Route path="/admin" element={<Admin/>}/>
+            <Route path="/admin" element={<Admin />} />
             <Route path="/new-project" element={<NewProject />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:project" element={<Project />} />
-            <Route path="/projects/:project/edit" />
+            <Route path="/projects/:project/edit" element={<NewProject />} />
             <Route path="/floors/:floor" element={<Floor />} />
             <Route path="/floors/:floor/edit" element={<FloorEdit />} />
             <Route path="/inmueble/:inmueble" element={<Apartment />} />
