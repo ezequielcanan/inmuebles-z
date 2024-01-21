@@ -16,6 +16,7 @@ import Register from "../pages/Register"
 import { UserContext } from "../context/userContext"
 import { useContext } from "react"
 import Admin from "../pages/Admin"
+import Statistics from "../pages/Statistics"
 
 const Router = () => {
   const { getUser } = useContext(UserContext)
@@ -37,6 +38,7 @@ const Router = () => {
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:project" element={<Project />} />
             <Route path="/projects/:project/edit" element={<NewProject />} />
+            <Route path="/projects/:project/statistics" element={<Statistics />} />
             <Route path="/floors/:floor" element={<Floor />} />
             <Route path="/floors/:floor/edit" element={<FloorEdit />} />
             <Route path="/inmueble/:inmueble" element={<Apartment />} />

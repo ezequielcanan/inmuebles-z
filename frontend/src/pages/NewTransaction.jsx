@@ -67,6 +67,8 @@ const NewTransaction = () => {
         total: data.total,
         booking: data.booking,
         bookingB: data.bookingB,
+        dolar: data.dolar,
+        date: moment().format("YYYY-MM-DD"),
         white: { quotas: data.quotas, baseQuota: whiteBaseQuota },
         black: {
           quotas: data["b-quotas"],
@@ -103,10 +105,10 @@ const NewTransaction = () => {
       })
     } else {
       transactionBody.black = {
-        cac: data["b-cac"], total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0
+        cac: data["b-cac"], total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0, paid: data["b-paid"]
       }
       transactionBody.white = {
-        cac: data["cac"], total: whiteBaseQuota, quota: 1, type: "white", date: today, adjustment: 0, extraAdjustment: 0
+        cac: data["cac"], total: whiteBaseQuota, quota: 1, type: "white", date: today, adjustment: 0, extraAdjustment: 0, paid: data["paid"]
       }
 
       const transactionRes = await (
@@ -168,10 +170,18 @@ const NewTransaction = () => {
       disabled: baseIndex
     },
     {
+      type: "number",
+      name: "paid",
+      label: "Pagado cuota 1 (en pesos)",
+      className: "w-[300px]",
+      value: 0,
+      disabled: baseIndex
+    },
+    {
       type: "checkbox",
       name: "baseIndex",
       multiOptions: true,
-      label: "Indice base?",
+      label: "Indice base",
       stateFunc: (checked) => setBaseIndex(checked ? true : false)
     },
     {
@@ -188,6 +198,14 @@ const NewTransaction = () => {
       name: "bookingB",
       label: "Adelanto B:",
       className: "w-[200px]",
+    },
+    {
+      type: "number",
+      name: "b-paid",
+      label: "Pagado cuota 1 (en pesos)",
+      className: "w-[300px]",
+      value: 0,
+      disabled: baseIndex
     },
     {
       type: "number",
@@ -229,6 +247,12 @@ const NewTransaction = () => {
                   type: "number",
                   name: "total",
                   label: "VALOR TOTAL (A+B):",
+                  className: "w-[200px]",
+                },
+                {
+                  type: "number",
+                  name: "dolar",
+                  label: "VALOR DOLAR:",
                   className: "w-[200px]",
                 }]}
                 className={"!px-16 w-[700px]"}

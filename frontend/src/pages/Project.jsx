@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { BounceLoader } from "react-spinners"
-import { FaPlus, FaChevronLeft, FaFileExcel, FaDollarSign, FaTrashAlt, FaPlusCircle } from "react-icons/fa"
+import { FaPlus, FaChevronLeft, FaFileExcel, FaTrashAlt, FaPlusCircle } from "react-icons/fa"
+import { GiReceiveMoney } from "react-icons/gi"
+import { VscGraph } from "react-icons/vsc"
 import { Link } from "react-router-dom"
 import Main from "../containers/Main"
 
@@ -53,7 +55,8 @@ const Project = () => {
             <Link to={"/projects/"}><FaChevronLeft className="text-6xl text-fourth" /></Link>
             <h1 className="text-6xl text-fourth font-black">{project.title}</h1>
             <div className="flex gap-x-[30px]">
-              <a href={`${import.meta.env.VITE_REACT_API_URL}/api/transaction/excel/project/${pid}`}><FaDollarSign className="text-fourth text-6xl cursor-pointer" /></a>
+              <Link to={`/projects/${pid}/statistics`}><VscGraph className="text-fourth text-6xl cursor-pointer" /></Link>
+              <a href={`${import.meta.env.VITE_REACT_API_URL}/api/transaction/excel/project/${pid}`}><GiReceiveMoney className="text-fourth text-6xl cursor-pointer" /></a>
               <a href={`${import.meta.env.VITE_REACT_API_URL}/api/projects/excel/${pid}`}><FaFileExcel className="text-fourth text-6xl cursor-pointer" /></a>
             </div>
           </section>
@@ -62,7 +65,6 @@ const Project = () => {
               const areApartments = apartments.filter((apartment, i) => {
                 return apartment?.floor?._id == f._id
               }).length
-              console.log(areApartments)
               return <div className="relative duration-300 hover:scale-[1.1] bg-indigo-500 text-fourth border-emerald-500 border-[8px] rounded">
                 <Link to={`/floors/${f._id}${!areApartments ? "/edit" : ""}`} className="flex flex-col h-[150px] w-[250px]" key={f.index}>
                   <h3 className="text-3xl font-semibold border-b-2 border-fourth px-5 py-2 text-center">{f.title}</h3>

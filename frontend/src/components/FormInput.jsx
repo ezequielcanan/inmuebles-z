@@ -18,10 +18,10 @@ const FormInput = ({ field, register = (a) => { }, i }) => {
         </div>
       )
     },
-    select: (({ name, label, className, options, value, disabled }, i) => {
+    select: (({ name, label, className, options, value, disabled, onChange, onClick }, i) => {
       return <div className="flex items-center justify-between w-full gap-x-[40px]" key={i}>
-        <label className={labelClassName} htmlFor={name}>{label}</label>
-        <select className="text-fourth text-center appearance-none bg-sixth px-3 py-2 duration-300 rounded hover:bg-second" {...register(name)} defaultValue={value} disabled={disabled || false}>
+        {label && <label className={labelClassName} htmlFor={name}>{label}</label>}
+        <select onChange={onChange} onClick={onClick} className={"text-fourth text-center appearance-none bg-sixth px-3 py-2 duration-300 rounded hover:bg-second " + className} {...register(name)} defaultValue={value} disabled={disabled || false}>
           {options.map((option, index) => {
             return <option className="flex items-center justify-between w-full gap-x-[40px]" key={index} value={option}>
               {option}

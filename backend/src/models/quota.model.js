@@ -11,7 +11,8 @@ const quotaSchema = new mongoose.Schema({
   transaction: { type: mongoose.Schema.Types.ObjectId, ref: "transactions" },
   adjustment: Number,
   extraAdjustment: Number,
-  date: String
+  date: String,
+  paid: Number
 })
 
 quotaSchema.pre("findOne", function () {

@@ -40,6 +40,24 @@ class TransactionService {
     return quotas
   }
 
+  getProjectTransactions = async (pid) => {
+    const transactions = await transactionModel.aggregate([
+      {
+        $lookup: {
+          from: "apartments",
+          localField: "apartment",
+          foreignField: "_id",
+          as: "apartment",
+        }
+      },
+      { $unwind: '$apartment' },
+      { $match: { "apartment.project": new mongoose.Types.ObjectId(pid) } },
+      { $sort: { "date": -1 } }
+    ])
+
+    return transactions
+  }
+
   getAllProjectTransactions = async (pid) => {
     const transactions = await transactionModel.aggregate([
       {

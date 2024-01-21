@@ -187,6 +187,9 @@ export const createTransactionExcel = (transaction, quotas) => {
     ws.cell(3, 13).number(transaction?.white?.baseIndex).style(styles["apartmentInfoCell"])
   }
 
+  ws.cell(2, 15).string("Precio dolar").style(styles["apartmentInfoHead"])
+  ws.cell(3, 15).number(transaction?.dolar || 1).style(styles["apartmentInfoCell"])
+
   wsBlack.cell(1, 1).string("40%").style(styles["apartmentInfoHead"])
   wsBlack.cell(1, 2).string("Adelanto").style(styles["apartmentInfoHead"])
   wsBlack.cell(1, 3).string("Saldo").style(styles["apartmentInfoHead"])
@@ -200,14 +203,14 @@ export const createTransactionExcel = (transaction, quotas) => {
   ws.cell(3, 5).number(apartment?.meters?.amenities || 0).style(styles["apartmentInfoCell"])
   ws.cell(3, 6).number(apartment?.meters?.total || 0).style(styles["apartmentInfoCell"])
   ws.cell(3, 7).string(apartment?.rooms).style(styles["apartmentInfoCell"])
-  ws.cell(3, 8).number(transaction?.total || 0).style(styles["apartmentInfoCell"])
+  ws.cell(3, 8).formula(`${transaction?.total || 0} * ${xl.getExcelCellRef(3,15)}`).style(styles["apartmentInfoCell"])
   ws.cell(3, 9).formula(`${xl.getExcelCellRef(3, 8)} * 60%`).style(styles["apartmentInfoCell"])
-  ws.cell(3, 10).number(transaction?.booking).style(styles["apartmentInfoCell"])
+  ws.cell(3, 10).number(transaction?.booking || 0).style(styles["apartmentInfoCell"])
   ws.cell(3, 11).formula(`${xl.getExcelCellRef(3, 9)} - ${xl.getExcelCellRef(3, 10)}`).style(styles["apartmentInfoCell"])
   ws.cell(3, 12).number(transaction?.white?.quotas).style(styles["apartmentInfoCell"])
 
   wsBlack.cell(2, 1).formula(`'Sheet 1'!H3 * 40%`).style(styles["apartmentInfoCell"])
-  wsBlack.cell(2, 2).number(transaction?.bookingB).style(styles["apartmentInfoCell"])
+  wsBlack.cell(2, 2).number(transaction?.bookingB || 0).style(styles["apartmentInfoCell"])
   wsBlack.cell(2, 3).formula(`${xl.getExcelCellRef(2, 1)} - ${xl.getExcelCellRef(2, 2)}`).style(styles["apartmentInfoCell"])
   wsBlack.cell(2, 4).number(transaction?.black?.quotas).style(styles["apartmentInfoCell"])
   transaction?.black?.baseIndex && wsBlack.cell(2, 5).number(transaction?.black?.baseIndex).style(styles["apartmentInfoCell"])
@@ -229,6 +232,7 @@ export const createTransactionExcel = (transaction, quotas) => {
     sheet.cell(row, 6 + addRowIfIndex).string("Cuota actual").style(styles["sectionInfoHead"])
     sheet.cell(row, 7 + addRowIfIndex).string("Fecha").style(styles["sectionInfoHead"])
     sheet.cell(row, 8 + addRowIfIndex).string("Total Abonado").style(styles["sectionInfoHead"])
+    sheet.cell(row, 10 + addRowIfIndex).string("Interes").style(styles["sectionInfoHead"])
   }
 
   if (!transaction?.white?.baseIndex) {
@@ -268,7 +272,7 @@ export const createTransactionExcel = (transaction, quotas) => {
       ws.cell(lastRow + i, 5).formula(`${totalCell} * ${cacCell} / 100`).style(styles["quota"])
       ws.cell(lastRow + i, 6).formula(`${totalCell} + ${xl.getExcelCellRef(lastRow + i, 5)}`).style(styles["quota"])
       ws.cell(lastRow + i, 7).string(quota?.date).style(styles["quota"])
-      ws.cell(lastRow + i, 8).formula(`${xl.getExcelCellRef(lastRow + i, 6)}`).style(styles["quota"])
+      ws.cell(lastRow + i, 8).number(quota?.paid).style(styles["quota"])
     })
 
     lastRow += white.length
@@ -312,8 +316,9 @@ export const createTransactionExcel = (transaction, quotas) => {
         const cacCell = xl.getExcelCellRef(lastRow + i, 4)
         wsBlack.cell(lastRow + i, 5).formula(`${totalCell} * ${cacCell} / 100`).style(styles["quota"])
         wsBlack.cell(lastRow + i, 6).formula(`${totalCell} + ${xl.getExcelCellRef(lastRow + i, 5)}`).style(styles["quota"])
-        wsBlack.cell(lastRow + i, 7).string(quota?.date).style(styles["quota"])
-        wsBlack.cell(lastRow + i, 8).formula(`${xl.getExcelCellRef(lastRow + i, 6)}`).style(styles["quota"])
+        wsBlack.cell(lastRow + i, 7).string(quota?.date || "").style(styles["quota"])
+        wsBlack.cell(lastRow + i, 8).number(quota?.paid || 0).style(styles["quota"])
+        wsBlack.cell(5, 9 + (quota?.baseIndex ? 1 : 0)).formula(`IF(${xl.getExcelCellRef(lastRow+i,6)} > ${xl.getExcelCellRef(lastRow+i,8)}, "SALDO A FAVOR", "SALDO EN CONTRA")`).style(styles["sectionInfoHead"])
       })
     }
   }
@@ -333,7 +338,7 @@ export const createTransactionExcel = (transaction, quotas) => {
       ws.cell(lastRow + i, 6).formula(`${xl.getExcelCellRef(lastRow + i, 5)} * ${totalCell}%`).style(styles["quota"])
       ws.cell(lastRow + i, 7).formula(`${xl.getExcelCellRef(lastRow + i, 6)} + ${totalCell}`).style(styles["quota"])
       ws.cell(lastRow + i, 8).string(quota?.date).style(styles["quota"])
-      ws.cell(lastRow + i, 9).formula(`${xl.getExcelCellRef(lastRow + i, 7)}`).style(styles["quota"])
+      ws.cell(lastRow + i, 9).number(quota?.paid).style(styles["quota"])
     })
 
     lastRow = 5
@@ -354,7 +359,7 @@ export const createTransactionExcel = (transaction, quotas) => {
         wsBlack.cell(lastRow + i, 6).formula(`${xl.getExcelCellRef(lastRow + i, 5)} * ${totalCell}%`).style(styles["quota"])
         wsBlack.cell(lastRow + i, 7).formula(`${xl.getExcelCellRef(lastRow + i, 6)} + ${totalCell}`).style(styles["quota"])
         wsBlack.cell(lastRow + i, 8).string(quota?.date).style(styles["quota"])
-        wsBlack.cell(lastRow + i, 9).formula(`${xl.getExcelCellRef(lastRow + i, 7)}`).style(styles["quota"])
+        wsBlack.cell(lastRow + i, 9).number(quota?.paid).style(styles["quota"])
       })
     }
   }
@@ -363,7 +368,7 @@ export const createTransactionExcel = (transaction, quotas) => {
 }
 
 
-export const createProjectExcel = (floors, project) => {
+export const createProjectExcel = (floors, project, transactions) => {
   const wb = new xl.Workbook()
   const ws = wb.addWorksheet(project.title, {
     sheetFormat: {
@@ -435,6 +440,7 @@ export const createProjectExcel = (floors, project) => {
     ws.cell(row, col + 8).string("Precio total").style(styles["sectionInfoHead"])
     ws.cell(row, col + 9).string("Ambientes").style(styles["sectionInfoHead"])
     ws.cell(row, col + 10).string("Dueño").style(styles["sectionInfoHead"])
+    ws.cell(row, col + 11).string("Vendido a:").style(styles["sectionInfoHead"])
   }
 
   writeApartmentsHeaders()
@@ -454,6 +460,8 @@ export const createProjectExcel = (floors, project) => {
     let blackApartments = 0
     floor.apartments.forEach((apartment, i) => {
       if (!apartment.unit) return skippedAapartments++
+      const apartmentTransaction = transactions.find((t) => t.apartment?._id.toString() === apartment._id.toString())
+      console.log("-----------------------------------")
       const plusApartments = apartment.orientation == "Frente" ? whiteApartments : blackApartments
       ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 2 : 21).string(apartment.forSale ? "DISPONIBLE" : "VENDIDO").style({ ...styles["floorInfoCell"], fill: { type: "pattern", patternType: "solid", bgColor: apartment.forSale ? "#88ff88" : "#ff7777", fgColor: apartment.forSale ? "#88ff88" : "#ff7777" } })
       ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 3 : 22).string(apartment.unit || "").style(styles["floorInfoCell"])
@@ -466,6 +474,7 @@ export const createProjectExcel = (floors, project) => {
       ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 10 : 29).formula(`${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 9 : 28)} * ${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 8 : 27)}`).style(styles["floorInfoCell"])
       ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 11 : 30).string(apartment?.rooms).style(styles["floorInfoCell"])
       ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 12 : 31).string(apartment?.owner?.name).style(styles["floorInfoCell"])
+      apartmentTransaction && ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 13 : 32).number(apartmentTransaction?.total || 0).style(styles["floorInfoCell"])
       apartment.orientation == "Frente" ? whiteApartments++ : blackApartments++
     })
     lastRow += totalRows + 4

@@ -72,11 +72,13 @@ const Transaction = () => {
   }
 
   const cacFields = [
-    { type: "number", name: "extraAdjustment", label: "Re Ajuste %" }
+    { type: "number", name: "extraAdjustment", label: "Re Ajuste %" },
+    { type: "number", name: "paid", label: "Pagado (en pesos)", className: "w-[300px]" }
   ]
 
   const indexFields = [
     { type: "number", name: "indexCac", label: "INDICE CAC MANUAL" },
+    { type: "number", name: "paid", label: "Pagado (en pesos)", className: "w-[300px]" }
   ]
 
   return (
