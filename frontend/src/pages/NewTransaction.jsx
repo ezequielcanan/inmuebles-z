@@ -105,10 +105,10 @@ const NewTransaction = () => {
       })
     } else {
       transactionBody.black = {
-        cac: data["b-cac"], total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0, paid: data["b-paid"]
+        cac: data["b-cac"], total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0, paid: data["b-paid"] / data.dolar
       }
       transactionBody.white = {
-        cac: data["cac"], total: whiteBaseQuota, quota: 1, type: "white", date: today, adjustment: 0, extraAdjustment: 0, paid: data["paid"]
+        cac: data["cac"], total: whiteBaseQuota, quota: 1, type: "white", date: today, adjustment: 0, extraAdjustment: 0, paid: data["paid"] / data.dolar 
       }
 
       const transactionRes = await (

@@ -33,18 +33,21 @@ const Transaction = () => {
     const secondIndex = cacHistory[cacHistory.length - 2]?.general
     const thirdIndex = cacHistory[cacHistory.length - 3]?.general
 
+    const balance = transaction[type].updatedQuota - (Number(transaction[type].lastQuota?.paid) || 1) - ((transaction[type].lastQuota?.interest || 0) * transaction[type].updatedQuota / 100) || 0
+    data.balance = balance
     if (!transaction[type].baseIndex && (transaction[type]?.lastQuota?.cac == 0 || transaction[type]?.lastQuota?.cac)) {
       data.cac = lastIndex / secondIndex * 100 - 100
       data.adjustment = data.cac - (secondIndex / thirdIndex * 100 - 100)
-      const totalWithAdjustment = ((transaction[type]?.lastQuota?.total || transaction[type]?.baseQuota) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100) + transaction[type]?.updatedQuota
+      const totalWithAdjustment = ((transaction[type]?.lastQuota?.total || transaction[type]?.baseQuota) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100) + transaction[type]?.updatedQuota + (balance > 0 ? balance * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100 + balance : 0)
       data.total = totalWithAdjustment
     }
     else {
       data.indexCac = data.baseIndex || Number(data.indexCac) || lastIndex
       data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
-      data.total = transaction[type].baseQuota + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * transaction[type].baseQuota / 100)
+      data.total = transaction[type].baseQuota + (balance > 0 ? balance : 0) + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * (transaction[type].baseQuota + (balance > 0 ? balance : 0)) / 100) + (balance < 0 ? balance : 0)
     }
     
+    data.paid = Number(data.paid) / transaction?.dolar
     data.quota = transaction[type]?.lastQuota?.quota + 1 || 1
     data.type = type
     data.transaction = transaction?._id
@@ -73,12 +76,14 @@ const Transaction = () => {
 
   const cacFields = [
     { type: "number", name: "extraAdjustment", label: "Re Ajuste %" },
-    { type: "number", name: "paid", label: "Pagado (en pesos)", className: "w-[300px]" }
+    { type: "number", name: "paid", label: "Pagado (en pesos)", className: "w-[300px]" },
+    { type: "number", name: "interest", label: "Interes %", className: "w-[300px]" }
   ]
 
   const indexFields = [
     { type: "number", name: "indexCac", label: "INDICE CAC MANUAL" },
-    { type: "number", name: "paid", label: "Pagado (en pesos)", className: "w-[300px]" }
+    { type: "number", name: "paid", label: "Pagado (en pesos)", className: "w-[300px]" },
+    { type: "number", name: "interest", label: "Interes %", className: "w-[300px]" }
   ]
 
   return (

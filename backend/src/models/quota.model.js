@@ -12,7 +12,8 @@ const quotaSchema = new mongoose.Schema({
   adjustment: Number,
   extraAdjustment: Number,
   date: String,
-  paid: Number
+  paid: Number,
+  interest: Number
 })
 
 quotaSchema.pre("findOne", function () {
