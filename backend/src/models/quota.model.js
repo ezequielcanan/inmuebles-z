@@ -12,7 +12,9 @@ const quotaSchema = new mongoose.Schema({
   adjustment: Number,
   extraAdjustment: Number,
   date: String,
+  dollarPrice: Number,
   paid: Number,
+  paidUSD: Number,
   interest: Number
 })
 

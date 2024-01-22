@@ -2,7 +2,8 @@ import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { BounceLoader } from "react-spinners";
 import { useForm } from "react-hook-form"
-import { FaChevronLeft, FaFileExcel } from "react-icons/fa";
+import { FaChevronLeft, FaFileExcel, FaMoneyBillWave } from "react-icons/fa";
+import { MdAttachMoney } from "react-icons/md"
 import Swal from "sweetalert2"
 import Main from "../containers/Main";
 import moment from "moment";
@@ -13,6 +14,8 @@ const Transaction = () => {
   const [transaction, setTransaction] = useState(false)
   const [reload, setReload] = useState(false)
   const [cacHistory, setCacHistory] = useState([])
+  const [dollar, setDollar] = useState(false)
+  const [blackDollar, setBlackDollar] = useState(false)
   const { register: black, handleSubmit: submitBlack, reset: resetBlack } = useForm()
   const { register: white, handleSubmit: submitWhite, reset: resetWhite } = useForm()
 
@@ -33,7 +36,7 @@ const Transaction = () => {
     const secondIndex = cacHistory[cacHistory.length - 2]?.general
     const thirdIndex = cacHistory[cacHistory.length - 3]?.general
 
-    const balance = transaction[type].updatedQuota - (Number(transaction[type].lastQuota?.paid) || 1) - ((transaction[type].lastQuota?.interest || 0) * transaction[type].updatedQuota / 100) || 0
+    const balance = transaction[type].updatedQuota - (Number(transaction[type].lastQuota?.paid) || 1)
     data.balance = balance
     if (!transaction[type].baseIndex && (transaction[type]?.lastQuota?.cac == 0 || transaction[type]?.lastQuota?.cac)) {
       data.cac = lastIndex / secondIndex * 100 - 100
@@ -46,8 +49,11 @@ const Transaction = () => {
       data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
       data.total = transaction[type].baseQuota + (balance > 0 ? balance : 0) + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * (transaction[type].baseQuota + (balance > 0 ? balance : 0)) / 100) + (balance < 0 ? balance : 0)
     }
-    
-    data.paid = Number(data.paid) / transaction?.dolar
+
+    data.paid = (Number(data.paid) / transaction?.dolar) || null
+    data.paidUSD = Number(data.paidUSD)
+    data.dollarPrice = Number(data.dollarPrice || 1)
+    data.total = data.total || data.paidUSD
     data.quota = transaction[type]?.lastQuota?.quota + 1 || 1
     data.type = type
     data.transaction = transaction?._id
@@ -76,14 +82,14 @@ const Transaction = () => {
 
   const cacFields = [
     { type: "number", name: "extraAdjustment", label: "Re Ajuste %" },
-    { type: "number", name: "paid", label: "Pagado (en pesos)", className: "w-[300px]" },
-    { type: "number", name: "interest", label: "Interes %", className: "w-[300px]" }
+    { type: "number", name: "interest", label: "Interes %", className: "w-[300px]" },
+    { type: "number", name: "dollarPrice", label: "Valor USD actual", className: "w-[300px]" },
   ]
 
   const indexFields = [
     { type: "number", name: "indexCac", label: "INDICE CAC MANUAL" },
-    { type: "number", name: "paid", label: "Pagado (en pesos)", className: "w-[300px]" },
-    { type: "number", name: "interest", label: "Interes %", className: "w-[300px]" }
+    { type: "number", name: "interest", label: "Interes %", className: "w-[300px]" },
+    { type: "number", name: "dollarPrice", label: "Valor USD actual", className: "w-[300px]" },
   ]
 
   return (
@@ -101,18 +107,31 @@ const Transaction = () => {
           <section className="grid xl:grid-cols-2 gap-8 justify-items-center w-full">
             {[{ type: "white", white: transaction.white }, { type: "black", black: transaction.black }].map((t, i) => {
               const typeIndexFields = [...indexFields]
-              !t[t.type]?.baseIndex && typeIndexFields.splice(0,0,{ type: "number", name: "baseIndex", label: "INDICE BASE MANUAL" })
-              return <div className="bg-indigo-500 w-4/5 flex flex-col gap-y-8 px-5 w-2/5 py-4 border-4 border-fourth rounded-xl text-fourth" key={i}>
-                <h2 className="text-7xl border-b-4 py-3 drop-shadow-[10px_10px_10px_rgba(0,0,0,1)] w-full text-center">{t.type == "white" ? "A" : "B"}</h2>
-                <p className="text-4xl">{t.type == "white" ? `Boleto: $${transaction.total * 60 / 100}` : `Reconocimiento de deuda: $${transaction.total * 40 / 100}`}</p>
-                <p className="text-4xl">Adelanto inicial: ${t.type == "white" ? transaction.booking : transaction.bookingB}</p>
-                <p className="text-4xl">Cuota base: ${t[t.type]?.baseQuota?.toFixed(2) || ""}</p>
-                {t[t.type]?.baseIndex && <p className="text-4xl">Indice base: {t[t.type]?.baseIndex}</p>}
-                {cacHistory.length && <p className="text-4xl">Indice actual: {cacHistory[cacHistory.length - 1]?.general}</p>}
+              const cacIndexFields = [...cacFields]
+              const setDollarState = t.type == "white" ? setDollar : setBlackDollar
+              const dollarState = t.type == "white" ? dollar : blackDollar
+              cacIndexFields.splice(1, 0, { type: "number", name: `${!dollarState ? "paid" : "paidUSD"}`, label: `Cuota N°${t[t.type]?.lastQuota?.quota + 1 || 1}${dollarState ? " USD" : ""}`, className: `w-[300px]` })
+              !t[t.type]?.baseIndex && typeIndexFields.splice(0, 0, { type: "number", name: "baseIndex", label: "INDICE BASE MANUAL" })
+              typeIndexFields.splice(1, 0, { type: "number", name: `${!dollarState ? "paid" : "paidUSD"}`, label: `Cuota N°${t[t.type]?.lastQuota?.quota + 1 || 1}${dollarState ? " USD" : ""}`, className: `w-[300px]` })
+
+              return <div className={`${!dollarState ? "bg-indigo-500 text-fourth" : "bg-emerald-400"} duration-300 w-4/5 flex flex-col gap-y-8 px-5 w-2/5 py-4 border-4 border-fourth rounded-xl`} key={i}>
+                <div className="flex items-center border-b-4 px-8">
+                  <h2 className="text-7xl py-3 drop-shadow-[10px_10px_10px_rgba(0,0,0,1)] w-full text-center">{t.type == "white" ? "A" : "B"}</h2>
+                  <div onClick={() => setDollarState(!dollarState)}>
+                    {!dollarState ? <FaMoneyBillWave size={50} className="text-emerald-400" /> : <MdAttachMoney className="text-indigo-500" size={50} />}
+                  </div>
+                </div>
+                <p className="text-4xl">{t.type == "white" ? `Boleto: U$D ${transaction.total * 60 / 100} / $ ${transaction.total * 60 / 100 * transaction?.dolar || 1}` : `Deuda: U$D ${transaction.total * 40 / 100} / $ ${transaction.total * 40 / 100 * transaction.dolar || 1}`}</p>
+                <p className="text-4xl">Precio dolar: {transaction?.dolar || 1}</p>
+                <p className="text-4xl">Adelanto inicial: $ {(t.type == "white" ? transaction.booking : transaction.bookingB) * transaction.dolar}</p>
+                <p className="text-4xl">Cuota base: $ {(t[t.type]?.baseQuota * transaction?.dolar).toFixed(2) || ""}</p>
+                {t[t.type]?.baseIndex ? <p className="text-4xl">Indice base: {t[t.type]?.baseIndex}</p> : null}
+                {cacHistory.length ? <p className="text-4xl">Indice actual: {cacHistory[cacHistory.length - 1]?.general}</p> : null}
                 <p className="text-4xl">Cuotas totales: {t[t.type]?.quotas}</p>
-                <p className="text-4xl">Cuotas pagadas: {t[t.type]?.lastQuota?.quota}</p>
-                <p className="text-4xl">Valor cuota {t[t.type]?.lastQuota?.quota}: ${t[t.type]?.updatedQuota?.toFixed(2) || t[t.type]?.baseQuota?.toFixed(2) || ""}</p>
-                {t[t.type]?.quotas == t[t.type]?.lastQuota?.quota ? <h3 className="text-4xl text-center bg-cyan-500/60">SALDADO</h3> : (<Form register={t.type == "black" ? black : white} fields={(!transaction?.white?.baseIndex && transaction?.white?.lastQuota?.cac != null) ? cacFields : typeIndexFields} className={"!bg-gradient-to-t from-cyan-500 to-transparent mt-auto"} onSubmit={(e) => addQuota(e, t.type)} />)}
+                <p className="text-4xl">Cuotas pagadas: {t[t.type]?.lastQuota?.quota || 0}</p>
+                <p className="text-4xl">Cuotas pendientes: {(t[t.type]?.quotas - t[t.type]?.lastQuota?.quota) || t[t.type]?.quotas}</p>
+                <p className="text-4xl">Valor cuota N°{t[t.type]?.lastQuota?.quota}: $ {((t[t.type]?.updatedQuota || t[t.type]?.baseQuota) * (dollarState ? 1 : transaction?.dolar)).toFixed(2) || ""}</p>
+                {t[t.type]?.quotas == t[t.type]?.lastQuota?.quota ? <h3 className="text-4xl text-center bg-cyan-500/60">SALDADO</h3> : (<Form register={t.type == "black" ? black : white} fields={(!transaction?.white?.baseIndex && transaction?.white?.lastQuota?.cac != null) ? cacIndexFields : typeIndexFields} className={`!bg-gradient-to-t from-cyan-500 to-transparent mt-auto ${dollarState && "!text-first"}`} onSubmit={(e) => addQuota(e, t.type)} />)}
               </div>
             })}
           </section>
