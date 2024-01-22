@@ -32,7 +32,7 @@ export const getAllFromProject = async (req, res) => {
   }
 }
 
-export const getApartmentsByRooms = async (req,res) => {
+export const getApartmentsByRooms = async (req, res) => {
   try {
     const { pid, rooms } = req.params
     const result = await apartmentService.getProjectApartmentsByRooms(pid, rooms)
@@ -44,7 +44,7 @@ export const getApartmentsByRooms = async (req,res) => {
   }
 }
 
-export const getProjectTotalMeters = async (req,res) => {
+export const getProjectTotalMeters = async (req, res) => {
   try {
     const { pid } = req.params
     const result = await apartmentService.getProjectTotalMeters(pid)
@@ -56,7 +56,7 @@ export const getProjectTotalMeters = async (req,res) => {
   }
 }
 
-export const getProjectTotalUnits = async (req,res) => {
+export const getProjectTotalUnits = async (req, res) => {
   try {
     const { pid } = req.params
     const result = await apartmentService.getProjectTotalUnits(pid)
@@ -100,7 +100,7 @@ export const createExcelProject = async (req, res) => {
       return { ...floor, apartments }
     }))
     const transactions = await transactionService.getProjectTransactions(req?.params?.pid)
-    
+
     const wb = createProjectExcel(floorsApartments, floors[0].project, transactions)
     wb.write(`General ${floors[0]?.project?.title || ""}.xlsx`, res)
   }

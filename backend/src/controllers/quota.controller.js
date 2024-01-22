@@ -12,3 +12,14 @@ export const createQuota = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const getQuotasByTransaction = async (req, res) => {
+  try {
+    const result = await quotaService.getTransactionQuotas(req?.params?.tid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}

@@ -12,10 +12,13 @@ import Form from "../components/Form"
 const Transaction = () => {
   const { tid } = useParams();
   const [transaction, setTransaction] = useState(false)
+  const [quotas, setQuotas] = useState(false)
   const [reload, setReload] = useState(false)
   const [cacHistory, setCacHistory] = useState([])
   const [dollar, setDollar] = useState(false)
   const [blackDollar, setBlackDollar] = useState(false)
+
+
   const { register: black, handleSubmit: submitBlack, reset: resetBlack } = useForm()
   const { register: white, handleSubmit: submitWhite, reset: resetWhite } = useForm()
 
@@ -24,6 +27,12 @@ const Transaction = () => {
       .then((res) => res.json())
       .then((json) => setTransaction(json.payload));
   }, [reload]);
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_REACT_API_URL}/api/quota/${tid}`, { credentials: "include" })
+      .then(res => res.json())
+      .then(json => setQuotas(json.payload))
+  }, [reload])
 
   useEffect(() => {
     fetch("https://prestamos.ikiwi.net.ar/api/cacs").then(res => res.json()).then(json => setCacHistory(json))
@@ -38,22 +47,49 @@ const Transaction = () => {
 
     const balance = transaction[type].updatedQuota - (Number(transaction[type].lastQuota?.paid) || 1)
     data.balance = balance
-    if (!transaction[type].baseIndex && (transaction[type]?.lastQuota?.cac == 0 || transaction[type]?.lastQuota?.cac)) {
-      data.cac = lastIndex / secondIndex * 100 - 100
-      data.adjustment = data.cac - (secondIndex / thirdIndex * 100 - 100)
-      const totalWithAdjustment = ((transaction[type]?.lastQuota?.total || transaction[type]?.baseQuota) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100) + transaction[type]?.updatedQuota + (balance > 0 ? balance * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100 + balance : 0)
-      data.total = totalWithAdjustment
+    if (transaction[type]?.lastQuota?.paid && data.paidUSD) {
+      const lastPesosQuotas = []
+      quotas?.forEach((quota, i) => {
+        !quota?.paidUSD ? lastPesosQuotas.push(quota) : lastPesosQuotas.length = 0
+      })
+
+      console.log(lastPesosQuotas, "0000000000000000000000000000000000000000")
+      const currencyChangeDifference = lastPesosQuotas.reduce((acc, pesosQuota) => {
+        console.log(pesosQuota)
+        const updatedPaid = pesosQuota?.paid * transaction.dolar / pesosQuota?.dollarPrice
+        console.log(updatedPaid, "aaaaa")
+        return acc + updatedPaid
+      }, 0) - lastPesosQuotas.length * transaction[type]?.baseQuota
+
+      data.total = transaction[type].baseQuota + currencyChangeDifference
+      console.log(currencyChangeDifference)
+
+      if (transaction[type].baseIndex) { 
+        data.indexCac = data.baseIndex || Number(data.indexCac) || lastIndex
+        data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
+      }
+      else {
+        data.cac = lastIndex / secondIndex * 100 - 100
+      }
     }
     else {
-      data.indexCac = data.baseIndex || Number(data.indexCac) || lastIndex
-      data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
-      data.total = transaction[type].baseQuota + (balance > 0 ? balance : 0) + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * (transaction[type].baseQuota + (balance > 0 ? balance : 0)) / 100) + (balance < 0 ? balance : 0)
+      if (!transaction[type].baseIndex && (transaction[type]?.lastQuota?.cac == 0 || transaction[type]?.lastQuota?.cac)) {
+        data.cac = lastIndex / secondIndex * 100 - 100
+        data.adjustment = data.cac - (secondIndex / thirdIndex * 100 - 100)
+        const totalWithAdjustment = ((transaction[type]?.lastQuota?.total || transaction[type]?.baseQuota) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100) + transaction[type]?.updatedQuota + (balance > 0 ? balance * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100 + balance : 0)
+        data.total = totalWithAdjustment
+      }
+      else {
+        data.indexCac = data.baseIndex || Number(data.indexCac) || lastIndex
+        data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
+        data.total = transaction[type].baseQuota + (balance > 0 ? balance : 0) + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * (transaction[type].baseQuota + (balance > 0 ? balance : 0)) / 100) + (balance < 0 ? balance : 0)
+      }
     }
+
 
     data.paid = (Number(data.paid) / transaction?.dolar) || null
     data.paidUSD = Number(data.paidUSD)
     data.dollarPrice = Number(data.dollarPrice || 1)
-    data.total = data.total || data.paidUSD
     data.quota = transaction[type]?.lastQuota?.quota + 1 || 1
     data.type = type
     data.transaction = transaction?._id
@@ -94,7 +130,7 @@ const Transaction = () => {
 
   return (
     <Main className={"items-center pt-[200px] pb-[100px] bg-sixth gap-y-[50px]"}>
-      {transaction ? (
+      {(transaction && quotas) ? (
         <>
           <div className="flex w-full justify-between">
             <Link to={"/inmueble/" + transaction?.apartment?._id}><FaChevronLeft className="text-6xl text-fourth" /></Link>

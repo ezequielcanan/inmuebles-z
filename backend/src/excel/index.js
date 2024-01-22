@@ -152,6 +152,7 @@ export const createTransactionExcel = (transaction, quotas) => {
   ws.column(11).setWidth(20);
   ws.column(12).setWidth(20);
   ws.column(13).setWidth(20);
+  ws.column(14).setWidth(20);
 
   wsBlack.column(1).setWidth(20);
   wsBlack.column(2).setWidth(20);
@@ -166,6 +167,7 @@ export const createTransactionExcel = (transaction, quotas) => {
   wsBlack.column(11).setWidth(20);
   wsBlack.column(12).setWidth(20);
   wsBlack.column(13).setWidth(20);
+  wsBlack.column(14).setWidth(20);
 
 
   ws.cell(1, 1, 1, transaction?.white?.baseIndex ? 13 : 12, true).string(apartment?.project?.title).style(styles["project"])
@@ -215,12 +217,8 @@ export const createTransactionExcel = (transaction, quotas) => {
   wsBlack.cell(2, 4).number(transaction?.black?.quotas).style(styles["apartmentInfoCell"])
   transaction?.black?.baseIndex && wsBlack.cell(2, 5).number(transaction?.black?.baseIndex).style(styles["apartmentInfoCell"])
 
-  ws.cell(6, 1).string("Nombre").style(styles["sectionInfoHead"])
-  ws.cell(6, 2).string("N° Cuota").style(styles["sectionInfoHead"])
-  ws.cell(6, 3).string("Cuota").style(styles["sectionInfoHead"])
-
   const writeQuotasHeaders = (type, row, index, sheet = ws, dollar = false) => {
-    sheet.cell(row - 1, 1, row - 1, index ? 11 : 10, true).string(type).style(styles["sectionHead"])
+    sheet.cell(row - 1, 1, row - 1, !dollar ? (index ? 13 : 12) : 9, true).string(type).style(!dollar ? styles["sectionHead"] : { ...styles["sectionHead"], fill: { type: "pattern", patternType: "solid", bgColor: "#64ff33", fgColor: "#64ff33" }, font: { size: 14, bold: true, color: "#000000" } })
     const addRowIfIndex = index ? 1 : 0
     sheet.cell(row, 1).string("Nombre").style(styles["sectionInfoHead"])
     sheet.cell(row, 2).string("N° Cuota").style(styles["sectionInfoHead"])
@@ -229,61 +227,127 @@ export const createTransactionExcel = (transaction, quotas) => {
       index && sheet.cell(row, 4).string("Indice").style(styles["sectionInfoHead"])
       sheet.cell(row, 4 + addRowIfIndex).string("Porcentaje").style(styles["sectionInfoHead"])
       sheet.cell(row, 5 + addRowIfIndex).string("Ajuste").style(styles["sectionInfoHead"])
+      sheet.cell(row, 6 + addRowIfIndex).string("Cuota actual").style(styles["sectionInfoHead"])
+      sheet.cell(row, 7 + addRowIfIndex).string("Fecha").style(styles["sectionInfoHead"])
+      sheet.cell(row, 8 + addRowIfIndex).string("Total Abonado").style(styles["sectionInfoHead"])
+      sheet.cell(row, 9 + addRowIfIndex).string("Saldo a favor").style(styles["sectionInfoHead"])
+      sheet.cell(row, 10 + addRowIfIndex).string("Interes").style(styles["sectionInfoHead"])
+      sheet.cell(row, 11 + addRowIfIndex).string("Valor dolar").style(styles["sectionInfoHead"])
+      sheet.cell(row, 12 + addRowIfIndex).string("Equivalente en dolares").style(styles["sectionInfoHead"])
+    } else {
+      sheet.cell(row, 4).string("Cuota actual").style(styles["sectionInfoHead"])
+      sheet.cell(row, 5).string("Fecha").style(styles["sectionInfoHead"])
+      sheet.cell(row, 6).string("Total Abonado").style(styles["sectionInfoHead"])
+      sheet.cell(row, 7).string("Saldo a favor").style(styles["sectionInfoHead"])
+      sheet.cell(row, 8).string("Interes").style(styles["sectionInfoHead"])
+      sheet.cell(row, 9).string("Indice CAC").style(styles["sectionInfoHead"])
     }
-    sheet.cell(row, 6 + addRowIfIndex).string("Cuota actual").style(styles["sectionInfoHead"])
-    sheet.cell(row, 7 + addRowIfIndex).string("Fecha").style(styles["sectionInfoHead"])
-    sheet.cell(row, 8 + addRowIfIndex).string("Total Abonado").style(styles["sectionInfoHead"])
-    sheet.cell(row, 9 + addRowIfIndex).string("Saldo a favor").style(styles["sectionInfoHead"])
-    sheet.cell(row, 10 + addRowIfIndex).string("Interes").style(styles["sectionInfoHead"])
   }
 
-  if (!transaction?.white?.baseIndex) {
-
+  if (!transaction?.white?.baseIndex) { // FORMATO PORCENTAJES --------------------------------------------------------------------------
     writeQuotasHeaders("A", 6, null)
 
+    let lastQuota
+    let adjustmentRows = 0
     let lastRow = 7
-    let lastMode
+    let lastMode = ""
+    const lastPesosQuotas = []
+    const lastDollarQuotas = []
+
     white.forEach((quota, i) => {
-      if (i && quota?.paidUSD) {
-        lastMode = "pesos"
-        if (quota?.extraAdjustment > 0) {
+
+      if (!quota.paidUSD) {
+        if (lastMode != "pesos") {
+          writeQuotasHeaders("A", lastRow + i + 2, transaction?.white?.baseIndex)
+          lastMode.length && ws.cell(lastRow + i + 2, 10).string("Saldo cambio de moneda").style(styles["sectionInfoHead"])
+
+          const currencyChangeDifference = (lastDollarQuotas.reduce((acc, quota) => {
+            const totalInPesos = quota?.total * quota?.dollarPrice
+            return acc + (totalInPesos + (totalInPesos * quota?.cac / 100))
+          }, 0)) - lastDollarQuotas.length * transaction?.white?.baseQuota * transaction?.dolar
+          ws.cell(lastRow + i + 3, 14).number(currencyChangeDifference).style(styles["quota"])
+          ws.cell(lastRow + i + 3, 6).formula(`${xl.getExcelCellRef(lastRow + i + 3, 5)} + ${xl.getExcelCellRef(lastRow + i + 3, 14)}`).style(styles["quota"])
+
+          lastRow += 3
+          lastDollarQuotas.length = 0
+        }
+
+        if (i && lastMode == "pesos") {
+          if (quota?.extraAdjustment > 0 && lastMode == "pesos") {
+            ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
+            ws.cell(lastRow + i, 2).string("REAJUSTE").style(styles["quota"])
+            ws.cell(lastRow + i, 3).string("").style(styles["quota"])
+            ws.cell(lastRow + i, 4).number(quota?.extraAdjustment).style(styles["quota"])
+            ws.cell(lastRow + i, 5).formula(`${xl.getExcelCellRef(lastRow + i, 4)} * ${xl.getExcelCellRef(lastRow + i - 1, 3)} / 100`).style(styles["quota"])
+            ws.cell(lastRow + i, 6).string("").style(styles["quota"])
+            ws.cell(lastRow + i, 7).string("").style(styles["quota"])
+            ws.cell(lastRow + i, 8).string("").style(styles["quota"])
+            adjustmentRows++
+            lastRow++
+          }
           ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
-          ws.cell(lastRow + i, 2).string("REAJUSTE").style(styles["quota"])
+          ws.cell(lastRow + i, 2).string("AJUSTE").style(styles["quota"])
           ws.cell(lastRow + i, 3).string("").style(styles["quota"])
-          ws.cell(lastRow + i, 4).number(quota?.extraAdjustment).style(styles["quota"])
-          ws.cell(lastRow + i, 5).formula(`${xl.getExcelCellRef(lastRow + i, 4)} * ${xl.getExcelCellRef(lastRow + i - 1, 3)} / 100`).style(styles["quota"])
+          ws.cell(lastRow + i, 4).number(Number(quota?.adjustment || 0)).style(styles["quota"])
+          ws.cell(lastRow + i, 5).formula(`${xl.getExcelCellRef(lastRow + i, 4)} * ${xl.getExcelCellRef(lastRow + i - (quota.extraAdjustment > 0 ? 2 : 1), 3)} / 100`).style(styles["quota"])
           ws.cell(lastRow + i, 6).string("").style(styles["quota"])
           ws.cell(lastRow + i, 7).string("").style(styles["quota"])
           ws.cell(lastRow + i, 8).string("").style(styles["quota"])
+          adjustmentRows++
           lastRow++
         }
         ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
-        ws.cell(lastRow + i, 2).string("AJUSTE").style(styles["quota"])
-        ws.cell(lastRow + i, 3).string("").style(styles["quota"])
-        ws.cell(lastRow + i, 4).number(Number(quota?.adjustment)).style(styles["quota"])
-        ws.cell(lastRow + i, 5).formula(`${xl.getExcelCellRef(lastRow + i, 4)} * ${xl.getExcelCellRef(lastRow + i - (quota.extraAdjustment > 0 ? 2 : 1), 3)} / 100`).style(styles["quota"])
-        ws.cell(lastRow + i, 6).string("").style(styles["quota"])
-        ws.cell(lastRow + i, 7).string("").style(styles["quota"])
-        ws.cell(lastRow + i, 8).string("").style(styles["quota"])
-        lastRow++
+        ws.cell(lastRow + i, 2).number(quota?.quota).style({ ...styles["quota"], numberFormat: "#; -#; -" })
+        ws.cell(lastRow + i, 7).string(quota?.date || "").style(styles["quota"])
+        if (quota.paid != null) {
+          lastQuota = quota
+          lastMode == "pesos" ? ws.cell(lastRow + i, 3).formula(!i ? xl.getExcelCellRef(3, 11) + "/" + xl.getExcelCellRef(3, 12) : `${xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 6)} + ${(quota.extraAdjustment > 0 ? xl.getExcelCellRef(lastRow - 2 + i, 5) : "")} + ${xl.getExcelCellRef(lastRow - 1 + i, 5)} + IF(${xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 9)} > 0, ${xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 9)} * (${(quota.extraAdjustment > 0 ? xl.getExcelCellRef(lastRow - 2 + i, 4) + "+" + xl.getExcelCellRef(lastRow - 1 + i, 4) : xl.getExcelCellRef(lastRow - 1 + i, 4))})% + ${xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 9)}, 0)`).style(styles["quota"]) : ws.cell(lastRow + i, 3).formula(`K3 / L3`).style(styles["quota"])
+          ws.cell(lastRow + i, 4).number(quota?.cac || 0).style(styles["quota"])
+          const totalCell = xl.getExcelCellRef(lastRow + i, 3)
+          const cacCell = xl.getExcelCellRef(lastRow + i, 4)
+          ws.cell(lastRow + i, 5).formula(`${totalCell} * ${cacCell} / 100`).style(styles["quota"])
+          ws.cell(lastRow + i, 6).formula(lastMode == "pesos" ? `IF(${xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 9)} >= 0, ${totalCell} + ${xl.getExcelCellRef(lastRow + i, 5)}, ${totalCell} + ${xl.getExcelCellRef(lastRow + i, 5)} + ${xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 9)})` : `${xl.getExcelCellRef(lastRow + i, 3)} + ${xl.getExcelCellRef(lastRow + i, 5)} + ${xl.getExcelCellRef(lastRow + i - adjustmentRows, 14)}`).style(styles["quota"])
+          ws.cell(lastRow + i, 8).formula(`${quota?.paid || 0} * ${xl.getExcelCellRef(3, 15)}`).style(styles["quota"])
+          ws.cell(lastRow + i, 9).formula(`${xl.getExcelCellRef(lastRow + i, 6)} - ${xl.getExcelCellRef(lastRow + i, 8)}`).style(styles["quota"])
+          ws.cell(lastRow + i, 10).formula(`${quota?.interest || 0} * ${xl.getExcelCellRef(lastRow + i, 6)}%`).style(styles["quota"])
+          ws.cell(lastRow + i, 11).number(quota?.dollarPrice || 0).style(styles["quota"])
+          ws.cell(lastRow + i, 12).formula(`${xl.getExcelCellRef(lastRow + i, 8)} / ${xl.getExcelCellRef(lastRow + i, 11)}`).style(styles["quota"])
+        }
+
+
+
+        lastMode = "pesos"
+        lastQuota = quota
+        lastPesosQuotas.push(quota)
       }
-      ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
-      ws.cell(lastRow + i, 2).number(quota?.quota).style({ ...styles["quota"], numberFormat: "#; -#; -" })
-      ws.cell(lastRow + i, 7).string(quota?.date || "").style(styles["quota"])
-      if (quota.paid != null) {
-        ws.cell(lastRow + i, 3).formula(!i ? xl.getExcelCellRef(3, 11) + "/" + xl.getExcelCellRef(3, 12) : `${xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 6)} + ${(quota.extraAdjustment > 0 ? xl.getExcelCellRef(lastRow - 2 + i, 5) : "")} + ${xl.getExcelCellRef(lastRow - 1 + i, 5)} + IF(${xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 9)} > 0, ${xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 9)} * (${(quota.extraAdjustment > 0 ? xl.getExcelCellRef(lastRow - 2 + i, 4) + "+" + xl.getExcelCellRef(lastRow - 1 + i, 4) : xl.getExcelCellRef(lastRow - 1 + i, 4))})% + ${xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 9)}, 0)`).style(styles["quota"])
-        ws.cell(lastRow + i, 4).number(quota?.cac || 0).style(styles["quota"])
-        const totalCell = xl.getExcelCellRef(lastRow + i, 3)
-        const cacCell = xl.getExcelCellRef(lastRow + i, 4)
-        ws.cell(lastRow + i, 5).formula(`${totalCell} * ${cacCell} / 100`).style(styles["quota"])
-        ws.cell(lastRow + i, 6).formula(`IF(${xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 9)} >= 0, ${totalCell} + ${xl.getExcelCellRef(lastRow + i, 5)}, ${totalCell} + ${xl.getExcelCellRef(lastRow + i, 5)} + ${xl.getExcelCellRef(lastRow - (quota.extraAdjustment > 0 ? 3 : 2) + i, 9)})`).style(styles["quota"])
-        ws.cell(lastRow + i, 8).formula(`${quota?.paid || 0} * ${xl.getExcelCellRef(3, 15)}`).style(styles["quota"])
-        ws.cell(lastRow + i, 9).formula(`${xl.getExcelCellRef(lastRow + i, 6)} - ${xl.getExcelCellRef(lastRow + i, 8)}`).style(styles["quota"])
-        ws.cell(lastRow + i, 10).formula(`${quota?.interest || 0} * ${xl.getExcelCellRef(lastRow + i, 6)}%`).style(styles["quota"])
-      } 
       else {
-        console.log("asdasd")
-        ws.cell(lastRow + i,3).number(transaction?.white?.updatedQuota * transaction?.dolar / transaction?.white?.lastQuota?.dollarPrice)
+        if (lastMode != "dollar") {
+          writeQuotasHeaders("A", lastRow + i + 2, transaction?.white?.baseIndex, ws, true)
+          lastMode.length && ws.cell(lastRow + i + 2, 10).string("Saldo cambio de moneda").style(styles["sectionInfoHead"])
+
+          const currencyChangeDifference = `-(SUM(${xl.getExcelCellRef(lastRow + i - lastPesosQuotas.length - adjustmentRows, 12)}:${xl.getExcelCellRef(lastRow + i - 1, 12)}) - ${lastPesosQuotas.length} * K3 / L3 / O3)`
+          ws.cell(lastRow + i + 3, 10).formula(currencyChangeDifference).style(styles["quota"])
+          ws.cell(lastRow + i + 3, 4).formula(`${xl.getExcelCellRef(lastRow + i + 3, 3)} + ${xl.getExcelCellRef(lastRow + i + 3, 10)}`).style(styles["quota"])
+
+          lastRow += 3
+          lastPesosQuotas.length = 0
+          adjustmentRows = 0
+        }
+
+        lastQuota = quota
+        lastDollarQuotas.push(quota)
+
+        ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
+        ws.cell(lastRow + i, 2).number(quota?.quota).style({ ...styles["quota"], numberFormat: "#; -#; -" })
+        ws.cell(lastRow + i, 3).formula("K3 / L3 / O3").style(styles["quota"])
+        lastMode == "dollar" && ws.cell(lastRow + i, 4).formula(`${xl.getExcelCellRef(lastRow + i, 3)}`).style(styles["quota"])
+        ws.cell(lastRow + i, 5).string(quota?.date || "").style(styles["quota"])
+        ws.cell(lastRow + i, 6).formula(`${quota?.paidUSD || 0}`).style(styles["quota"])
+        ws.cell(lastRow + i, 7).formula(`${xl.getExcelCellRef(lastRow + i, 4)} - ${xl.getExcelCellRef(lastRow + i, 6)}`).style(styles["quota"])
+        ws.cell(lastRow + i, 8).formula(`${quota?.interest || 0} * ${xl.getExcelCellRef(lastRow + i, 4)}%`).style(styles["quota"])
+        ws.cell(lastRow + i, 9).number(quota?.indexCac || 0).style(styles["quota"])
+
+        lastMode = "dollar"
       }
     })
 
@@ -335,25 +399,84 @@ export const createTransactionExcel = (transaction, quotas) => {
       })
     }
   }
-  else {
-    writeQuotasHeaders("A", 6, transaction?.white?.baseIndex)
+  else { // FORMATO COEFICIENTE --------------------------------------------------------------------------------------------------------
 
+    let lastQuota
     let lastRow = 7
+    let lastMode = ""
+    const lastPesosQuotas = []
+    const lastDollarQuotas = []
+
     white.forEach((quota, i) => {
-      ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
-      ws.cell(lastRow + i, 2).number(quota?.quota).style({ ...styles["quota"], numberFormat: "#; -#; -" })
-      ws.cell(lastRow + i, 3).formula(!i ? `K3 / L3` : `IF(${xl.getExcelCellRef(lastRow + i - 1, 10)} >= 0, K3 / L3 + ${xl.getExcelCellRef(lastRow + i - 1, 10)}, K3 / L3)`).style(styles["quota"])
-      ws.cell(lastRow + i, 4).number(quota?.indexCac || 0).style(styles["quota"])
-      const totalCell = xl.getExcelCellRef(lastRow + i, 3)
-      const baseIndexCell = xl.getExcelCellRef(3, 13)
-      const cacCell = xl.getExcelCellRef(lastRow + i, 4)
-      ws.cell(lastRow + i, 5).formula(`${cacCell} / ${baseIndexCell}% - 100`).style(styles["quota"])
-      ws.cell(lastRow + i, 6).formula(`${xl.getExcelCellRef(lastRow + i, 5)} * ${totalCell}%`).style(styles["quota"])
-      ws.cell(lastRow + i, 7).formula(!i ? `${xl.getExcelCellRef(lastRow + i, 6)} + ${totalCell}` : `IF(${xl.getExcelCellRef(lastRow + i - 1, 10)} >= 0, ${xl.getExcelCellRef(lastRow + i, 6)} + ${totalCell}, ${xl.getExcelCellRef(lastRow + i, 6)} + ${totalCell} + ${xl.getExcelCellRef(lastRow + i - 1, 10)})`).style(styles["quota"])
-      ws.cell(lastRow + i, 8).string(quota?.date || "").style(styles["quota"])
-      ws.cell(lastRow + i, 9).formula(`${quota?.paid || 0} * ${xl.getExcelCellRef(3, 15)}`).style(styles["quota"])
-      ws.cell(lastRow + i, 10).formula(`${xl.getExcelCellRef(lastRow + i, 7)} - ${xl.getExcelCellRef(lastRow + i, 9)}`).style(styles["quota"])
-      ws.cell(lastRow + i, 11).formula(`${quota?.interest || 0} * ${xl.getExcelCellRef(lastRow + i, 7)}%`).style(styles["quota"])
+      if (!quota.paidUSD) {
+
+        const totalAfterDollarQuotas = lastQuota?.paidUSD ? lastDollarQuotas.reduce((acc, dollarQuota) => {
+          const quotaInPesos = dollarQuota?.total * dollarQuota?.dollarPrice
+          const total = quotaInPesos + quotaInPesos * (dollarQuota?.indexCac / transaction?.white?.baseIndex * 100 - 100)
+          return total
+        }) : null
+
+        if (lastMode != "pesos") {
+          writeQuotasHeaders("A", lastRow + i + 2, transaction?.white?.baseIndex)
+          lastMode.length && ws.cell(lastRow + i + 2, 14).string("Saldo cambio de moneda").style(styles["sectionInfoHead"])
+
+          const currencyChangeDifference = lastDollarQuotas.reduce((acc, quota) => {
+
+          }, 0)
+
+          lastRow += 3
+          lastDollarQuotas.length = 0
+        }
+        lastMode = "pesos"
+
+        lastQuota = quota
+        lastPesosQuotas.push(quota)
+
+        const totalCell = xl.getExcelCellRef(lastRow + i, 3)
+        const baseIndexCell = xl.getExcelCellRef(3, 13)
+        const cacCell = xl.getExcelCellRef(lastRow + i, 4)
+        ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
+        ws.cell(lastRow + i, 2).number(quota?.quota).style({ ...styles["quota"], numberFormat: "#; -#; -" })
+        ws.cell(lastRow + i, 3).formula(totalAfterDollarQuotas ? totalAfterDollarQuotas + "" : (!i ? `K3 / L3` : `IF(${xl.getExcelCellRef(lastRow + i - 1, 10)} >= 0, K3 / L3 + ${xl.getExcelCellRef(lastRow + i - 1, 10)}, K3 / L3)`)).style(styles["quota"])
+        ws.cell(lastRow + i, 4).number(quota?.indexCac || 0).style(styles["quota"])
+        ws.cell(lastRow + i, 5).formula(`${cacCell} / ${baseIndexCell}% - 100`).style(styles["quota"])
+        ws.cell(lastRow + i, 6).formula(`${xl.getExcelCellRef(lastRow + i, 5)} * ${totalCell}%`).style(styles["quota"])
+        ws.cell(lastRow + i, 7).formula(!i ? `${xl.getExcelCellRef(lastRow + i, 6)} + ${totalCell}` : `IF(${xl.getExcelCellRef(lastRow + i - 1, 10)} >= 0, ${xl.getExcelCellRef(lastRow + i, 6)} + ${totalCell}, ${xl.getExcelCellRef(lastRow + i, 6)} + ${totalCell} + ${xl.getExcelCellRef(lastRow + i - 1, 10)})`).style(styles["quota"])
+        ws.cell(lastRow + i, 8).string(quota?.date || "").style(styles["quota"])
+        ws.cell(lastRow + i, 9).formula(`${quota?.paid || 0} * ${xl.getExcelCellRef(3, 15)}`).style(styles["quota"])
+        ws.cell(lastRow + i, 10).formula(`${xl.getExcelCellRef(lastRow + i, 7)} - ${xl.getExcelCellRef(lastRow + i, 9)}`).style(styles["quota"])
+        ws.cell(lastRow + i, 11).formula(`${quota?.interest || 0} * ${xl.getExcelCellRef(lastRow + i, 7)}%`).style(styles["quota"])
+        ws.cell(lastRow + i, 12).number(quota?.dollarPrice).style(styles["quota"])
+        ws.cell(lastRow + i, 13).formula(`${xl.getExcelCellRef(lastRow + i, 9)} / ${xl.getExcelCellRef(lastRow + i, 12)}`).style(styles["quota"])
+      } else {
+        if (lastMode != "dollar") {
+          writeQuotasHeaders("A", lastRow + i + 2, transaction?.white?.baseIndex, ws, true)
+          lastMode.length && ws.cell(lastRow + i + 2, 10).string("Saldo cambio de moneda").style(styles["sectionInfoHead"])
+
+          const currencyChangeDifference = `-(SUM(${xl.getExcelCellRef(lastRow + i - lastPesosQuotas.length, 13)}:${xl.getExcelCellRef(lastRow + i - 1, 13)}) - ${lastPesosQuotas.length} * K3 / L3 / O3)`
+          ws.cell(lastRow + i + 3, 10).formula(currencyChangeDifference).style(styles["quota"])
+          ws.cell(lastRow + i + 3, 4).formula(`${xl.getExcelCellRef(lastRow + i + 3, 3)} + ${xl.getExcelCellRef(lastRow + i + 3, 10)}`).style(styles["quota"])
+
+          lastRow += 3
+          lastPesosQuotas.length = 0
+        }
+
+        lastQuota = quota
+        lastDollarQuotas.push(quota)
+
+        ws.cell(lastRow + i, 1).string(quota?.transaction?.buyer?.name).style(styles["quota"])
+        ws.cell(lastRow + i, 2).number(quota?.quota).style({ ...styles["quota"], numberFormat: "#; -#; -" })
+        ws.cell(lastRow + i, 3).formula("K3 / L3 / O3").style(styles["quota"])
+        lastMode == "dollar" && ws.cell(lastRow + i, 4).formula(`${xl.getExcelCellRef(lastRow + i, 3)}`).style(styles["quota"])
+        ws.cell(lastRow + i, 5).string(quota?.date || "").style(styles["quota"])
+        ws.cell(lastRow + i, 6).formula(`${quota?.paidUSD || 0}`).style(styles["quota"])
+        ws.cell(lastRow + i, 7).formula(`${xl.getExcelCellRef(lastRow + i, 4)} - ${xl.getExcelCellRef(lastRow + i, 6)}`).style(styles["quota"])
+        ws.cell(lastRow + i, 8).formula(`${quota?.interest || 0} * ${xl.getExcelCellRef(lastRow + i, 4)}%`).style(styles["quota"])
+        ws.cell(lastRow + i, 9).number(quota?.indexCac || 0).style(styles["quota"])
+
+        lastMode = "dollar"
+      }
+
     })
 
     lastRow = 5
@@ -589,27 +712,27 @@ export const createFutureQuotasExcel = (transactions, lastIndexCac, indexCac, se
   let blackLastRow = 6
   transactions.forEach((t, i) => {
     if (t.white) {
-      ws.cell(lastRow + i, 1).string(t.apartment?.unit).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 2).string(t.apartment?.floor?.title).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 3).string(t.buyer?.name).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 4).number(t.white?.lastQuota?.quota + 1).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 5).number(t.white?.updatedQuota * (t?.dolar || 1)).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 1).string(t.apartment?.unit || "").style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 2).string(t.apartment?.floor?.title || "").style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 3).string(t.buyer?.name || "").style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 4).number(t.white?.lastQuota?.quota + 1 || 0).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 5).number(t.white?.updatedQuota * (t?.dolar || 1) || 0).style(styles["subsectionInfoCell"])
       const balance = ((t.white?.updatedQuota || 0) - (t.white?.lastQuota?.paid || 0))
-      ws.cell(lastRow + i, 6).number((t.white?.baseIndex ? (indexCac / t.white?.baseIndex * 100 - 100) * (t.white?.baseQuota + (balance > 0 ? balance : 0)) / 100 + (t.white?.baseQuota + (balance > 0 ? balance : 0)) + (balance < 0 ? balance : 0) : ((balance > 0 ? (adjustment * balance / 100) : 0) + (balance > 0 ? balance : 0) + (adjustment * t.white?.lastQuota?.total / 100) + t.white?.updatedQuota) * cac / 100 + ((balance > 0 ? (adjustment * balance / 100) + (balance > 0 ? balance : 0) : balance) + (adjustment * t.white?.lastQuota?.total / 100) + t.white?.updatedQuota)) * (t?.dolar || 1)).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 7).number(((t.white?.lastQuota?.interest || 0) * t.white?.updatedQuota / 100) * (t.dolar || 1)).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 8).formula(`${xl.getExcelCellRef(lastRow + i, 6)}+${xl.getExcelCellRef(lastRow + i, 7)}`).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 6).number((t.white?.baseIndex ? (indexCac / t.white?.baseIndex * 100 - 100) * (t.white?.baseQuota + (balance > 0 ? balance : 0)) / 100 + (t.white?.baseQuota + (balance > 0 ? balance : 0)) + (balance < 0 ? balance : 0) : ((balance > 0 ? (adjustment * balance / 100) : 0) + (balance > 0 ? balance : 0) + (adjustment * t.white?.lastQuota?.total / 100) + t.white?.updatedQuota) * cac / 100 + ((balance > 0 ? (adjustment * balance / 100) + (balance > 0 ? balance : 0) : balance) + (adjustment * t.white?.lastQuota?.total / 100) + t.white?.updatedQuota)) * (t?.dolar || 1) || 0).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 7).number(((t.white?.lastQuota?.interest || 0) * t.white?.updatedQuota / 100) * (t.dolar || 1) || 0).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 8).formula(`${xl.getExcelCellRef(lastRow + i, 6)}+${xl.getExcelCellRef(lastRow + i, 7)}` || "").style(styles["subsectionInfoCell"])
       whiteLastRow++
     }
     if (t.black) {
-      ws.cell(lastRow + i, 10).string(t.apartment?.unit).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 11).string(t.apartment?.floor?.title).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 12).string(t.buyer?.name).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 13).number(t.black?.lastQuota?.quota + 1).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 14).number(t.black?.updatedQuota * (t?.dolar || 1)).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 10).string(t.apartment?.unit || "").style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 11).string(t.apartment?.floor?.title || "").style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 12).string(t.buyer?.name || "").style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 13).number(t.black?.lastQuota?.quota + 1 || 0).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 14).number(t.black?.updatedQuota * (t?.dolar || 1) || 0).style(styles["subsectionInfoCell"])
       const balance = ((t.black?.updatedQuota || 0) - (t.black?.lastQuota?.paid || 0))
-      ws.cell(lastRow + i, 15).number((t.black?.baseIndex ? (indexCac / t.black?.baseIndex * 100 - 100) * (t.black?.baseQuota + (balance > 0 ? balance : 0)) / 100 + (t.black?.baseQuota + (balance > 0 ? balance : 0)) + (balance < 0 ? balance : 0) : ((balance > 0 ? (adjustment * balance / 100) : 0) + (balance > 0 ? balance : 0) + (adjustment * t.black?.lastQuota?.total / 100) + t.black?.updatedQuota) * cac / 100 + ((balance > 0 ? (adjustment * balance / 100) + (balance > 0 ? balance : 0) : balance) + (adjustment * t.black?.lastQuota?.total / 100) + t.black?.updatedQuota)) * (t?.dolar || 1)).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 16).number(((t.black?.lastQuota?.interest || 0) * t.black?.updatedQuota / 100) * (t.dolar || 1)).style(styles["subsectionInfoCell"])
-      ws.cell(lastRow + i, 17).formula(`${xl.getExcelCellRef(lastRow + i, 15)}+${xl.getExcelCellRef(lastRow + i, 16)}`).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 15).number((t.black?.baseIndex ? (indexCac / t.black?.baseIndex * 100 - 100) * (t.black?.baseQuota + (balance > 0 ? balance : 0)) / 100 + (t.black?.baseQuota + (balance > 0 ? balance : 0)) + (balance < 0 ? balance : 0) : ((balance > 0 ? (adjustment * balance / 100) : 0) + (balance > 0 ? balance : 0) + (adjustment * t.black?.lastQuota?.total / 100) + t.black?.updatedQuota) * cac / 100 + ((balance > 0 ? (adjustment * balance / 100) + (balance > 0 ? balance : 0) : balance) + (adjustment * t.black?.lastQuota?.total / 100) + t.black?.updatedQuota)) * (t?.dolar || 1) || 0).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 16).number(((t.black?.lastQuota?.interest || 0) * t.black?.updatedQuota / 100) * (t.dolar || 1) || 0).style(styles["subsectionInfoCell"])
+      ws.cell(lastRow + i, 17).formula(`${xl.getExcelCellRef(lastRow + i, 15)}+${xl.getExcelCellRef(lastRow + i, 16)}` || "").style(styles["subsectionInfoCell"])
       blackLastRow++
     }
   })

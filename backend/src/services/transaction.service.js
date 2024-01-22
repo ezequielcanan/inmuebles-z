@@ -21,7 +21,7 @@ class TransactionService {
   }
 
   updateTransaction = async (tid, update) => {
-    const result = await transactionModel.updateOne({_id: tid}, update)
+    const result = await transactionModel.updateOne({ _id: tid }, update)
     return result
   }
 
@@ -87,7 +87,7 @@ class TransactionService {
           as: "apartment.floor",
         }
       },
-      { $unwind: '$apartment.floor' },
+      { $unwind: { path: '$apartment.floor', preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "owners",
@@ -96,7 +96,7 @@ class TransactionService {
           as: "buyer",
         }
       },
-      { $unwind: '$buyer' },
+      { $unwind: { path: '$buyer', preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "quotas",
@@ -105,7 +105,7 @@ class TransactionService {
           as: "white.lastQuota",
         }
       },
-      { $unwind: '$white.lastQuota' },
+      { $unwind: { path: '$white.lastQuota', preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "quotas",
@@ -115,7 +115,7 @@ class TransactionService {
         }
       },
       { $addFields: { "black.lastQuota": "$black.lastQuota" } },
-      { $unwind: '$black.lastQuota' },
+      { $unwind: { path: '$black.lastQuota', preserveNullAndEmptyArrays: true } },
       {
         $set: {
           "white": { $cond: { if: { $eq: ["$white.lastQuota.quota", "$white.quotas"] }, then: "$$REMOVE", else: "$white" } },

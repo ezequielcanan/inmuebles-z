@@ -67,7 +67,7 @@ class ApartmentService {
         }
       }
     ])
-    console.log(result)
+
     return result
   }
 

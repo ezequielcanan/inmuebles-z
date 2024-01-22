@@ -61,6 +61,7 @@ export const getTransactionById = async (req, res) => {
 
 export const createTransactionXlsx = async (req, res) => {
   try {
+
     const white = await transactionService.getTransactionWhiteQuotas(req?.params?.tid)
     const black = await transactionService.getTransactionBlackQuotas(req?.params?.tid)
 
