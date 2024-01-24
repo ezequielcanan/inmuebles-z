@@ -262,7 +262,7 @@ export const createTransactionExcel = (transaction, quotas) => {
 
           const currencyChangeDifference = lastDollarQuotas.reduce((acc, dollarQuota, i) => {
             const updatedPaid = dollarQuota?.paidUSD * dollarQuota?.dollarPrice
-            const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1] * dollarQuota?.adjustment / 100) : dollarQuota?.total
+            const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1].total * dollarQuota?.adjustment / 100) : dollarQuota?.total
             const updatedQuota = (quotaAfterAdjustment + (quotaAfterAdjustment * dollarQuota?.cac / 100)) * dollarQuota?.dollarPrice
 
             return acc + (updatedQuota - updatedPaid)
@@ -273,6 +273,7 @@ export const createTransactionExcel = (transaction, quotas) => {
             return quotaAfterAdjustment
           }, 0)
 
+
           const updatedQuota = lastDollarQuotas.reduce((acc, dollarQuota, i) => {
             const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1].total * dollarQuota?.adjustment / 100) : dollarQuota?.total
             const updatedQuota = (quotaAfterAdjustment + (quotaAfterAdjustment * dollarQuota?.cac / 100))
@@ -280,8 +281,9 @@ export const createTransactionExcel = (transaction, quotas) => {
           }, 0)
 
           const totalWithAdjustment = ((quotaAfterAdjustment || transaction?.white?.baseQuota) * (Number(quota.adjustment || 0) + Number(quota.extraAdjustment || 0)) / 100) + updatedQuota + (currencyChangeDifference > 0 ? (currencyChangeDifference / transaction.dolar) * (Number(quota.adjustment || 0) + Number(quota.extraAdjustment || 0)) / 100 + (currencyChangeDifference / transaction.dolar) : 0)
-          console.log(currencyChangeDifference, quotaAfterAdjustment, updatedQuota, totalWithAdjustment)
 
+
+          console.log(currencyChangeDifference, quotaAfterAdjustment, updatedQuota, totalWithAdjustment)
           ws.cell(lastRow + i + 3, 14).number(currencyChangeDifference).style(styles["quota"])
           ws.cell(lastRow + i + 3, 6).formula(`IF(${xl.getExcelCellRef(lastRow + i + 3, 14)} > 0, ${xl.getExcelCellRef(lastRow + i + 3, 5)} + ${xl.getExcelCellRef(lastRow + i + 3, 3)}, ${xl.getExcelCellRef(lastRow + i + 3, 5)} + ${xl.getExcelCellRef(lastRow + i + 3, 3)} + ${xl.getExcelCellRef(lastRow + i + 3, 14)})`).style(styles["quota"])
           ws.cell(lastRow + i + 3, 3).number(totalWithAdjustment * transaction.dolar).style(styles["quota"])
@@ -388,9 +390,8 @@ export const createTransactionExcel = (transaction, quotas) => {
 
             const currencyChangeDifference = lastDollarQuotas.reduce((acc, dollarQuota, i) => {
               const updatedPaid = dollarQuota?.paidUSD * dollarQuota?.dollarPrice
-              const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1] * dollarQuota?.adjustment / 100) : dollarQuota?.total
+              const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1].total * dollarQuota?.adjustment / 100) : dollarQuota?.total
               const updatedQuota = (quotaAfterAdjustment + (quotaAfterAdjustment * dollarQuota?.cac / 100)) * dollarQuota?.dollarPrice
-
               return acc + (updatedQuota - updatedPaid)
             }, 0)
 
@@ -406,9 +407,8 @@ export const createTransactionExcel = (transaction, quotas) => {
             }, 0)
 
             const totalWithAdjustment = ((quotaAfterAdjustment || transaction?.black?.baseQuota) * (Number(quota.adjustment || 0) + Number(quota.extraAdjustment || 0)) / 100) + updatedQuota + (currencyChangeDifference > 0 ? (currencyChangeDifference / transaction.dolar) * (Number(quota.adjustment || 0) + Number(quota.extraAdjustment || 0)) / 100 + (currencyChangeDifference / transaction.dolar) : 0)
-            console.log(currencyChangeDifference, quotaAfterAdjustment, updatedQuota, totalWithAdjustment)
 
-            wsBlack.cell(lastRow + i + 3, 14).number(currencyChangeDifference).style(styles["quota"])
+            wsBlack.cell(lastRow + i + 3, 14).number(currencyChangeDifference || 0).style(styles["quota"])
             wsBlack.cell(lastRow + i + 3, 6).formula(`IF(${xl.getExcelCellRef(lastRow + i + 3, 14)} > 0, ${xl.getExcelCellRef(lastRow + i + 3, 5)} + ${xl.getExcelCellRef(lastRow + i + 3, 3)}, ${xl.getExcelCellRef(lastRow + i + 3, 5)} + ${xl.getExcelCellRef(lastRow + i + 3, 3)} + ${xl.getExcelCellRef(lastRow + i + 3, 14)})`).style(styles["quota"])
             wsBlack.cell(lastRow + i + 3, 3).number(totalWithAdjustment * transaction.dolar).style(styles["quota"])
 

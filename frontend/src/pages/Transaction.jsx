@@ -57,6 +57,7 @@ const Transaction = () => {
         const updatedPaid = pesosQuota?.paid * transaction.dolar / pesosQuota?.dollarPrice
         return acc + updatedPaid
       }, 0) - lastPesosQuotas.length * transaction[type]?.baseQuota
+      console.log(currencyChangeDifference)
 
       data.total = transaction[type].baseQuota - currencyChangeDifference
 
@@ -68,7 +69,7 @@ const Transaction = () => {
         data.cac = lastIndex / secondIndex * 100 - 100
       }
     }
-    else if (transaction[type]?.lastQuota?.paidUSD && data.paid != null) {
+    else if (transaction[type]?.lastQuota?.paidUSD && data.paid) {
       const lastDollarQuotas = []
       quotas?.forEach((quota, i) => {
         !quota?.paid ? (quota.type == type && lastDollarQuotas.push(quota)) : lastDollarQuotas.length = 0
@@ -77,7 +78,7 @@ const Transaction = () => {
       const currencyChangeDifference = !transaction[type].baseIndex ? (
         lastDollarQuotas.reduce((acc, dollarQuota, i) => {
           const updatedPaid = dollarQuota?.paidUSD * dollarQuota?.dollarPrice
-          const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1] * dollarQuota?.adjustment / 100) : dollarQuota?.total
+          const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1].total * dollarQuota?.adjustment / 100) : dollarQuota?.total
           const updatedQuota = (quotaAfterAdjustment + (quotaAfterAdjustment * dollarQuota?.cac / 100)) * dollarQuota?.dollarPrice
           console.log(acc)
 
@@ -96,23 +97,22 @@ const Transaction = () => {
         data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
         const totalWithoutAdjustment = ((transaction[type]?.baseQuota) + (currencyChangeDifference > 0 ? (currencyChangeDifference / transaction.dolar) : 0))
         data.total = totalWithoutAdjustment + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * totalWithoutAdjustment / 100) + (currencyChangeDifference < 0 ? (currencyChangeDifference / transaction.dolar) : 0)
-        console.log((currencyChangeDifference > 0 ? (currencyChangeDifference / transaction.dolar) : 0), totalWithoutAdjustment)
       }
       else {
         data.cac = lastIndex / secondIndex * 100 - 100
         data.adjustment = data.cac - (secondIndex / thirdIndex * 100 - 100)
         const quotaAfterAdjustment = lastDollarQuotas.reduce((acc,dollarQuota, i) => {
           const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1].total * dollarQuota?.adjustment / 100) : dollarQuota?.total
-          console.log("Cuota despues de ajuste: ", quotaAfterAdjustment)
           return quotaAfterAdjustment
         }, 0)
 
         const updatedQuota = lastDollarQuotas.reduce((acc,dollarQuota, i) => {
           const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1].total * dollarQuota?.adjustment / 100) : dollarQuota?.total
           const updatedQuota = (quotaAfterAdjustment + (quotaAfterAdjustment * dollarQuota?.cac / 100))
-          console.log("Cuota actualizada: ", updatedQuota)
           return updatedQuota
         }, 0)
+
+        console.log(updatedQuota)
 
         const totalWithAdjustment = ((quotaAfterAdjustment || transaction[type]?.baseQuota) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100) + updatedQuota + (currencyChangeDifference > 0 ? (currencyChangeDifference / transaction.dolar) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100 + (currencyChangeDifference / transaction.dolar) : 0)
         data.total = totalWithAdjustment
@@ -205,7 +205,7 @@ const Transaction = () => {
               const cacIndexFields = [...cacFields]
               const setDollarState = t.type == "white" ? setDollar : setBlackDollar
               const dollarState = t.type == "white" ? dollar : blackDollar
-              cacIndexFields.splice(1, 0, { type: "number", name: `${!dollarState ? "paid" : "paidUSD"}`, label: `Cuota N°${t[t.type]?.lastQuota?.quota + 1 || 1}${dollarState ? " USD" : ""}`, className: `w-[300px]` })
+              !dollarState ? cacIndexFields.splice(1, 0, { type: "number", name: `paid`, label: `Cuota N°${t[t.type]?.lastQuota?.quota + 1 || 1}`, className: `w-[300px]` }) : cacIndexFields.splice(2, 0, { type: "number", name: `paidUSD`, label: `Cuota N°${t[t.type]?.lastQuota?.quota + 1 || 1} USD`, className: `w-[300px]` })
               !t[t.type]?.baseIndex && typeIndexFields.splice(0, 0, { type: "number", name: "baseIndex", label: "INDICE BASE MANUAL" })
               typeIndexFields.splice(1, 0, { type: "number", name: `${!dollarState ? "paid" : "paidUSD"}`, label: `Cuota N°${t[t.type]?.lastQuota?.quota + 1 || 1}${dollarState ? " USD" : ""}`, className: `w-[300px]` })
 
