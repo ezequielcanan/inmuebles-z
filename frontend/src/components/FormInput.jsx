@@ -81,10 +81,10 @@ const FormInput = ({ field, register = (a) => { }, i }) => {
           )}
       </div>
     }),
-    number: (({ type, name, label, checkedState, className, disabled, value }, i) => {
+    number: (({ type, name, label, checkedState, className, disabled, value, required=false }, i) => {
       return <div className="flex items-center justify-between w-full gap-x-[40px]" key={i}>
         <label className={labelClassName} htmlFor={name}>{label}</label>
-        <input onKeyDown={(e) => { e.key === 'Enter' && e.preventDefault()}} type={type} step={0.01} {...register(name)} disabled={checkedState ? "disabled" : disabled} onWheel={e => e.target.blur()} className={`${inputClassName} w-1/6 appareance-none ${checkedState && "text-transparent"} ${className}`} defaultValue={value} />
+        <input onKeyDown={(e) => { e.key === 'Enter' && e.preventDefault()}} type={type} step={0.01} {...register(name, {required})} disabled={checkedState ? "disabled" : disabled} onWheel={e => e.target.blur()} className={`${inputClassName} w-1/6 appareance-none ${checkedState && "text-transparent"} ${className}`} defaultValue={value} />
       </div>
     }),
     date: (({ type, name, label, className, value }, i) => {

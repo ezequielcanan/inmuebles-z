@@ -178,13 +178,13 @@ const Transaction = () => {
   const cacFields = [
     { type: "number", name: "extraAdjustment", label: "Re Ajuste %" },
     { type: "number", name: "interest", label: "Interes %", className: "w-[300px]" },
-    { type: "number", name: "dollarPrice", label: "Valor USD actual", className: "w-[300px]" },
+    { type: "number", name: "dollarPrice", label: "Valor USD actual", className: "w-[300px]", required: true },
   ]
 
   const indexFields = [
     { type: "number", name: "indexCac", label: "INDICE CAC MANUAL" },
     { type: "number", name: "interest", label: "Interes %", className: "w-[300px]" },
-    { type: "number", name: "dollarPrice", label: "Valor USD actual", className: "w-[300px]" },
+    { type: "number", name: "dollarPrice", label: "Valor USD actual", className: "w-[300px]", required: true },
   ]
 
   return (
