@@ -47,26 +47,54 @@ const Transaction = () => {
 
     const balance = transaction[type].updatedQuota - (Number(transaction[type].lastQuota?.paid) || 1)
     data.balance = balance
-    if (transaction[type]?.lastQuota?.paid && data.paidUSD) {
+    if (transaction[type]?.lastQuota?.paid && data.paidUSD != null) {
       const lastPesosQuotas = []
       quotas?.forEach((quota, i) => {
-        !quota?.paidUSD ? lastPesosQuotas.push(quota) : lastPesosQuotas.length = 0
+        !quota?.paidUSD ? (quota.type == type && lastPesosQuotas.push(quota)) : lastPesosQuotas.length = 0
       })
 
-      console.log(lastPesosQuotas, "0000000000000000000000000000000000000000")
       const currencyChangeDifference = lastPesosQuotas.reduce((acc, pesosQuota) => {
-        console.log(pesosQuota)
         const updatedPaid = pesosQuota?.paid * transaction.dolar / pesosQuota?.dollarPrice
-        console.log(updatedPaid, "aaaaa")
         return acc + updatedPaid
       }, 0) - lastPesosQuotas.length * transaction[type]?.baseQuota
 
-      data.total = transaction[type].baseQuota + currencyChangeDifference
-      console.log(currencyChangeDifference)
+      data.total = transaction[type].baseQuota - currencyChangeDifference
 
-      if (transaction[type].baseIndex) { 
+      if (transaction[type].baseIndex) {
         data.indexCac = data.baseIndex || Number(data.indexCac) || lastIndex
         data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
+      }
+      else {
+        data.cac = lastIndex / secondIndex * 100 - 100
+      }
+    }
+    else if (transaction[type]?.lastQuota?.paidUSD && data.paid != null) {
+      const lastDollarQuotas = []
+      quotas?.forEach((quota, i) => {
+        !quota?.paid ? (quota.type == type && lastDollarQuotas.push(quota)) : lastDollarQuotas.length = 0
+      })
+
+      const currencyChangeDifference = !transaction[type].baseIndex ? (
+        lastDollarQuotas.reduce((acc,dollarQuota,i) => {
+          const updatedPaid = dollarQuota?.paidUSD * dollarQuota?.dollarPrice
+          const quotaAfterAdjustment = !i ? dollarQuota?.total + (lastDollarQuotas[i-1] * dollarQuota?.adjustment / 100) : dollarQuota?.total
+          const updatedQuota = (quotaAfterAdjustment + (quotaAfterAdjustment * dollarQuota?.cac / 100)) * dollarQuota?.dollarPrice
+          console.log(acc, "...............", updatedQuota, ".....................". updatedPaid)
+          return acc + (updatedQuota - updatedPaid)
+        }) 
+      ) : (
+        lastDollarQuotas.reduce((acc,dollarQuota) => {
+          const updatedPaid = dollarQuota?.paidUSD * dollarQuota?.dollarPrice
+          const updatedQuota = dollarQuota?.total + (dollarQuota?.total * (dollarQuota?.indexCac / transaction[type]?.baseIndex * 100 - 100) / 100)
+          console.log(acc, "...............", updatedQuota, ".....................". updatedPaid)
+          return acc + (updatedQuota - updatedPaid)
+        })
+      )
+      
+      if (transaction[type].baseIndex) {
+        data.indexCac = data.baseIndex || Number(data.indexCac) || lastIndex
+        data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
+        const totalWithoutAdjustment = ((transaction[type]?.baseQuota * transaction.dolar) - currencyChangeDifference) / transaction.dolar
       }
       else {
         data.cac = lastIndex / secondIndex * 100 - 100
@@ -76,13 +104,23 @@ const Transaction = () => {
       if (!transaction[type].baseIndex && (transaction[type]?.lastQuota?.cac == 0 || transaction[type]?.lastQuota?.cac)) {
         data.cac = lastIndex / secondIndex * 100 - 100
         data.adjustment = data.cac - (secondIndex / thirdIndex * 100 - 100)
-        const totalWithAdjustment = ((transaction[type]?.lastQuota?.total || transaction[type]?.baseQuota) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100) + transaction[type]?.updatedQuota + (balance > 0 ? balance * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100 + balance : 0)
-        data.total = totalWithAdjustment
+        if (data.paidUSD == null) {
+          const totalWithAdjustment = ((transaction[type]?.lastQuota?.total || transaction[type]?.baseQuota) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100) + transaction[type]?.updatedQuota + (balance > 0 ? balance * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100 + balance : 0)
+          data.total = totalWithAdjustment
+        }
+        else {
+          data.total = transaction[type].baseQuota + (transaction[type]?.lastQuota?.total - transaction[type].lastQuota?.paidUSD)
+        }
       }
       else {
         data.indexCac = data.baseIndex || Number(data.indexCac) || lastIndex
         data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
-        data.total = transaction[type].baseQuota + (balance > 0 ? balance : 0) + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * (transaction[type].baseQuota + (balance > 0 ? balance : 0)) / 100) + (balance < 0 ? balance : 0)
+        if (data.paidUSD == null) {
+          data.total = transaction[type].baseQuota + (balance > 0 ? balance : 0) + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * (transaction[type].baseQuota + (balance > 0 ? balance : 0)) / 100) + (balance < 0 ? balance : 0)
+        }
+        else {
+          data.total = transaction[type].baseQuota + (transaction[type]?.lastQuota?.total - transaction[type].lastQuota?.paidUSD)
+        }
       }
     }
 
