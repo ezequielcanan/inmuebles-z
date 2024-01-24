@@ -75,30 +75,51 @@ const Transaction = () => {
       })
 
       const currencyChangeDifference = !transaction[type].baseIndex ? (
-        lastDollarQuotas.reduce((acc,dollarQuota,i) => {
+        lastDollarQuotas.reduce((acc, dollarQuota, i) => {
           const updatedPaid = dollarQuota?.paidUSD * dollarQuota?.dollarPrice
-          const quotaAfterAdjustment = !i ? dollarQuota?.total + (lastDollarQuotas[i-1] * dollarQuota?.adjustment / 100) : dollarQuota?.total
+          const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1] * dollarQuota?.adjustment / 100) : dollarQuota?.total
           const updatedQuota = (quotaAfterAdjustment + (quotaAfterAdjustment * dollarQuota?.cac / 100)) * dollarQuota?.dollarPrice
-          console.log(acc, "...............", updatedQuota, ".....................". updatedPaid)
+          console.log(acc)
+
           return acc + (updatedQuota - updatedPaid)
-        }) 
+        }, 0)
       ) : (
-        lastDollarQuotas.reduce((acc,dollarQuota) => {
+        lastDollarQuotas.reduce((acc, dollarQuota) => {
           const updatedPaid = dollarQuota?.paidUSD * dollarQuota?.dollarPrice
-          const updatedQuota = dollarQuota?.total + (dollarQuota?.total * (dollarQuota?.indexCac / transaction[type]?.baseIndex * 100 - 100) / 100)
-          console.log(acc, "...............", updatedQuota, ".....................". updatedPaid)
+          const updatedQuota = dollarQuota?.total * dollarQuota?.dollarPrice + (dollarQuota?.indexCac != transaction[type].baseIndex ? ((dollarQuota?.total * dollarQuota?.dollarPrice * (dollarQuota?.indexCac / transaction[type]?.baseIndex * 100 - 100)) / 100) : 0)
           return acc + (updatedQuota - updatedPaid)
-        })
+        }, 0)
       )
-      
+
       if (transaction[type].baseIndex) {
         data.indexCac = data.baseIndex || Number(data.indexCac) || lastIndex
         data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
-        const totalWithoutAdjustment = ((transaction[type]?.baseQuota * transaction.dolar) - currencyChangeDifference) / transaction.dolar
+        const totalWithoutAdjustment = ((transaction[type]?.baseQuota) + (currencyChangeDifference > 0 ? (currencyChangeDifference / transaction.dolar) : 0))
+        data.total = totalWithoutAdjustment + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * totalWithoutAdjustment / 100) + (currencyChangeDifference < 0 ? (currencyChangeDifference / transaction.dolar) : 0)
+        console.log((currencyChangeDifference > 0 ? (currencyChangeDifference / transaction.dolar) : 0), totalWithoutAdjustment)
       }
       else {
         data.cac = lastIndex / secondIndex * 100 - 100
+        data.adjustment = data.cac - (secondIndex / thirdIndex * 100 - 100)
+        const quotaAfterAdjustment = lastDollarQuotas.reduce((acc,dollarQuota, i) => {
+          const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1].total * dollarQuota?.adjustment / 100) : dollarQuota?.total
+          console.log("Cuota despues de ajuste: ", quotaAfterAdjustment)
+          return quotaAfterAdjustment
+        }, 0)
+
+        const updatedQuota = lastDollarQuotas.reduce((acc,dollarQuota, i) => {
+          const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1].total * dollarQuota?.adjustment / 100) : dollarQuota?.total
+          const updatedQuota = (quotaAfterAdjustment + (quotaAfterAdjustment * dollarQuota?.cac / 100))
+          console.log("Cuota actualizada: ", updatedQuota)
+          return updatedQuota
+        }, 0)
+
+        const totalWithAdjustment = ((quotaAfterAdjustment || transaction[type]?.baseQuota) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100) + updatedQuota + (currencyChangeDifference > 0 ? (currencyChangeDifference / transaction.dolar) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100 + (currencyChangeDifference / transaction.dolar) : 0)
+        data.total = totalWithAdjustment
+        data.balance = currencyChangeDifference / transaction.dolar
+        console.log(currencyChangeDifference, quotaAfterAdjustment, updatedQuota, totalWithAdjustment)
       }
+
     }
     else {
       if (!transaction[type].baseIndex && (transaction[type]?.lastQuota?.cac == 0 || transaction[type]?.lastQuota?.cac)) {
@@ -119,7 +140,7 @@ const Transaction = () => {
           data.total = transaction[type].baseQuota + (balance > 0 ? balance : 0) + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * (transaction[type].baseQuota + (balance > 0 ? balance : 0)) / 100) + (balance < 0 ? balance : 0)
         }
         else {
-          data.total = transaction[type].baseQuota + (transaction[type]?.lastQuota?.total - transaction[type].lastQuota?.paidUSD)
+          data.total = transaction[type].baseQuota + (transaction[type]?.lastQuota ? (transaction[type]?.lastQuota?.total - transaction[type].lastQuota?.paidUSD) : 0)
         }
       }
     }
@@ -197,8 +218,8 @@ const Transaction = () => {
                 </div>
                 <p className="text-4xl">{t.type == "white" ? `Boleto: U$D ${transaction.total * 60 / 100} / $ ${transaction.total * 60 / 100 * transaction?.dolar || 1}` : `Deuda: U$D ${transaction.total * 40 / 100} / $ ${transaction.total * 40 / 100 * transaction.dolar || 1}`}</p>
                 <p className="text-4xl">Precio dolar: {transaction?.dolar || 1}</p>
-                <p className="text-4xl">Adelanto inicial: $ {(t.type == "white" ? transaction.booking : transaction.bookingB) * transaction.dolar}</p>
-                <p className="text-4xl">Cuota base: $ {(t[t.type]?.baseQuota * transaction?.dolar).toFixed(2) || ""}</p>
+                <p className="text-4xl">Adelanto inicial: $ {(t.type == "white" ? transaction.booking : transaction.bookingB) * (dollarState ? 1 : transaction.dolar)}</p>
+                <p className="text-4xl">Cuota base: $ {(t[t.type]?.baseQuota * (dollarState ? 1 : transaction.dolar)).toFixed(2) || ""}</p>
                 {t[t.type]?.baseIndex ? <p className="text-4xl">Indice base: {t[t.type]?.baseIndex}</p> : null}
                 {cacHistory.length ? <p className="text-4xl">Indice actual: {cacHistory[cacHistory.length - 1]?.general}</p> : null}
                 <p className="text-4xl">Cuotas totales: {t[t.type]?.quotas}</p>
