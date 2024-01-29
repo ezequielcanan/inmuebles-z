@@ -11,7 +11,7 @@ import ApartmentCard from "../components/ApartmentCard";
 const NewTransaction = () => {
   const [apartment, setApartment] = useState(false);
   const [formIndex, setFormIndex] = useState(0);
-  const [ownerSuggestions, setOwnerSuggestions] = useState([]) 
+  const [ownerSuggestions, setOwnerSuggestions] = useState([])
   const [suggestedOwner, setSuggestedOwner] = useState(false)
   const [baseIndex, setBaseIndex] = useState(false)
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const NewTransaction = () => {
   }, []);
 
   const ownerTextSearch = async (text) => {
-    const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/owner?query=${text}`, {credentials: "include"})).json()
+    const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/owner?query=${text}`, { credentials: "include" })).json()
     setOwnerSuggestions(text.split(" ").length > 1 ? [] : result.payload)
   }
 
@@ -56,8 +56,8 @@ const NewTransaction = () => {
       )
     ).json()
     const today = moment().format("DD-MM-YYYY")
-    const whiteBaseQuota = ((Number(data.total) * 60 / 100) - Number(data.booking)) / Number(data["quotas"]).toFixed(2)
-    const blackBaseQuota = ((Number(data.total) * 40 / 100) - Number(data.bookingB)) / Number(data["b-quotas"]).toFixed(2)
+    const whiteBaseQuota = ((Number(data.total) * (Number(data.percentage) || 60) / 100) - Number(data.booking)) / Number(data["quotas"]).toFixed(2)
+    const blackBaseQuota = ((Number(data.total) * (100 - Number(data.percentage) || 40) / 100) - Number(data.bookingB)) / Number(data["b-quotas"]).toFixed(2)
 
     const transactionBody = {
       transaction: {
@@ -65,6 +65,7 @@ const NewTransaction = () => {
         seller: apartment?.owner,
         buyer: ownerResult.payload._id,
         total: data.total,
+        percentage: Number(data.percentage),
         booking: data.booking,
         bookingB: data.bookingB,
         dolar: data.dolar,
@@ -80,17 +81,7 @@ const NewTransaction = () => {
     if (data["cac"] == "" || baseIndex) {
       fetch("https://prestamos.ikiwi.net.ar/api/cacs").then(res => res.json()).then(async json => {
         const cacHistory = json
-        const cacIndex = cacHistory.find((cac,i) => cac.period == (moment().subtract(2, "months").format("YYYY-MM")).toString() + "-01").general
-
-        /*transactionBody.black = {
-          indexCac: cacIndex, total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0
-        }
-        transactionBody.white = {
-          indexCac: cacIndex, total: whiteBaseQuota, quota: 1, type: "white", date: today, adjustment: 0, extraAdjustment: 0
-        }
-
-        transactionBody.transaction.white.baseIndex = cacIndex
-        transactionBody.transaction.black.baseIndex = cacIndex*/
+        const cacIndex = cacHistory.find((cac, i) => cac.period == (moment().subtract(2, "months").format("YYYY-MM")).toString() + "-01").general
 
         const transactionRes = await (
           await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction`, {
@@ -105,10 +96,10 @@ const NewTransaction = () => {
       })
     } else {
       transactionBody.black = {
-        cac: data["b-cac"], total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0, paid: data["b-paid"] / data.dolar, dollarPrice: data.dolar
+        cac: data["b-cac"], total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0, paid: data["b-paid"] / data.dolar, dollarPrice: data.dolar, balance: (blackBaseQuota - data["b-paid"] / data.dolar)
       }
       transactionBody.white = {
-        cac: data["cac"], total: whiteBaseQuota, quota: 1, type: "white", date: today, adjustment: 0, extraAdjustment: 0, paid: data["paid"] / data.dolar, dollarPrice: data.dolar 
+        cac: data["cac"], total: whiteBaseQuota, quota: 1, type: "white", date: today, adjustment: 0, extraAdjustment: 0, paid: data["paid"] / data.dolar, dollarPrice: data.dolar, balance: (whiteBaseQuota - data["paid"] / data.dolar)
       }
 
       const transactionRes = await (
@@ -201,18 +192,18 @@ const NewTransaction = () => {
     },
     {
       type: "number",
-      name: "b-paid",
-      label: "Pagado cuota 1 (en pesos)",
-      className: "w-[300px]",
-      value: 0,
-      disabled: baseIndex
-    },
-    {
-      type: "number",
       name: "b-cac",
       label: "CAC B",
       value: 0,
       className: "w-[200px]",
+      disabled: baseIndex
+    },
+    {
+      type: "number",
+      name: "b-paid",
+      label: "Pagado cuota 1 (en pesos)",
+      className: "w-[300px]",
+      value: 0,
       disabled: baseIndex
     },
     {
@@ -248,6 +239,13 @@ const NewTransaction = () => {
                   name: "total",
                   label: "VALOR TOTAL (A+B):",
                   className: "w-[200px]",
+                },
+                {
+                  type: "number",
+                  name: "percentage",
+                  label: "A %:",
+                  className: "w-[150px]",
+                  value: 60
                 },
                 {
                   type: "number",

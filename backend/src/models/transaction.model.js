@@ -12,6 +12,7 @@ const transactionsSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "owners",
   },
+  percentage: Number,
   booking: Number,
   bookingB: Number,
   total: Number,
@@ -44,6 +45,15 @@ transactionsSchema.pre("find", function () {
 })
 
 transactionsSchema.pre("findOne", function () {
+  this.populate("seller")
+  this.populate("buyer")
+  this.populate("apartment")
+  this.populate("apartment.project")
+  this.populate("black.lastQuota")
+  this.populate("white.lastQuota")
+})
+
+transactionsSchema.pre("findOneAndUpdate", function () {
   this.populate("seller")
   this.populate("buyer")
   this.populate("apartment")

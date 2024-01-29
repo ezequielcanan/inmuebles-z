@@ -15,6 +15,7 @@ const quotaSchema = new mongoose.Schema({
   dollarPrice: Number,
   paid: Number,
   paidUSD: Number,
+  balance: Number,
   interest: Number
 })
 

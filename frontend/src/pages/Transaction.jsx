@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { BounceLoader } from "react-spinners";
 import { useForm } from "react-hook-form"
-import { FaChevronLeft, FaFileExcel, FaMoneyBillWave } from "react-icons/fa";
+import { FaChevronLeft, FaFileExcel, FaMoneyBillWave, FaUndo } from "react-icons/fa";
 import { MdAttachMoney } from "react-icons/md"
 import Swal from "sweetalert2"
 import Main from "../containers/Main";
@@ -32,7 +32,7 @@ const Transaction = () => {
     fetch(`${import.meta.env.VITE_REACT_API_URL}/api/quota/${tid}`, { credentials: "include" })
       .then(res => res.json())
       .then(json => setQuotas(json.payload))
-  }, [reload])
+  }, [reload, transaction])
 
   useEffect(() => {
     fetch("https://prestamos.ikiwi.net.ar/api/cacs").then(res => res.json()).then(json => setCacHistory(json))
@@ -45,7 +45,7 @@ const Transaction = () => {
     const secondIndex = cacHistory[cacHistory.length - 2]?.general
     const thirdIndex = cacHistory[cacHistory.length - 3]?.general
 
-    const balance = transaction[type].updatedQuota - (Number(transaction[type].lastQuota?.paid) || 1)
+    const balance = transaction[type]?.lastQuota ? transaction[type].updatedQuota - (Number(transaction[type].lastQuota?.paid) || 1) : 0
     data.balance = balance
     if (transaction[type]?.lastQuota?.paid && data.paidUSD != null) {
       const lastPesosQuotas = []
@@ -57,7 +57,6 @@ const Transaction = () => {
         const updatedPaid = pesosQuota?.paid * transaction.dolar / pesosQuota?.dollarPrice
         return acc + updatedPaid
       }, 0) - lastPesosQuotas.length * transaction[type]?.baseQuota
-      console.log(currencyChangeDifference)
 
       data.total = transaction[type].baseQuota - currencyChangeDifference
 
@@ -66,7 +65,7 @@ const Transaction = () => {
         data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
       }
       else {
-        data.cac = lastIndex / secondIndex * 100 - 100
+        data.cac = data.cac || (lastIndex / secondIndex * 100 - 100)
       }
     }
     else if (transaction[type]?.lastQuota?.paidUSD && data.paid) {
@@ -80,8 +79,6 @@ const Transaction = () => {
           const updatedPaid = dollarQuota?.paidUSD * dollarQuota?.dollarPrice
           const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1].total * dollarQuota?.adjustment / 100) : dollarQuota?.total
           const updatedQuota = (quotaAfterAdjustment + (quotaAfterAdjustment * dollarQuota?.cac / 100)) * dollarQuota?.dollarPrice
-          console.log(acc)
-
           return acc + (updatedQuota - updatedPaid)
         }, 0)
       ) : (
@@ -95,36 +92,33 @@ const Transaction = () => {
       if (transaction[type].baseIndex) {
         data.indexCac = data.baseIndex || Number(data.indexCac) || lastIndex
         data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
-        const totalWithoutAdjustment = ((transaction[type]?.baseQuota) + (currencyChangeDifference > 0 ? (currencyChangeDifference / transaction.dolar) : 0))
-        data.total = totalWithoutAdjustment + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * totalWithoutAdjustment / 100) + (currencyChangeDifference < 0 ? (currencyChangeDifference / transaction.dolar) : 0)
+        const totalWithoutAdjustment = (transaction[type]?.baseQuota)
+        data.total = totalWithoutAdjustment + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * totalWithoutAdjustment / 100) + (currencyChangeDifference <= 0 ? (currencyChangeDifference / transaction?.dolar) : (currencyChangeDifference / transaction?.dolar) + (data.indexCac / (transaction[type]?.lastQuota?.indexCac || transaction[type].baseIndex) * 100 - 100) * (currencyChangeDifference / transaction?.dolar) / 100)
       }
       else {
-        data.cac = lastIndex / secondIndex * 100 - 100
-        data.adjustment = data.cac - (secondIndex / thirdIndex * 100 - 100)
-        const quotaAfterAdjustment = lastDollarQuotas.reduce((acc,dollarQuota, i) => {
+        data.cac = data.cac || (lastIndex / secondIndex * 100 - 100)
+        data.adjustment = data.adjustment || (data.cac - (secondIndex / thirdIndex * 100 - 100))
+        const quotaAfterAdjustment = lastDollarQuotas.reduce((acc, dollarQuota, i) => {
           const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1].total * dollarQuota?.adjustment / 100) : dollarQuota?.total
           return quotaAfterAdjustment
         }, 0)
 
-        const updatedQuota = lastDollarQuotas.reduce((acc,dollarQuota, i) => {
+        const updatedQuota = lastDollarQuotas.reduce((acc, dollarQuota, i) => {
           const quotaAfterAdjustment = i ? dollarQuota?.total + (lastDollarQuotas[i - 1].total * dollarQuota?.adjustment / 100) : dollarQuota?.total
           const updatedQuota = (quotaAfterAdjustment + (quotaAfterAdjustment * dollarQuota?.cac / 100))
           return updatedQuota
         }, 0)
 
-        console.log(updatedQuota)
-
         const totalWithAdjustment = ((quotaAfterAdjustment || transaction[type]?.baseQuota) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100) + updatedQuota + (currencyChangeDifference > 0 ? (currencyChangeDifference / transaction.dolar) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100 + (currencyChangeDifference / transaction.dolar) : 0)
         data.total = totalWithAdjustment
         data.balance = currencyChangeDifference / transaction.dolar
-        console.log(currencyChangeDifference, quotaAfterAdjustment, updatedQuota, totalWithAdjustment)
       }
 
     }
     else {
       if (!transaction[type].baseIndex && (transaction[type]?.lastQuota?.cac == 0 || transaction[type]?.lastQuota?.cac)) {
-        data.cac = lastIndex / secondIndex * 100 - 100
-        data.adjustment = data.cac - (secondIndex / thirdIndex * 100 - 100)
+        data.cac = data.cac || (lastIndex / secondIndex * 100 - 100)
+        data.adjustment = data.adjustment || (data.cac - (secondIndex / thirdIndex * 100 - 100))
         if (data.paidUSD == null) {
           const totalWithAdjustment = ((transaction[type]?.lastQuota?.total || transaction[type]?.baseQuota) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100) + transaction[type]?.updatedQuota + (balance > 0 ? balance * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100 + balance : 0)
           data.total = totalWithAdjustment
@@ -137,7 +131,7 @@ const Transaction = () => {
         data.indexCac = data.baseIndex || Number(data.indexCac) || lastIndex
         data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
         if (data.paidUSD == null) {
-          data.total = transaction[type].baseQuota + (balance > 0 ? balance : 0) + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * (transaction[type].baseQuota + (balance > 0 ? balance : 0)) / 100) + (balance < 0 ? balance : 0)
+          data.total = transaction[type].baseQuota + ((data.indexCac / (data.baseIndex || transaction[type].baseIndex) * 100 - 100) * (transaction[type].baseQuota) / 100) + (balance <= 0 ? balance : balance + (data.indexCac / (transaction[type]?.lastQuota?.indexCac || transaction[type].baseIndex) * 100 - 100) * balance / 100)
         }
         else {
           data.total = transaction[type].baseQuota + (transaction[type]?.lastQuota ? (transaction[type]?.lastQuota?.total - transaction[type].lastQuota?.paidUSD) : 0)
@@ -175,14 +169,22 @@ const Transaction = () => {
     onSubmit()
   }
 
+  const undoQuota = async (qid) => {
+    const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/quota/${qid}`, {credentials: "include", method: "PUT"})).json()
+    console.log(result)
+    setTransaction(result.payload)
+  }
+
   const cacFields = [
-    { type: "number", name: "extraAdjustment", label: "Re Ajuste %" },
-    { type: "number", name: "interest", label: "Interes %", className: "w-[300px]" },
+    { type: "number", name: "cac", label: "CAC %", className: "w-[200px]" },
+    { type: "number", name: "adjustment", label: "Ajuste %", className: "w-[200px]" },
+    { type: "number", name: "extraAdjustment", label: "Re Ajuste %", className: "w-[200px]" },
+    { type: "number", name: "interest", label: "Interes %", className: "w-[200px]" },
     { type: "number", name: "dollarPrice", label: "Valor USD actual", className: "w-[300px]", required: true },
   ]
 
   const indexFields = [
-    { type: "number", name: "indexCac", label: "INDICE CAC MANUAL" },
+    { type: "number", name: "indexCac", label: "INDICE CAC MANUAL", className: "w-[150px]"},
     { type: "number", name: "interest", label: "Interes %", className: "w-[300px]" },
     { type: "number", name: "dollarPrice", label: "Valor USD actual", className: "w-[300px]", required: true },
   ]
@@ -205,12 +207,13 @@ const Transaction = () => {
               const cacIndexFields = [...cacFields]
               const setDollarState = t.type == "white" ? setDollar : setBlackDollar
               const dollarState = t.type == "white" ? dollar : blackDollar
-              !dollarState ? cacIndexFields.splice(1, 0, { type: "number", name: `paid`, label: `Cuota N°${t[t.type]?.lastQuota?.quota + 1 || 1}`, className: `w-[300px]` }) : cacIndexFields.splice(2, 0, { type: "number", name: `paidUSD`, label: `Cuota N°${t[t.type]?.lastQuota?.quota + 1 || 1} USD`, className: `w-[300px]` })
-              !t[t.type]?.baseIndex && typeIndexFields.splice(0, 0, { type: "number", name: "baseIndex", label: "INDICE BASE MANUAL" })
-              typeIndexFields.splice(1, 0, { type: "number", name: `${!dollarState ? "paid" : "paidUSD"}`, label: `Cuota N°${t[t.type]?.lastQuota?.quota + 1 || 1}${dollarState ? " USD" : ""}`, className: `w-[300px]` })
+              !dollarState ? cacIndexFields.splice(3, 0, { type: "number", name: `paid`, label: `Cuota N°${t[t.type]?.lastQuota?.quota + 1 || 1}`, className: `w-[300px]` }) : cacIndexFields.splice(3, 0, { type: "number", name: `paidUSD`, label: `Cuota N°${t[t.type]?.lastQuota?.quota + 1 || 1} USD`, className: `w-[300px]` })
+              !t[t.type]?.baseIndex && typeIndexFields.splice(0, 0, { type: "number", name: "baseIndex", label: "INDICE BASE MANUAL", className: "w-[150px]" })
+              typeIndexFields.splice(2, 0, { type: "number", name: `${!dollarState ? "paid" : "paidUSD"}`, label: `Cuota N°${t[t.type]?.lastQuota?.quota + 1 || 1}${dollarState ? " USD" : ""}`, className: `w-[300px]` })
 
               return <div className={`${!dollarState ? "bg-indigo-500 text-fourth" : "bg-emerald-400"} duration-300 w-4/5 flex flex-col gap-y-8 px-5 w-2/5 py-4 border-4 border-fourth rounded-xl`} key={i}>
-                <div className="flex items-center border-b-4 px-8">
+                <div className="flex items-center justify-between border-b-4 px-8">
+                  {t[t.type]?.lastQuota ?<FaUndo className="text-5xl" onClick={() => undoQuota(t[t.type]?.lastQuota?._id)}/> : null}
                   <h2 className="text-7xl py-3 drop-shadow-[10px_10px_10px_rgba(0,0,0,1)] w-full text-center">{t.type == "white" ? "A" : "B"}</h2>
                   <div onClick={() => setDollarState(!dollarState)}>
                     {!dollarState ? <FaMoneyBillWave size={50} className="text-emerald-400" /> : <MdAttachMoney className="text-indigo-500" size={50} />}

@@ -23,3 +23,14 @@ export const getQuotasByTransaction = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const undoQuota = async (req,res) => {
+  try {
+    const result = await quotaService.deleteQuotaAndUpdateTransaction(req?.params?.qid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}

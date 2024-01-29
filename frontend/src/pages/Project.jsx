@@ -15,7 +15,7 @@ const Project = () => {
   const navigate = useNavigate()
   const { project: pid } = useParams()
   useEffect(() => {
-    fetch("http://localhost:3000/api/projects/" + pid, { credentials: "include" })
+    fetch(import.meta.env.VITE_REACT_API_URL + "/api/projects/" + pid, { credentials: "include" })
       .then(res => res.json())
       .then(json => setProject(json?.payload))
   }, [reload])

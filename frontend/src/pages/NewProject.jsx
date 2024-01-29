@@ -44,7 +44,7 @@ const NewProject = () => {
 
     const imageResult = (image?.size && (await (await fetch(import.meta.env.VITE_REACT_API_URL + "/api/projects/file", { method: "POST", body: formData, credentials: "include" })).json()))
     console.log(imageResult)
-    window.location.replace("/projects")
+    window.location.replace("/#/projects")
   })
 
   const fields = [
