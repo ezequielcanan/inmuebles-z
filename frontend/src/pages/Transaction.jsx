@@ -60,7 +60,7 @@ const Transaction = () => {
 
       data.total = transaction[type].baseQuota - currencyChangeDifference
 
-      if (transaction[type].baseIndex) {
+      if (transaction.mode == "index") {
         data.indexCac = data.baseIndex || Number(data.indexCac) || lastIndex
         data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
       }
@@ -89,7 +89,7 @@ const Transaction = () => {
         }, 0)
       )
 
-      if (transaction[type].baseIndex) {
+      if (transaction.mode == "index") {
         data.indexCac = data.baseIndex || Number(data.indexCac) || lastIndex
         data.baseIndex = transaction[type].baseIndex || data.baseIndex || lastIndex
         const totalWithoutAdjustment = (transaction[type]?.baseQuota)
@@ -116,15 +116,15 @@ const Transaction = () => {
 
     }
     else {
-      if (!transaction[type].baseIndex && (transaction[type]?.lastQuota?.cac == 0 || transaction[type]?.lastQuota?.cac)) {
+      if (transaction.mode != "index") {
         data.cac = data.cac || (lastIndex / secondIndex * 100 - 100)
         data.adjustment = data.adjustment || (data.cac - (secondIndex / thirdIndex * 100 - 100))
         if (data.paidUSD == null) {
-          const totalWithAdjustment = ((transaction[type]?.lastQuota?.total || transaction[type]?.baseQuota) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100) + transaction[type]?.updatedQuota + (balance > 0 ? balance * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100 + balance : 0)
+          const totalWithAdjustment = ((transaction[type]?.lastQuota?.total || transaction[type]?.baseQuota) * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100) + (transaction[type]?.updatedQuota || transaction[type].baseQuota) + (balance > 0 ? balance * (Number(data.adjustment || 0) + Number(data.extraAdjustment || 0)) / 100 + balance : 0)
           data.total = totalWithAdjustment
         }
         else {
-          data.total = transaction[type].baseQuota + (transaction[type]?.lastQuota?.total - transaction[type].lastQuota?.paidUSD)
+          data.total = transaction[type].baseQuota + ((transaction[type]?.lastQuota?.total - transaction[type].lastQuota?.paidUSD) || 0)
         }
       }
       else {
@@ -148,7 +148,7 @@ const Transaction = () => {
     data.transaction = transaction?._id
     data.date = moment().format("DD-MM-YYYY")
 
-    !(transaction[type]?.lastQuota?.cac == 0 || transaction[type]?.lastQuota?.cac) && await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction/${transaction?._id}/${type}`, { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ baseIndex: data.baseIndex }) })).json()
+    transaction.mode != "cac" && await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction/${transaction?._id}/${type}`, { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ baseIndex: data.baseIndex }) })).json()
     const result = await (await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/quota`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })).json()
     setReload(!reload)
     Swal.fire({
@@ -229,7 +229,7 @@ const Transaction = () => {
                 <p className="text-4xl">Cuotas pagadas: {t[t.type]?.lastQuota?.quota || 0}</p>
                 <p className="text-4xl">Cuotas pendientes: {(t[t.type]?.quotas - t[t.type]?.lastQuota?.quota) || t[t.type]?.quotas}</p>
                 <p className="text-4xl">Valor cuota N°{t[t.type]?.lastQuota?.quota}: $ {((t[t.type]?.updatedQuota || t[t.type]?.baseQuota) * (dollarState ? 1 : transaction?.dolar)).toFixed(2) || ""}</p>
-                {t[t.type]?.quotas == t[t.type]?.lastQuota?.quota ? <h3 className="text-4xl text-center bg-cyan-500/60">SALDADO</h3> : (<Form register={t.type == "black" ? black : white} fields={(!transaction?.white?.baseIndex && transaction?.white?.lastQuota?.cac != null) ? cacIndexFields : typeIndexFields} className={`!bg-gradient-to-t from-cyan-500 to-transparent mt-auto ${dollarState && "!text-first"}`} onSubmit={(e) => addQuota(e, t.type)} />)}
+                {t[t.type]?.quotas == t[t.type]?.lastQuota?.quota ? <h3 className="text-4xl text-center bg-cyan-500/60">SALDADO</h3> : (<Form register={t.type == "black" ? black : white} fields={(transaction?.mode != "index") ? cacIndexFields : typeIndexFields} className={`!bg-gradient-to-t from-cyan-500 to-transparent mt-auto ${dollarState && "!text-first"}`} onSubmit={(e) => addQuota(e, t.type)} />)}
               </div>
             })}
           </section>

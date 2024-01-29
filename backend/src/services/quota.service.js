@@ -8,8 +8,6 @@ class QuotaService {
     const result = await quotaModel.create(data)
     const update = { $set: {} }
 
-    console.log(data.balance)
-
     update["$set"][result.type + ".lastQuota"] = result._id
 
 

@@ -82,7 +82,7 @@ const NewTransaction = () => {
       fetch("https://prestamos.ikiwi.net.ar/api/cacs").then(res => res.json()).then(async json => {
         const cacHistory = json
         const cacIndex = cacHistory.find((cac, i) => cac.period == (moment().subtract(2, "months").format("YYYY-MM")).toString() + "-01").general
-
+        transactionBody.transaction.mode = "index"
         const transactionRes = await (
           await fetch(`${import.meta.env.VITE_REACT_API_URL}/api/transaction`, {
             method: "POST",
@@ -95,6 +95,7 @@ const NewTransaction = () => {
 
       })
     } else {
+      transactionBody.transaction.mode = "cac"
       transactionBody.black = {
         cac: data["b-cac"], total: blackBaseQuota, quota: 1, type: "black", date: today, adjustment: 0, extraAdjustment: 0, paid: data["b-paid"] / data.dolar, dollarPrice: data.dolar, balance: (blackBaseQuota - data["b-paid"] / data.dolar)
       }
