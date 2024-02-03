@@ -16,10 +16,13 @@ import cors from "cors"
 import __dirname from "./utils.js"
 import initializePassport from "./config/passport.config.js"
 import passport from "passport"
+import { Server as SocketServer } from "socket.io"
+import { addLogger } from "./utils/logger.js"
 
 dotenv.config() // .env config
 const app = express()
 
+app.use(addLogger)
 // POST AND COOKIES
 app.use(cors({ credentials: true, origin: true }))
 app.use(cookieParser())
@@ -55,7 +58,8 @@ app.use("/api/user", userRouter.getRouter())
 // MONGO CONNECTION AND RUNNING SERVER
 mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGO_DB })
   .then(() => {
-    app.listen(process.env.PORT, () => console.log("Running on port " + process.env.PORT))
+    const httpServer = app.listen(process.env.PORT, () => console.log("Running on port " + process.env.PORT))
+    const io = new SocketServer(httpServer)
   })
   .catch(e => console.error(e))
 

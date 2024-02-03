@@ -8,3 +8,5 @@ const constructionsSchema = new mongoose.Schema({
     {type: mongoose.Schema.Types.ObjectId, ref: "budgets"}
   ]
 })
+
+export default mongoose.model(constructionsCollection, constructionsSchema)
