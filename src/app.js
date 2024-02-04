@@ -12,6 +12,7 @@ import TransactionRouter from "./routes/transaction.router.js"
 import QuotaRouter from "./routes/quotas.router.js"
 import SessionRouter from "./routes/session.router.js"
 import UserRouter from "./routes/users.router.js"
+import SupplierRouter from "./routes/supplier.router.js"
 import cors from "cors"
 import __dirname from "./utils.js"
 import initializePassport from "./config/passport.config.js"
@@ -40,6 +41,7 @@ const transactionRouter = new TransactionRouter()
 const quotaRouter = new QuotaRouter()
 const sessionRouter = new SessionRouter()
 const userRouter = new UserRouter()
+const supplierRouter = new SupplierRouter()
 
 initializePassport()
 app.use(passport.initialize())
@@ -54,6 +56,7 @@ app.use("/api/transaction", transactionRouter.getRouter())
 app.use("/api/quota", quotaRouter.getRouter())
 app.use("/api/session", sessionRouter.getRouter())
 app.use("/api/user", userRouter.getRouter())
+app.use("/api/supplier", supplierRouter.getRouter())
 
 // MONGO CONNECTION AND RUNNING SERVER
 mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGO_DB })

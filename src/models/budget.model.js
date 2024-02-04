@@ -9,6 +9,7 @@ const budgetsSchema = new mongoose.Schema({
   percentage: Number,
   paymentType: { type: String, enum: ["quotas", "advance"] },
   baseIndex: Number,
+  advanced: Number,
   paidApartments: {
     type: [
       {

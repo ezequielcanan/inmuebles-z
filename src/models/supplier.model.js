@@ -4,7 +4,7 @@ const suppliersCollection = "suppliers"
 
 const suppliersSchema = new mongoose.Schema({
   name: String,
-  cuit: Number,
+  cuit: String,
   email: String,
   phone: String,
   address: String,
