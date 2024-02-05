@@ -13,15 +13,18 @@ class ProjectService {
     return result
   }
 
-  getProjects = async () => {
+  getProjects = async (filter=true) => {
     const result = await projectModel.find().lean()
-    const categories = {
-      status: true,
-      "De pozo": result.filter(p => p.type == "De pozo"),
-      "En desarrollo": result.filter(p => p.type == "En desarrollo"),
-      "Finalizados": result.filter(p => p.type == "Finalizado")
-    }
-    return categories
+    if (filter) {
+      const categories = {
+        status: true,
+        "De pozo": result.filter(p => p.type == "De pozo"),
+        "En desarrollo": result.filter(p => p.type == "En desarrollo"),
+        "Finalizados": result.filter(p => p.type == "Finalizado")
+      }
+      return categories
+    } 
+    return result
   }
 
   getProject = async (pid) => {

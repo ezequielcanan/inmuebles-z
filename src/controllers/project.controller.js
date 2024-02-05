@@ -11,7 +11,8 @@ const transactionService = new TransactionService()
 
 export const getProjects = async (req, res) => {
   try {
-    const projects = await projectService.getProjects()
+    req.query.filter = req?.query?.filter != "false"
+    const projects = await projectService.getProjects(req?.query?.filter)
     res.sendSuccess(projects)
   }
   catch (e) {

@@ -10,6 +10,9 @@ const budgetsSchema = new mongoose.Schema({
   paymentType: { type: String, enum: ["quotas", "advance"] },
   baseIndex: Number,
   advanced: Number,
+  booking: Number,
+  code: String,
+  dollarPrice: Number,
   paidApartments: {
     type: [
       {
