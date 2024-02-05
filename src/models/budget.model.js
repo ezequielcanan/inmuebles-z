@@ -12,16 +12,22 @@ const budgetsSchema = new mongoose.Schema({
   advanced: Number,
   booking: Number,
   code: String,
+  date: Date,
   dollarPrice: Number,
   paidApartments: {
     type: [
       {
-        apartment: { type: mongoose.Schema.Types.ObjectId, ref: "apartments" },
-        discount: String
+        apartment: { type: mongoose.Schema.Types.ObjectId, ref: "transactions" },
+        discount: { type: String, enum: ["quota", "total"] }
       }
     ],
     default: []
   }
 });
+
+budgetsSchema.pre("find", function () {
+  this.populate("project")
+  this.populate("supplier")
+})
 
 export default mongoose.model(budgetsCollection, budgetsSchema);

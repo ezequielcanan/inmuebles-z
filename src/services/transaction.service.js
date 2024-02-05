@@ -40,6 +40,8 @@ class TransactionService {
     return quotas
   }
 
+  deleteTransaction = async (tid) => transactionModel.deleteOne({ _id: tid })
+
   getProjectTransactions = async (pid) => {
     const transactions = await transactionModel.aggregate([
       {
@@ -118,8 +120,8 @@ class TransactionService {
       { $unwind: { path: '$black.lastQuota', preserveNullAndEmptyArrays: true } },
       {
         $set: {
-          "white": { $cond: { if: { $eq: ["$white.lastQuota.quota", "$white.quotas"] }, then: "$$REMOVE", else: "$white" } },
-          "black": { $cond: { if: { $eq: ["$black.lastQuota.quota", "$black.quotas"] }, then: "$$REMOVE", else: "$black" } }
+          "white": { $cond: { if: { $or: [{ $eq: ["$white.lastQuota.quota", "$white.quotas"] }, { $eq: ["$white.quotas", 0] }] }, then: "$$REMOVE", else: "$white" } },
+          "black": { $cond: { if: { $or: [{ $eq: ["$black.lastQuota.quota", "$black.quotas"] }, { $eq: ["$black.quotas", 0] }] }, then: "$$REMOVE", else: "$black" } }
         }
       },
       {

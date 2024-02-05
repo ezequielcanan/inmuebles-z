@@ -771,7 +771,7 @@ export const createProjectExcel = (floors, project, transactions) => {
       ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 7 : 26).number(apartment.meters?.amenities || 0).style(styles["floorInfoCell"])
       ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 8 : 27).number(apartment.meters?.total || 0).style(styles["floorInfoCell"])
       ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 9 : 28).number(apartment.price || 0).style(styles["floorInfoCell"])
-      ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 10 : 29).formula(`${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 9 : 28)} * ${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 8 : 27)}`).style(styles["floorInfoCell"])
+      ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 10 : 29).formula(`(${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 8 : 27)} - IF(${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 5 : 24)} >= 10, ${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 5 : 24)} / 2,0) - IF(${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 6 : 25)} >= 10, ${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 6 : 25)} / 2,0)) * ${xl.getExcelCellRef(lastRow + i, apartment.orientation == "Frente" ? 9 : 28)}`).style(styles["floorInfoCell"])
       ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 11 : 30).string(apartment?.rooms).style(styles["floorInfoCell"])
       ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 12 : 31).string(apartment?.owner?.name).style(styles["floorInfoCell"])
       apartmentTransaction && ws.cell(lastRow + plusApartments - skippedAapartments, apartment.orientation == "Frente" ? 13 : 32).number(apartmentTransaction?.total || 0).style(styles["floorInfoCell"])
@@ -841,7 +841,6 @@ export const createFutureQuotasExcel = (transactions, lastIndexCac, indexCac, se
 
   const cac = indexCac / lastIndexCac * 100 - 100
   const adjustment = cac - (lastIndexCac / secondIndexCac * 100 - 100)
-  console.log(adjustment)
 
   ws.cell(1, 1, 1, 6, true).string("CUOTAS PESOS: A - " + transactions[0]?.apartment?.project?.title || "").style(styles["project"])
   ws.cell(1, 10, 1, 15, true).string("CUOTAS PESOS: B - " + transactions[0]?.apartment?.project?.title || "").style(styles["project"])

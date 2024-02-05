@@ -35,6 +35,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const data = JSON.parse(req.body?.data)
     req.data = data
+    console.log(file, req.data)
     if (!fs.existsSync("./src/public/" + data?.folder)) {
       fs.mkdirSync("./src/public/" + data?.folder, { recursive: true })
     }
@@ -42,6 +43,7 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const ext = file.originalname.substring(file.originalname.lastIndexOf('.'), file.originalname.length);
+    console.log(file, req.data)
     cb(null, (req.data?.id || req.data?.title || req.data?.name || req.data?.tenant) ? (req.data?.id || req.data?.title || req.data?.name || req.data?.tenant) + ext : file.originalname)
   }
 })

@@ -90,3 +90,14 @@ export const createFutureQuotasXlsx = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const deleteTransaction = async (req, res) => {
+  try {
+    const result = await transactionService.deleteTransaction(req?.params?.tid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}

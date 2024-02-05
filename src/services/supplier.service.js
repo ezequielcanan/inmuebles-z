@@ -1,11 +1,14 @@
 import mongoose from "mongoose"
 import supplierModel from "../models/supplier.model.js"
+import ownerModel from "../models/owner.model.js"
 
 class SupplierService {
   constructor() { }
 
   createSupplier = async (supplier) => {
     const result = await supplier?._id ? supplierModel.findOneAndUpdate({ _id: supplier?._id }, { $set: { ...supplier } }, { upsert: true }) : supplierModel.create(supplier)
+    const isOwner = await ownerModel.findOne({ name: supplier?.name }).lean().exec()
+    !isOwner && await ownerModel.create({ name: supplier?.name, number: supplier?.phone, email: supplier?.email, ownerType: "Gremio" })
     return result
   }
 
