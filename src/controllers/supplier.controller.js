@@ -7,7 +7,7 @@ export const addSupplier = async (req, res) => {
     res.sendSuccess(result)
   }
   catch (e) {
-    req.logger.error(e)
+    console.error(e)
     res.sendServerError(e)
   }
 }
@@ -18,7 +18,7 @@ export const getSuppliers = async (req, res) => {
     res.sendSuccess(result)
   }
   catch (e) {
-    req.logger.error(e)
+    console.error(e)
     res.sendServerError(e)
   }
 }
@@ -29,7 +29,7 @@ export const getSupplier = async (req, res) => {
     res.sendSuccess(result)
   }
   catch (e) {
-    req.logger.error(e)
+    console.error(e)
     res.sendServerError(e)
   }
 }

@@ -15,6 +15,9 @@ import UserRouter from "./routes/users.router.js"
 import SupplierRouter from "./routes/supplier.router.js"
 import BudgetRouter from "./routes/budget.router.js"
 import AccountRouter from "./routes/account.router.js"
+import PaymentRouter from "./routes/payment.router.js"
+import WhitePaymentRouter from "./routes/whitePayment.router.js"
+import BlackPaymentRouter from "./routes/blackPayment.router.js"
 import cors from "cors"
 import __dirname from "./utils.js"
 import initializePassport from "./config/passport.config.js"
@@ -46,6 +49,9 @@ const userRouter = new UserRouter()
 const supplierRouter = new SupplierRouter()
 const bugdetRouter = new BudgetRouter()
 const accountRouter = new AccountRouter()
+const paymentRouter = new PaymentRouter()
+const whitePaymentRouter = new WhitePaymentRouter()
+const blackPaymentRouter = new BlackPaymentRouter()
 
 initializePassport()
 app.use(passport.initialize())
@@ -63,6 +69,9 @@ app.use("/api/user", userRouter.getRouter())
 app.use("/api/supplier", supplierRouter.getRouter())
 app.use("/api/budget", bugdetRouter.getRouter())
 app.use("/api/account", accountRouter.getRouter())
+app.use("/api/payment", paymentRouter.getRouter())
+app.use("/api/white-payment", whitePaymentRouter.getRouter())
+app.use("/api/black-payment", blackPaymentRouter.getRouter())
 
 // MONGO CONNECTION AND RUNNING SERVER
 mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGO_DB })

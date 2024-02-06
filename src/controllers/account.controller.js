@@ -7,7 +7,7 @@ export const getAccounts = async (req, res) => {
     res.sendSuccess(result)
   }
   catch (e) {
-    req.logger.error(e)
+    console.error(e)
     res.sendServerError(e)
   }
 }
@@ -18,7 +18,7 @@ export const createAccount = async (req, res) => {
     res.sendSuccess(result)
   }
   catch (e) {
-    req.logger.error(e)
+    console.error(e)
     res.sendServerError(e)
   }
 }

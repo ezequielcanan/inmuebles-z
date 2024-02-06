@@ -13,8 +13,7 @@ export const logger = winston.createLogger({
   levels,
   transports: [
     new winston.transports.Console({
-      level: "info",
-      format: winston.format.simple(),
+      level: "info"
     }),
     new winston.transports.File({
       filename: "./errors.log",
@@ -24,7 +23,7 @@ export const logger = winston.createLogger({
 });
 
 
-export const addLogger = (req,res,next) => {
+export const addLogger = (req, res, next) => {
   req.logger = logger
   req.logger.http(`[${req?.method}] - ${req?.url} ${new Date().toLocaleTimeString()}`)
 

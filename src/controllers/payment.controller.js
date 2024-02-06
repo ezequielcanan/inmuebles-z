@@ -1,0 +1,36 @@
+import PaymentService from "../services/payment.service.js"
+
+const paymentService = new PaymentService()
+
+export const createPayment = async (req, res) => {
+  try {
+    const result = await paymentService.createPayment(req?.body)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getBudgetPayments = async (req, res) => {
+  try {
+    const result = await paymentService.getBudgetPayments(req?.params?.bid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getPayment = async (req, res) => {
+  try {
+    const result = await paymentService.getPayment(req?.params?.pid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}

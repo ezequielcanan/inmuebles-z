@@ -37,6 +37,7 @@ class BudgetService {
       return { apartment: transactionResult._id, discount: transaction?.subtractType }
     }))
 
+    data.advanced = data?.paidApartments?.reduce((acc, apartment) => apartment.subtractType == "total" ? acc + Number(apartment?.total * apartment?.dollar) : acc, Number(data?.booking)) || Number(data?.booking) || 0
     data.paidApartments = transactions
 
     const result = await budgetModel.create(data)
@@ -49,6 +50,8 @@ class BudgetService {
   }
 
   getBudgets = async () => budgetModel.find()
+
+  getBudget = async (bid) => budgetModel.findOne({ _id: bid })
 
   getFiles = (project, budget) => {
     const files = []
