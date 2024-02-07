@@ -16,4 +16,13 @@ const whitePaymentsSchema = new mongoose.Schema({
   retention: Number
 })
 
+whitePaymentsSchema.pre("find", function () {
+  this.populate("checks")
+})
+
+whitePaymentsSchema.pre("findOne", function () {
+  this.populate("checks")
+})
+
+
 export default mongoose.model(whitePaymentsCollection, whitePaymentsSchema)

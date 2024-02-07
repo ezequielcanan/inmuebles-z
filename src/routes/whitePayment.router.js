@@ -3,6 +3,6 @@ import Z_Router from "./router.js";
 
 export default class WhitePaymentRouter extends Z_Router {
   init() {
-    this.post("/", ["ADMIN"], createWhitePayment)
+    this.post("/:pid", ["ADMIN"], createWhitePayment)
   }
 }

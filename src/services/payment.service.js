@@ -5,6 +5,8 @@ class PaymentService {
 
   createPayment = async (payment) => {
     const result = await paymentModel.create(payment)
+    const adjustment = payment?.indexCac / payment?.budget?.baseIndex
+    payment?.budget?.lastPayment && await paymentModel.updateOne({ _id: payment?.budget?.lastPayment }, { $set: { "white.mcd": adjustment * payment?.budget?.lastPayment?.white?.amount, "black.mcd": adjustment * payment?.budget?.lastPayment?.black?.amount } })
     return result
   }
 
@@ -13,8 +15,15 @@ class PaymentService {
     return payments
   }
 
+  insertSubPayment = async (pid, type, subId) => {
+    const update = {}
+    update[type] = subId
+    const result = await paymentModel.findOneAndUpdate({ _id: pid }, { $push: { ...update } }, { new: true })
+    return result
+  }
+
   updatePayment = async (id, payment) => {
-    const result = await paymentModel.findOneAndUpdate({ _id: id }, { $set: {...payment} }, { new: true })
+    const result = await paymentModel.findOneAndUpdate({ _id: id }, { $set: { ...payment } }, { new: true })
     return result
   }
 

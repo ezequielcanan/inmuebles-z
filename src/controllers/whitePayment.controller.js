@@ -4,7 +4,7 @@ const whitePaymentService = new WhitePaymentService()
 
 export const createWhitePayment = async (req, res) => {
   try {
-    const result = await whitePaymentService.createWhitePayment(req?.body)
+    const result = await whitePaymentService.createWhitePayment(req?.body, req?.params?.pid)
     res.sendSuccess(result)
   }
   catch (e) {

@@ -6,7 +6,8 @@ const checkSchema = new mongoose.Schema({
   emissionDate: Date,
   expirationDate: Date,
   code: String,
-  amount: Number
+  amount: Number,
+  account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts" }
 })
 
 export default mongoose.model(checkCollection, checkSchema)
