@@ -48,7 +48,7 @@ export default class Z_Router {
     if (policies.length > 0 && policies.length < 4) {
       const token = req.cookies.jwt
       if (!token) return res.sendNoAuthenticatedError('No token')
-      const { user: jwtUser } = jwt.verify(token, jwtSign)
+      const { user: jwtUser } = jwt.verify(token, jwtSign, {ignoreExpiration: true})
       const user = await userService.getUserById(jwtUser._id)
 
       if (!policies.includes(user.role.toUpperCase())) {

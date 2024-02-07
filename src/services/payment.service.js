@@ -14,7 +14,7 @@ class PaymentService {
   }
 
   updatePayment = async (id, payment) => {
-    const result = await paymentModel.findOneAndUpdate({ _id: id }, { $set: { ...payment } }, { new: true })
+    const result = await paymentModel.findOneAndUpdate({ _id: id }, { $set: {...payment} }, { new: true })
     return result
   }
 

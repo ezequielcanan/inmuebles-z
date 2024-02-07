@@ -6,6 +6,7 @@ const billsSchema = new mongoose.Schema({
   code: String,
   emissionDate: Date,
   amount: Number,
+  iva: Number,
   receiver: {type: mongoose.Schema.Types.ObjectId, ref: "suppliers"}
 })
 
