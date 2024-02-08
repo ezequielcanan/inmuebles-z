@@ -1,3 +1,4 @@
+import { paymentExcel } from "../excel/payments.js"
 import PaymentService from "../services/payment.service.js"
 
 const paymentService = new PaymentService()
@@ -31,6 +32,21 @@ export const getPayment = async (req, res) => {
   }
   catch (e) {
     console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getExcelPayment = async (req, res) => {
+  try {
+    const payment = await paymentService.getPayment(req?.params?.pid)
+    const lastPayment = await paymentService.getPaymentByNumber(payment?.paymentNumber - 1)
+
+
+    const wb = paymentExcel(payment, lastPayment)
+    wb.write(`Pago ${payment?.paymentNumber} - ${payment?.budget?.supplier?.name || ""}.xlsx`, res)
+  }
+  catch (e) {
+    console.log(e)
     res.sendServerError(e)
   }
 }

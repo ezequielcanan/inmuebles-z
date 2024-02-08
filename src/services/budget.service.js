@@ -49,6 +49,21 @@ class BudgetService {
     return result
   }
 
+  addNote = async (id, note) => {
+    const result = await budgetModel.findOneAndUpdate({ _id: id }, { $push: { notes: note } }, { new: true })
+    return result
+  }
+
+  updateNote = async (id, nid, note) => {
+    const result = await budgetModel.findOneAndUpdate({ _id: id, "notes._id": nid }, { $set: { "notes.$.note": note } })
+    return result
+  }
+
+  deleteNote = async (id, nid) => {
+    const result = await budgetModel.findOneAndUpdate({ _id: id }, { $pull: { "notes": { "_id": nid } } }, { new: true })
+    return result
+  }
+
   getBudgets = async () => budgetModel.find()
 
   getBudget = async (bid) => budgetModel.findOne({ _id: bid })

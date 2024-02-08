@@ -4,6 +4,7 @@ const budgetsCollection = "budgets";
 
 const budgetsSchema = new mongoose.Schema({
   total: Number,
+  title: String,
   project: { type: mongoose.Schema.Types.ObjectId, ref: "projects" },
   supplier: { type: mongoose.Schema.Types.ObjectId, ref: "suppliers" },
   percentage: Number,
@@ -15,6 +16,15 @@ const budgetsSchema = new mongoose.Schema({
   code: String,
   date: Date,
   dollarPrice: Number,
+  notes: {
+    type: [
+      {
+        date: Date,
+        note: String
+      }
+    ],
+    default: []
+  },
   lastPayment: { type: mongoose.Schema.Types.ObjectId, ref: "payments" },
   paidApartments: {
     type: [
@@ -35,6 +45,13 @@ budgetsSchema.pre("find", function () {
 
 
 budgetsSchema.pre("findOne", function () {
+  this.populate("project")
+  this.populate("supplier")
+  this.populate("lastPayment")
+  this.populate("paidApartments.apartment")
+})
+
+budgetsSchema.pre("findOneAndUpdate", function () {
   this.populate("project")
   this.populate("supplier")
   this.populate("lastPayment")

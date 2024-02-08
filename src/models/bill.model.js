@@ -7,7 +7,8 @@ const billsSchema = new mongoose.Schema({
   emissionDate: Date,
   amount: Number,
   iva: Number,
-  receiver: {type: mongoose.Schema.Types.ObjectId, ref: "suppliers"}
+  taxes: Number,
+  receiver: { type: mongoose.Schema.Types.ObjectId, ref: "suppliers" }
 })
 
 export default mongoose.model(billsCollection, billsSchema)

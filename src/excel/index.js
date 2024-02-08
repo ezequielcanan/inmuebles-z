@@ -1,6 +1,6 @@
 import xl from "excel4node"
 
-const fontHeadStyle = {
+export const fontHeadStyle = {
   font: {
     size: 18,
     bold: true,
@@ -8,7 +8,7 @@ const fontHeadStyle = {
   }
 }
 
-const textCenterStyle = {
+export const textCenterStyle = {
   alignment: {
     horizontal: 'center',
     vertical: 'center',
@@ -17,7 +17,7 @@ const textCenterStyle = {
 
 }
 
-const boldBorder = {
+export const boldBorder = {
   border: {
     left: {
       style: 'medium',
@@ -39,7 +39,7 @@ const boldBorder = {
   }
 }
 
-const thinBorder = {
+export const thinBorder = {
   border: {
     left: {
       style: 'thin',
@@ -61,7 +61,7 @@ const thinBorder = {
   }
 }
 
-const bgHead = {
+export const bgHead = {
   fill: {
     type: "pattern",
     patternType: "solid",
@@ -70,7 +70,7 @@ const bgHead = {
   }
 }
 
-const bgSectionHead = {
+export const bgSectionHead = {
   fill: {
     type: "pattern",
     patternType: "solid",
@@ -79,7 +79,7 @@ const bgSectionHead = {
   }
 }
 
-const bgSectionInfo = {
+export const bgSectionInfo = {
   fill: {
     type: "pattern",
     patternType: "solid",

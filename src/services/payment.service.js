@@ -5,7 +5,7 @@ class PaymentService {
 
   createPayment = async (payment) => {
     const result = await paymentModel.create(payment)
-    const adjustment = payment?.indexCac / payment?.budget?.baseIndex
+    const adjustment = payment?.indexCac / payment?.budget?.baseIndex - 1
     payment?.budget?.lastPayment && await paymentModel.updateOne({ _id: payment?.budget?.lastPayment }, { $set: { "white.mcd": adjustment * payment?.budget?.lastPayment?.white?.amount, "black.mcd": adjustment * payment?.budget?.lastPayment?.black?.amount } })
     return result
   }
@@ -15,6 +15,11 @@ class PaymentService {
     return payments
   }
 
+  getFiles = (project, budget, payment) => {
+    const files = []
+    fs.readdirSync(__dirname + "/public/projects/" + project + "/budgets/" + budget + "/payments/" + payment).forEach(file => files.push(file))
+    return files
+  }
 
   insertSubPayment = async (pid, type, subId) => {
     const update = {}
@@ -29,6 +34,8 @@ class PaymentService {
   }
 
   getPayment = async (id) => paymentModel.findOne({ _id: id })
+
+  getPaymentByNumber = async (number) => paymentModel.findOne({ paymentNumber: number })
 }
 
 export default PaymentService

@@ -58,3 +58,36 @@ export const updateBudget = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const addNote = async (req, res) => {
+  try {
+    const result = await budgetService.addNote(req?.params?.bid, req?.body)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const updateNote = async (req, res) => {
+  try {
+    const result = await budgetService.updateNote(req?.params?.bid, req?.params?.nid, req?.body?.note)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const deleteNote = async (req, res) => {
+  try {
+    const result = await budgetService.deleteNote(req?.params?.bid, req?.params?.nid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
