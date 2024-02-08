@@ -1,16 +1,20 @@
-import billModel from "../models/bill.model.js"
-import PaymentService from "./payment.service.js"
+import billModel from "../models/bill.model.js";
+import PaymentService from "./payment.service.js";
 
-const paymentService = new PaymentService()
+const paymentService = new PaymentService();
 class BillService {
   constructor() {}
 
   createBill = async (bill, payment) => {
-    const result = await billModel.create(bill)
-    const paymentResult = await paymentService.getPayment(payment)
-    const updatePayment = await paymentService.updatePayment(payment, {"white.bill": result?._id, "white.amount": paymentResult?.white?.amount + (result?.iva * paymentResult?.white?.amount / 100)})
-    return result
-  }
+    const result = await billModel.create(bill);
+    const paymentResult = await paymentService.getPayment(payment);
+    const updateObj = {
+      "white.bill": result?._id
+    };
+
+    const updatePayment = await paymentService.updatePayment(payment, updateObj);
+    return result;
+  };
 }
 
-export default BillService
+export default BillService;

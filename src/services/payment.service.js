@@ -15,6 +15,7 @@ class PaymentService {
     return payments
   }
 
+
   insertSubPayment = async (pid, type, subId) => {
     const update = {}
     update[type] = subId
