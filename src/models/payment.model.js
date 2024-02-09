@@ -10,6 +10,15 @@ const paymentsSchema = new mongoose.Schema({
   discountByApartments: Number,
   total: Number,
   indexCac: Number,
+  notes: {
+    type: [
+      {
+        date: Date,
+        note: String
+      }
+    ],
+    default: []
+  },
   white: {
     amount: Number,
     mcp: Number,

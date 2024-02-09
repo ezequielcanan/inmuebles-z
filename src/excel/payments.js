@@ -78,7 +78,7 @@ export const paymentExcel = (payment, lastPayment) => {
 
     ws.cell(4, col).formula(`B1 * ${percentage}%`).style(styles["cell"])
     ws.cell(5, col).formula(`${xl.getExcelCellRef(4, col)} * ${adjustmentCell}`).style(styles["cell"])
-    ws.cell(6, col).number((lastPayment[type]?.mcd - lastPayment[type]?.mcp) || 0).style(styles["cell"])
+    ws.cell(6, col).number(0).style(styles["cell"])
     ws.cell(7, col).formula(`SUM(${xl.getExcelCellRef(4, col)}:${xl.getExcelCellRef(6, col)})`).style(styles["cell"])
     type == "white" && ws.cell(8, col).formula(`${xl.getExcelCellRef(7, col)} * ${(payment?.bill?.iva || 0)}% `).style(styles["cell"])
     type == "white" && ws.cell(9, col).formula(`${xl.getExcelCellRef(7, col)} * ${(payment?.bill?.taxes || 0)}% `).style(styles["cell"])

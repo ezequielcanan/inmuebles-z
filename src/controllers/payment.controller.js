@@ -50,3 +50,36 @@ export const getExcelPayment = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const addNote = async (req, res) => {
+  try {
+    const result = await paymentService.addNote(req?.params?.pid, req?.body)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const updateNote = async (req, res) => {
+  try {
+    const result = await paymentService.updateNote(req?.params?.pid, req?.params?.nid, req?.body?.note)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const deleteNote = async (req, res) => {
+  try {
+    const result = await paymentService.deleteNote(req?.params?.pid, req?.params?.nid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
