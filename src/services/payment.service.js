@@ -28,6 +28,11 @@ class PaymentService {
     return result
   }
 
+  inserBill = async (pid, bill) => {
+    const result = await paymentModel.findOneAndUpdate({ _id: pid }, { $push: { "white.bills": bill } })
+    return result
+  }
+
   updatePayment = async (id, payment) => {
     const result = await paymentModel.findOneAndUpdate({ _id: id }, { $set: { ...payment } }, { new: true })
     return result

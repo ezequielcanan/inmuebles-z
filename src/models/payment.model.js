@@ -23,7 +23,15 @@ const paymentsSchema = new mongoose.Schema({
     amount: Number,
     mcp: Number,
     mcd: Number,
-    bill: { type: mongoose.Schema.Types.ObjectId, ref: "bills" },
+    bills: {
+      type: [
+        {
+          bill: { type: mongoose.Schema.Types.ObjectId, ref: "bills" },
+          concept: { type: String, enum: ["mcd", "mcp", "certificate"] }
+        }
+      ],
+      default: []
+    },
     payments: {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: "whitePayments" }]
     }
@@ -39,13 +47,13 @@ const paymentsSchema = new mongoose.Schema({
 })
 
 paymentsSchema.pre("find", function () {
-  this.populate("white.bill")
+  this.populate("white.bills.bill")
   this.populate("white.payments")
   this.populate("black.payments.payment")
 })
 
 paymentsSchema.pre("findOne", function () {
-  this.populate("white.bill")
+  this.populate("white.bills.bill")
   this.populate("white.payments")
   this.populate("black.payments")
   this.populate("budget")

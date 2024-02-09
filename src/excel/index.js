@@ -214,7 +214,7 @@ export const createTransactionExcel = (transaction, quotas) => {
   wsBlack.cell(2, 1).formula(`'Sheet 1'!H3 * ${100 - transaction.percentage}%`).style(styles["apartmentInfoCell"])
   wsBlack.cell(2, 2).formula(`${transaction?.bookingB} * 'Sheet 1'!O3`).style(styles["apartmentInfoCell"])
   wsBlack.cell(2, 3).formula(`${xl.getExcelCellRef(2, 1)} - ${xl.getExcelCellRef(2, 2)}`).style(styles["apartmentInfoCell"])
-  wsBlack.cell(2, 4).number(transaction?.black?.quotas).style(styles["apartmentInfoCell"])
+  wsBlack.cell(2, 4).number(transaction?.black?.quotas || 0).style(styles["apartmentInfoCell"])
   transaction?.black?.baseIndex && wsBlack.cell(2, 5).number(transaction?.black?.baseIndex).style(styles["apartmentInfoCell"])
 
   const writeQuotasHeaders = (type, row, index, sheet = ws, dollar = false) => {

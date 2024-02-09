@@ -3,17 +3,17 @@ import mongoose from "mongoose"
 const whitePaymentsCollection = "whitePayments"
 
 const whitePaymentsSchema = new mongoose.Schema({
-  cashPaid: {
-    type: {
-      total: Number,
-      account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts" }
-    }
-  },
   date: Date,
+  transfers: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "transfers" }
+  ],
   checks: [
     { type: mongoose.Schema.Types.ObjectId, ref: "checks" }
   ],
-  retention: Number
+  retention: {
+    amount: Number,
+    code: Number
+  }
 })
 
 whitePaymentsSchema.pre("find", function () {

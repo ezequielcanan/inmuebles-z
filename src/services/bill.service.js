@@ -3,16 +3,13 @@ import PaymentService from "./payment.service.js";
 
 const paymentService = new PaymentService();
 class BillService {
-  constructor() {}
+  constructor() { }
 
   createBill = async (bill, payment) => {
     const result = await billModel.create(bill);
     const paymentResult = await paymentService.getPayment(payment);
-    const updateObj = {
-      "white.bill": result?._id
-    };
 
-    const updatePayment = await paymentService.updatePayment(payment, updateObj);
+    const updatePayment = await paymentService.inserBill(payment, { bill: result?._id, concept: bill.concept });
     return result;
   };
 }
