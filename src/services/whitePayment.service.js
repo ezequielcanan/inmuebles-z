@@ -11,4 +11,6 @@ export default class WhitePaymentService {
 
     return result
   }
+
+  getWhitePayment = async (sid) => whitePaymentModel.findOne({_id: sid})
 }

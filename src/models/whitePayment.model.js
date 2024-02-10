@@ -12,16 +12,18 @@ const whitePaymentsSchema = new mongoose.Schema({
   ],
   retention: {
     amount: Number,
-    code: Number
+    code: String
   }
 })
 
 whitePaymentsSchema.pre("find", function () {
   this.populate("checks")
+  this.populate("transfers")
 })
 
 whitePaymentsSchema.pre("findOne", function () {
   this.populate("checks")
+  this.populate("transfers")
 })
 
 

@@ -1,7 +1,10 @@
+import { budgetWhiteExcel } from "../excel/payments.js"
 import BudgetService from "../services/budget.service.js"
-
+import PaymentService from "../services/payment.service.js"
 
 const budgetService = new BudgetService()
+const paymentService = new PaymentService()
+
 
 export const createBudget = async (req, res) => {
   try {
@@ -85,6 +88,20 @@ export const deleteNote = async (req, res) => {
   try {
     const result = await budgetService.deleteNote(req?.params?.bid, req?.params?.nid)
     res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getBudgetExcel = async (req,res) => {
+  try {
+    const budget = await budgetService.getBudget(req?.params?.bid)
+    const payments = await paymentService.getBudgetPayments(req?.params?.bid)
+
+    const wb = budgetWhiteExcel(budget, payments)
+    wb.write(`Cuenta corriente ${budget?.title} - ${budget?.supplier?.name || ""}.xlsx`, res)
   }
   catch (e) {
     console.error(e)

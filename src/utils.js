@@ -34,7 +34,6 @@ export const authorization = role => {
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const data = JSON.parse(req.body?.data)
-    console.log(file)
     req.data = data
     if (!fs.existsSync("./src/public/" + data?.folder)) {
       fs.mkdirSync("./src/public/" + data?.folder, { recursive: true })

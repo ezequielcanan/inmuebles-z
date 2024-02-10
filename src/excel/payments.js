@@ -1,6 +1,6 @@
 import xl from "excel4node"
 import { textCenterStyle, thinBorder, boldBorder, bgHead, bgSectionInfo, fontHeadStyle } from "./index.js"
-
+import moment from "moment"
 
 export const paymentExcel = (payment, lastPayment) => {
   const wb = new xl.Workbook()
@@ -102,3 +102,79 @@ export const paymentExcel = (payment, lastPayment) => {
 
   return wb
 }
+
+export const budgetWhiteExcel = (budget, payments) => {
+  const wb = new xl.Workbook()
+  const ws = wb.addWorksheet("CERTIFICADO", {
+    sheetFormat: {
+      'defaultColWidth': 35,
+      'defaultRowHeight': 30,
+    }
+  })
+
+  const styles = {
+    sectionHead: wb.createStyle({
+      ...fontHeadStyle,
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    }),
+    importantCell: wb.createStyle({
+      font: {
+        bold: true
+      },
+      ...textCenterStyle,
+      ...thinBorder,
+      ...bgSectionInfo,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    }),
+    cell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    })
+  }
+
+  ws.cell(1,1,1,6, true).string(`Cuenta corriente presupuesto ${budget.title} - ${budget?.supplier?.name}`).style(styles["sectionHead"])
+  ws.cell(2,1).string("Fecha").style(styles["importantCell"])
+  ws.cell(2,2).string("Comprobante").style(styles["importantCell"])
+  ws.cell(2,3).string("Descripción").style(styles["importantCell"])
+  ws.cell(2,4).string("Crédito").style(styles["importantCell"])
+  ws.cell(2,5).string("Débito").style(styles["importantCell"])
+  ws.cell(2,6).string("Saldo").style(styles["importantCell"])
+
+  const writeRow = (row, date, code, description, credit=0, debit=0) => {
+    ws.cell(row,1).string(date).style(styles["cell"])
+    ws.cell(row,2).string(code).style(styles["cell"])
+    ws.cell(row,3).string(description || code).style(styles["cell"])
+    ws.cell(row,4).number(credit).style(styles["cell"])
+    ws.cell(row,5).number(debit).style(styles["cell"])
+    ws.cell(row,6).formula(row == 3 ? `+${xl.getExcelCellRef(row,4)} - ${xl.getExcelCellRef(row,5)}` : `+${xl.getExcelCellRef(row-1,6)} + ${xl.getExcelCellRef(row,4)} - ${xl.getExcelCellRef(row,5)}`).style(styles["cell"])
+  }
+
+
+  let lastRow = 3
+  payments?.forEach((payment, i) => {
+    payment?.white?.bills?.forEach((bill) => {
+      writeRow(lastRow, moment.utc(bill?.bill?.emissionDate).format("YYYY-MM-DD"), bill?.bill?.code, "Factura", 0, bill?.bill?.amount * (1 + (bill?.bill?.iva + bill?.bill?.taxes) / 100))
+      lastRow++
+    })
+    payment?.white?.payments?.forEach(payment => {
+      payment?.checks?.forEach(check => {
+        writeRow(lastRow, moment.utc(check?.emissionDate).format("YYYY-MM-DD"), check?.code, "Cheque", check?.amount)
+        lastRow++
+      })
+      payment?.transfers?.forEach(transfer => {
+        writeRow(lastRow, moment.utc(transfer?.emissionDate).format("YYYY-MM-DD"), transfer?.code, "Transferencia", transfer?.amount)
+        lastRow++
+      })
+      payment?.retention && (
+        writeRow(lastRow, moment.utc(payment?.date).format("YYYY-MM-DD"), payment?.retention?.code, "Retencion", payment?.retention?.amount),
+        lastRow++
+      )
+    })
+  })
+
+  return wb
+} 

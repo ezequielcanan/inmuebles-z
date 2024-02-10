@@ -32,6 +32,10 @@ export default class Z_Router {
     this.router.delete(path, this.generateCustomResponse, this.handlePolicies(policies), this.applyCallbacks(callbacks))
   }
 
+  patch = (path, policies, ...callbacks) => {
+    this.router.patch(path, this.generateCustomResponse, this.handlePolicies(policies), this.applyCallbacks(callbacks))
+  }
+
   applyCallbacks = callbacks => {
     return callbacks.map(callback => async (...params) => {
       try {

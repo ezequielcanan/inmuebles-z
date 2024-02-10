@@ -12,3 +12,14 @@ export const createWhitePayment = async (req, res) => {
     res.sendServerError(e)
   }
 } 
+
+export const getWhitePayment = async (req,res) => {
+  try {
+    const result = await whitePaymentService.getWhitePayment(req?.params?.sid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
