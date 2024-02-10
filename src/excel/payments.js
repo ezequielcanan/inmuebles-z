@@ -51,7 +51,7 @@ export const paymentExcel = (payment, lastPayment) => {
   ws.cell(6, 5).formula(`E5 / E4 - 1`).style(styles["importantCell"])
 
   const writeSectionImportantCells = (type = "A", col = 7) => {
-    ws.cell(3, col).string(type).style(styles["sectionHead"])
+    ws.cell(3, col, 3, col + 1, true).string(type).style(styles["sectionHead"])
     ws.cell(4, col).string("Subtotal").style(styles["importantCell"])
     ws.cell(5, col).string("Mayor costo").style(styles["cell"])
     ws.cell(6, col).string("Mayor costo definitivo").style(styles["cell"])
@@ -63,9 +63,7 @@ export const paymentExcel = (payment, lastPayment) => {
     ws.cell(13, col).string("Mayor costo").style(styles["cell"])
     ws.cell(14, col).string("Mayor costo definitivo").style(styles["cell"])
     ws.cell(15, col).string("Total:").style(styles["cell"])
-    type == "A" && ws.cell(16, col).string("IVA:").style(styles["cell"])
-    type == "A" && ws.cell(17, col).string("Impuestos:").style(styles["cell"])
-    ws.cell(18, col).string("Total a cobrar:").style(styles["importantCell"])
+    ws.cell(16, col).string("Total a cobrar:").style(styles["importantCell"])
     ws.cell(20, col).string("SALDO A PAGAR").style(styles["importantCell"])
   }
 
@@ -87,10 +85,8 @@ export const paymentExcel = (payment, lastPayment) => {
     ws.cell(13, col).formula(`${xl.getExcelCellRef(12, col)} * ${adjustmentCell} `).style(styles["cell"])
     ws.cell(14, col).number((lastMcdApartments - lastMcpApartments) || 0).style(styles["cell"])
     ws.cell(15, col).formula(`SUM(${xl.getExcelCellRef(12, col)}: ${xl.getExcelCellRef(14, col)})`).style(styles["cell"])
-    type == "white" && ws.cell(16, col).formula(`${xl.getExcelCellRef(15, col)} * ${(payment?.bill?.iva || 0)}% `).style(styles["cell"])
-    type == "white" && ws.cell(17, col).formula(`${xl.getExcelCellRef(15, col)} * ${(payment?.bill?.taxes || 0)}% `).style(styles["cell"])
-    ws.cell(18, col).formula(`SUM(${xl.getExcelCellRef(15, col)}: ${xl.getExcelCellRef(17, col)})`).style(styles["cell"])
-    ws.cell(20, col).formula(`${xl.getExcelCellRef(10, col)} -${xl.getExcelCellRef(18, col)} `).style(styles["sectionHead"])
+    ws.cell(16, col).formula(`${xl.getExcelCellRef(15, col)}`).style(styles["cell"])
+    ws.cell(20, col).formula(`${xl.getExcelCellRef(10, col)} - ${xl.getExcelCellRef(16, col)}`).style(styles["sectionHead"])
     ws.column(col).setWidth(35)
   }
 
@@ -136,21 +132,21 @@ export const budgetWhiteExcel = (budget, payments) => {
     })
   }
 
-  ws.cell(1,1,1,6, true).string(`Cuenta corriente presupuesto ${budget.title} - ${budget?.supplier?.name}`).style(styles["sectionHead"])
-  ws.cell(2,1).string("Fecha").style(styles["importantCell"])
-  ws.cell(2,2).string("Comprobante").style(styles["importantCell"])
-  ws.cell(2,3).string("Descripción").style(styles["importantCell"])
-  ws.cell(2,4).string("Crédito").style(styles["importantCell"])
-  ws.cell(2,5).string("Débito").style(styles["importantCell"])
-  ws.cell(2,6).string("Saldo").style(styles["importantCell"])
+  ws.cell(1, 1, 1, 6, true).string(`Cuenta corriente presupuesto ${budget.title} - ${budget?.supplier?.name}`).style(styles["sectionHead"])
+  ws.cell(2, 1).string("Fecha").style(styles["importantCell"])
+  ws.cell(2, 2).string("Comprobante").style(styles["importantCell"])
+  ws.cell(2, 3).string("Descripción").style(styles["importantCell"])
+  ws.cell(2, 4).string("Crédito").style(styles["importantCell"])
+  ws.cell(2, 5).string("Débito").style(styles["importantCell"])
+  ws.cell(2, 6).string("Saldo").style(styles["importantCell"])
 
-  const writeRow = (row, date, code, description, credit=0, debit=0) => {
-    ws.cell(row,1).string(date).style(styles["cell"])
-    ws.cell(row,2).string(code).style(styles["cell"])
-    ws.cell(row,3).string(description || code).style(styles["cell"])
-    ws.cell(row,4).number(credit).style(styles["cell"])
-    ws.cell(row,5).number(debit).style(styles["cell"])
-    ws.cell(row,6).formula(row == 3 ? `+${xl.getExcelCellRef(row,4)} - ${xl.getExcelCellRef(row,5)}` : `+${xl.getExcelCellRef(row-1,6)} + ${xl.getExcelCellRef(row,4)} - ${xl.getExcelCellRef(row,5)}`).style(styles["cell"])
+  const writeRow = (row, date, code, description, credit = 0, debit = 0) => {
+    ws.cell(row, 1).string(date).style(styles["cell"])
+    ws.cell(row, 2).string(code).style(styles["cell"])
+    ws.cell(row, 3).string(description || code).style(styles["cell"])
+    ws.cell(row, 4).number(credit).style(styles["cell"])
+    ws.cell(row, 5).number(debit).style(styles["cell"])
+    ws.cell(row, 6).formula(row == 3 ? `+${xl.getExcelCellRef(row, 4)} - ${xl.getExcelCellRef(row, 5)}` : `+${xl.getExcelCellRef(row - 1, 6)} + ${xl.getExcelCellRef(row, 4)} - ${xl.getExcelCellRef(row, 5)}`).style(styles["cell"])
   }
 
 
