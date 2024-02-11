@@ -1,10 +1,17 @@
 import xl from "excel4node"
-import { textCenterStyle, thinBorder, boldBorder, bgHead, bgSectionInfo, fontHeadStyle } from "./index.js"
+import { textCenterStyle, thinBorder, boldBorder, bgHead, bgSectionInfo, fontHeadStyle, bgSectionHead } from "./index.js"
 import moment from "moment"
 
 export const paymentExcel = (payment, lastPayment) => {
   const wb = new xl.Workbook()
   const ws = wb.addWorksheet("CERTIFICADO", {
+    sheetFormat: {
+      'defaultColWidth': 20,
+      'defaultRowHeight': 30,
+    }
+  })
+
+  const wsBills = wb.addWorksheet("FACTURAS", {
     sheetFormat: {
       'defaultColWidth': 20,
       'defaultRowHeight': 30,
@@ -17,6 +24,17 @@ export const paymentExcel = (payment, lastPayment) => {
       ...textCenterStyle,
       ...boldBorder,
       ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    }),
+    header: wb.createStyle({
+      font: {
+        size: 14,
+        bold: true,
+        color: "#FFFFFF"
+      },
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgSectionHead,
       numberFormat: '#,##0.00; -#,##0.00; -'
     }),
     importantCell: wb.createStyle({
@@ -58,12 +76,12 @@ export const paymentExcel = (payment, lastPayment) => {
     ws.cell(7, col).string("Total").style(styles["cell"])
     type == "A" && ws.cell(8, col).string("IVA:").style(styles["cell"])
     type == "A" && ws.cell(9, col).string("Impuestos:").style(styles["cell"])
-    ws.cell(10, col).string("Total a pagar:").style(styles["importantCell"])
+    ws.cell(10, col).string("Total a pagar:").style(styles["header"])
     ws.cell(12, col).string("A cobrar unidades:").style(styles["importantCell"])
     ws.cell(13, col).string("Mayor costo").style(styles["cell"])
     ws.cell(14, col).string("Mayor costo definitivo").style(styles["cell"])
     ws.cell(15, col).string("Total:").style(styles["cell"])
-    ws.cell(16, col).string("Total a cobrar:").style(styles["importantCell"])
+    ws.cell(16, col).string("Total a cobrar:").style(styles["header"])
     ws.cell(20, col).string("SALDO A PAGAR").style(styles["importantCell"])
   }
 
@@ -95,6 +113,36 @@ export const paymentExcel = (payment, lastPayment) => {
   writeSectionInfo(payment?.budget?.percentage)
   writeSectionInfo((100 - payment?.budget?.percentage), "black", 2)
 
+  const writeBillInfo = (bill, concept, col = 1) => {
+    wsBills.cell(3, col).string(bill?.code).style(styles["header"])
+    wsBills.cell(3, col + 1).string(concept).style(styles["header"])
+    wsBills.cell(4, col).string(`IVA ${bill?.iva}%`).style(styles["cell"])
+    wsBills.cell(5, col).number(bill?.amount).style(styles["cell"])
+    wsBills.cell(6, col).formula(`${xl.getExcelCellRef(5, col)}*${bill?.iva / 100}`).style(styles["cell"])
+    wsBills.cell(7, col).formula(`${xl.getExcelCellRef(5, col)}*${bill?.taxes / 100}`).style(styles["cell"])
+    wsBills.cell(8, col).formula(`SUM(${xl.getExcelCellRef(5, col)} : ${xl.getExcelCellRef(7, col)})`).style(styles["importantCell"])
+  }
+
+  wsBills.cell(1, 1, 1, 5, true).string(payment?.budget?.supplier?.name).style(styles["sectionHead"])
+
+  let lastBillCol = 0
+  const billCells = []
+  payment?.white?.bills?.forEach((bill, i) => {
+    lastBillCol = 3 * i + 1
+    billCells.push(xl.getExcelCellRef(8, lastBillCol))
+    writeBillInfo(bill?.bill, bill?.concept == "certificate" ? "CERTIFICADO" : (bill.concept == "mcp" ? "MCP" : "MCD"), 3 * i + 1)
+  })
+
+  const totalCol = lastBillCol + 3
+  wsBills.cell(5, totalCol).formula(`SUM(${xl.getExcelCellRef(5, 1)}:${xl.getExcelCellRef(5, lastBillCol)})`).style(styles["importantCell"])
+  wsBills.cell(6, totalCol).formula(`SUM(${xl.getExcelCellRef(6, 1)}:${xl.getExcelCellRef(6, lastBillCol)})`).style(styles["importantCell"])
+  wsBills.cell(7, totalCol).formula(`SUM(${xl.getExcelCellRef(7, 1)}:${xl.getExcelCellRef(7, lastBillCol)})`).style(styles["importantCell"])
+  wsBills.cell(8, totalCol).formula(`SUM(${xl.getExcelCellRef(8, 1)}:${xl.getExcelCellRef(8, lastBillCol)})`).style(styles["importantCell"])
+
+  wsBills.cell(12, 1, 12, 2, true).string("DETALLE PAGO").style(styles["header"])
+  billCells.forEach((billCell, i) => {
+    wsBills.cell(14 + i, 2).formula(`${billCell}`).style(styles["cell"])
+  })
 
   return wb
 }
