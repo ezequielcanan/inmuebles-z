@@ -8,6 +8,15 @@ const billsSchema = new mongoose.Schema({
   amount: Number,
   iva: Number,
   taxes: Number,
+  notes: {
+    type: [
+      {
+        type: { type: String, enum: ["debit", "credit"] },
+        amount: Number,
+        date: Date
+      }
+    ]
+  },
   receiver: { type: mongoose.Schema.Types.ObjectId, ref: "suppliers" }
 })
 

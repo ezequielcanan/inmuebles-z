@@ -12,6 +12,8 @@ class BillService {
     const updatePayment = await paymentService.inserBill(payment, { bill: result?._id, concept: bill.concept });
     return result;
   };
+
+  getBillById = async (bid) => billModel.findOne({ _id: bid })
 }
 
 export default BillService;
