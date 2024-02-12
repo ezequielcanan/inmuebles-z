@@ -140,9 +140,45 @@ export const paymentExcel = (payment, lastPayment) => {
   wsBills.cell(8, totalCol).formula(`SUM(${xl.getExcelCellRef(8, 1)}:${xl.getExcelCellRef(8, lastBillCol)})`).style(styles["importantCell"])
 
   wsBills.cell(12, 1, 12, 2, true).string("DETALLE PAGO").style(styles["header"])
+  const totalRetention = payment?.white?.payments?.reduce((acc, payment) => acc + payment?.retention?.amount, 0)
+
+  let lastRow = 0
   billCells.forEach((billCell, i) => {
     wsBills.cell(14 + i, 2).formula(`${billCell}`).style(styles["cell"])
+    i == billCells.length - 1 && (
+      wsBills.cell(14 + i + 2, 2).formula(`SUM(${xl.getExcelCellRef(14, 2)}:${xl.getExcelCellRef(14 + i, 2)})`).style(styles["importantCell"]),
+      wsBills.cell(14 + i + 4, 1).string("Retenciones").style(styles["cell"]),
+      wsBills.cell(14 + i + 4, 2).number(-totalRetention || 0).style(styles["cell"]),
+      wsBills.cell(14 + i + 5, 1).string("A PAGAR").style(styles["importantCell"]),
+      wsBills.cell(14 + i + 5, 2).formula(`${xl.getExcelCellRef(14 + i + 2, 2)} + ${xl.getExcelCellRef(14 + i + 4, 2)}`).style(styles["importantCell"]),
+      lastRow += 14 + i + 8
+    )
   })
+
+  wsBills.cell(lastRow, 1, lastRow, 6, true).string("DETALLE DE CHEQUES").style(styles["sectionHead"])
+  lastRow++
+  wsBills.cell(lastRow, 2).string("MONTO").style(styles["importantCell"])
+  wsBills.cell(lastRow, 3).string("Fecha de emisión").style(styles["importantCell"])
+  wsBills.cell(lastRow, 4).string("Fecha de cobro").style(styles["importantCell"])
+  wsBills.cell(lastRow, 5).string("Número de cheque").style(styles["importantCell"])
+  wsBills.cell(lastRow, 6).string("Titular cuenta").style(styles["importantCell"])
+  lastRow++
+
+  const writeCheckOrPaymentMethod = (payment, type="Cheque") => {
+    wsBills.cell(lastRow,1).string(`${type}`).style(styles["cell"])
+    wsBills.cell(lastRow,2).number(payment?.amount).style(styles["cell"])
+    wsBills.cell(lastRow,3).string(moment.utc(payment?.emissionDate).format("DD-MM-YYYY")).style(styles["cell"])
+    wsBills.cell(lastRow,4).string(moment.utc(payment?.expirationDate).format("DD-MM-YYYY") || "").style(styles["cell"])
+    wsBills.cell(lastRow,5).string(payment?.code).style(styles["cell"])
+    wsBills.cell(lastRow,6).string(payment?.account?.name || "").style(styles["cell"])
+    lastRow++
+  } 
+
+  payment?.white?.payments?.forEach((payment) => {
+    payment?.checks?.forEach((check) => {
+      writeCheckOrPaymentMethod(check)
+    })
+  })  
 
   return wb
 }

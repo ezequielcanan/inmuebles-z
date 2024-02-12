@@ -10,4 +10,12 @@ const checkSchema = new mongoose.Schema({
   account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts" }
 })
 
+checkSchema.pre("findOne", function () {
+  this.populate("account")
+})
+
+checkSchema.pre("find", function () {
+  this.populate("account")
+})
+
 export default mongoose.model(checkCollection, checkSchema)
