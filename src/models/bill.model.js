@@ -13,7 +13,8 @@ const billsSchema = new mongoose.Schema({
       {
         type: { type: String, enum: ["debit", "credit"] },
         amount: Number,
-        date: Date
+        date: Date,
+        code: String
       }
     ]
   },

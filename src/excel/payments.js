@@ -167,18 +167,26 @@ export const paymentExcel = (payment, lastPayment) => {
   const writeCheckOrPaymentMethod = (payment, type="Cheque") => {
     wsBills.cell(lastRow,1).string(`${type}`).style(styles["cell"])
     wsBills.cell(lastRow,2).number(payment?.amount).style(styles["cell"])
-    wsBills.cell(lastRow,3).string(moment.utc(payment?.emissionDate).format("DD-MM-YYYY")).style(styles["cell"])
+    wsBills.cell(lastRow,3).string(moment.utc(payment?.emissionDate || payment?.date).format("DD-MM-YYYY")).style(styles["cell"])
     wsBills.cell(lastRow,4).string(moment.utc(payment?.expirationDate).format("DD-MM-YYYY") || "").style(styles["cell"])
     wsBills.cell(lastRow,5).string(payment?.code).style(styles["cell"])
     wsBills.cell(lastRow,6).string(payment?.account?.name || "").style(styles["cell"])
     lastRow++
   } 
 
+  const firstPaymentRow = lastRow
+
   payment?.white?.payments?.forEach((payment) => {
     payment?.checks?.forEach((check) => {
       writeCheckOrPaymentMethod(check)
     })
-  })  
+    payment?.transfers?.forEach((transfer) => {
+      writeCheckOrPaymentMethod(transfer)
+    })
+    payment?.materials?.amount && writeCheckOrPaymentMethod(payment?.materials, payment?.materials?.material)
+  })
+  
+  wsBills.cell(lastRow+1, 2).formula(`SUM(${xl.getExcelCellRef(firstPaymentRow, 2)}:${xl.getExcelCellRef(lastRow-1, 2)})`).style(styles["importantCell"])
 
   return wb
 }
@@ -233,28 +241,52 @@ export const budgetWhiteExcel = (budget, payments) => {
     ws.cell(row, 6).formula(row == 3 ? `+${xl.getExcelCellRef(row, 4)} - ${xl.getExcelCellRef(row, 5)}` : `+${xl.getExcelCellRef(row - 1, 6)} + ${xl.getExcelCellRef(row, 4)} - ${xl.getExcelCellRef(row, 5)}`).style(styles["cell"])
   }
 
+  const writeRows = (rows) => {
+    rows.sort((a,b) => {
+      const date1 = moment(a[1])
+      const date2 = moment(b[1])
+      return date1.diff(date2)
+    })
+    rows = rows.map((row) => [row[1].format("DD-MM-YYYY"), row[2], row[3], row[4], row[5]])
+    rows.forEach((row,i) => writeRow(i+3, ...row))
+  }
+
+  const addRow = (row, date, code, description, credit = 0, debit = 0) => rows.push([row,date,code,description,credit,debit])
+
+  const rows = []
+
 
   let lastRow = 3
   payments?.forEach((payment, i) => {
     payment?.white?.bills?.forEach((bill) => {
-      writeRow(lastRow, moment.utc(bill?.bill?.emissionDate).format("YYYY-MM-DD"), bill?.bill?.code, "Factura", 0, bill?.bill?.amount * (1 + (bill?.bill?.iva + bill?.bill?.taxes) / 100))
+      addRow(lastRow, moment.utc(bill?.bill?.emissionDate), bill?.bill?.code, "Factura", 0, bill?.bill?.amount * (1 + (bill?.bill?.iva + bill?.bill?.taxes) / 100))
       lastRow++
+      bill?.bill?.notes?.forEach((note) => {
+        addRow(lastRow, moment.utc(note?.date), note?.code, `Nota de ${note?.type == "credit" ? "crédito" : "débito"}`, (note?.type == "credit" ? note?.amount : 0), (note?.type == "debit" ? note?.amount : 0))
+        lastRow++
+      })
     })
     payment?.white?.payments?.forEach(payment => {
       payment?.checks?.forEach(check => {
-        writeRow(lastRow, moment.utc(check?.emissionDate).format("YYYY-MM-DD"), check?.code, "Cheque", check?.amount)
+        addRow(lastRow, moment.utc(check?.emissionDate), check?.code, "Cheque", check?.amount)
         lastRow++
       })
       payment?.transfers?.forEach(transfer => {
-        writeRow(lastRow, moment.utc(transfer?.emissionDate).format("YYYY-MM-DD"), transfer?.code, "Transferencia", transfer?.amount)
+        addRow(lastRow, moment.utc(transfer?.emissionDate), transfer?.code, "Transferencia", transfer?.amount)
         lastRow++
       })
-      payment?.retention && (
-        writeRow(lastRow, moment.utc(payment?.date).format("YYYY-MM-DD"), payment?.retention?.code, "Retencion", payment?.retention?.amount),
+      payment?.retention?.amount && (
+        addRow(lastRow, moment.utc(payment?.date), payment?.retention?.code, "Retencion", payment?.retention?.amount),
+        lastRow++
+      )
+      payment?.materials?.amount && (
+        addRow(lastRow, moment.utc(payment?.materials?.date), "", payment?.materials?.material, payment?.materials?.amount),
         lastRow++
       )
     })
   })
+
+  writeRows(rows)
 
   return wb
 } 

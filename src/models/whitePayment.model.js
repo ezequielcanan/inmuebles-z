@@ -13,6 +13,11 @@ const whitePaymentsSchema = new mongoose.Schema({
   retention: {
     amount: Number,
     code: String
+  },
+  materials: {
+    amount: Number,
+    material: String,
+    date: Date
   }
 })
 

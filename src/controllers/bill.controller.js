@@ -23,3 +23,25 @@ export const getBill = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const addBalanceNote = async (req,res) => {
+  try {
+    const result = await billService.addBalanceNote(req?.params?.bid, req?.body)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const updateBalanceNote = async (req,res) => {
+  try {
+    const result = await billService.updateBalanceNote(req?.params?.bid, req?.params?.nid, req?.body)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
