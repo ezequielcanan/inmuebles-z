@@ -134,12 +134,14 @@ export const paymentExcel = (payment, lastPayment) => {
   })
 
   const totalCol = lastBillCol + 3
-  wsBills.cell(5, totalCol).formula(`SUM(${xl.getExcelCellRef(5, 1)}:${xl.getExcelCellRef(5, lastBillCol)})`).style(styles["importantCell"])
-  wsBills.cell(6, totalCol).formula(`SUM(${xl.getExcelCellRef(6, 1)}:${xl.getExcelCellRef(6, lastBillCol)})`).style(styles["importantCell"])
-  wsBills.cell(7, totalCol).formula(`SUM(${xl.getExcelCellRef(7, 1)}:${xl.getExcelCellRef(7, lastBillCol)})`).style(styles["importantCell"])
-  wsBills.cell(8, totalCol).formula(`SUM(${xl.getExcelCellRef(8, 1)}:${xl.getExcelCellRef(8, lastBillCol)})`).style(styles["importantCell"])
+  if (payment?.white?.bills?.length) {
+    wsBills.cell(5, totalCol).formula(`SUM(${xl.getExcelCellRef(5, 1)}:${xl.getExcelCellRef(5, lastBillCol)})`).style(styles["importantCell"])
+    wsBills.cell(6, totalCol).formula(`SUM(${xl.getExcelCellRef(6, 1)}:${xl.getExcelCellRef(6, lastBillCol)})`).style(styles["importantCell"])
+    wsBills.cell(7, totalCol).formula(`SUM(${xl.getExcelCellRef(7, 1)}:${xl.getExcelCellRef(7, lastBillCol)})`).style(styles["importantCell"])
+    wsBills.cell(8, totalCol).formula(`SUM(${xl.getExcelCellRef(8, 1)}:${xl.getExcelCellRef(8, lastBillCol)})`).style(styles["importantCell"])
+    wsBills.cell(12, 1, 12, 2, true).string("DETALLE PAGO").style(styles["header"])
+  }
 
-  wsBills.cell(12, 1, 12, 2, true).string("DETALLE PAGO").style(styles["header"])
   const totalRetention = payment?.white?.payments?.reduce((acc, payment) => acc + payment?.retention?.amount, 0)
 
   let lastRow = 0
@@ -154,6 +156,7 @@ export const paymentExcel = (payment, lastPayment) => {
       lastRow += 14 + i + 8
     )
   })
+  lastRow++
 
   wsBills.cell(lastRow, 1, lastRow, 6, true).string("DETALLE DE CHEQUES").style(styles["sectionHead"])
   lastRow++
@@ -164,15 +167,15 @@ export const paymentExcel = (payment, lastPayment) => {
   wsBills.cell(lastRow, 6).string("Titular cuenta").style(styles["importantCell"])
   lastRow++
 
-  const writeCheckOrPaymentMethod = (payment, type="Cheque") => {
-    wsBills.cell(lastRow,1).string(`${type}`).style(styles["cell"])
-    wsBills.cell(lastRow,2).number(payment?.amount).style(styles["cell"])
-    wsBills.cell(lastRow,3).string(moment.utc(payment?.emissionDate || payment?.date).format("DD-MM-YYYY")).style(styles["cell"])
-    wsBills.cell(lastRow,4).string(moment.utc(payment?.expirationDate).format("DD-MM-YYYY") || "").style(styles["cell"])
-    wsBills.cell(lastRow,5).string(payment?.code).style(styles["cell"])
-    wsBills.cell(lastRow,6).string(payment?.account?.name || "").style(styles["cell"])
+  const writeCheckOrPaymentMethod = (payment, type = "Cheque") => {
+    wsBills.cell(lastRow, 1).string(`${type}`).style(styles["cell"])
+    wsBills.cell(lastRow, 2).number(payment?.amount).style(styles["cell"])
+    wsBills.cell(lastRow, 3).string(moment.utc(payment?.emissionDate || payment?.date).format("DD-MM-YYYY")).style(styles["cell"])
+    wsBills.cell(lastRow, 4).string(moment.utc(payment?.expirationDate).format("DD-MM-YYYY") || "").style(styles["cell"])
+    wsBills.cell(lastRow, 5).string(payment?.code).style(styles["cell"])
+    wsBills.cell(lastRow, 6).string(payment?.account?.name || "").style(styles["cell"])
     lastRow++
-  } 
+  }
 
   const firstPaymentRow = lastRow
 
@@ -185,8 +188,8 @@ export const paymentExcel = (payment, lastPayment) => {
     })
     payment?.materials?.amount && writeCheckOrPaymentMethod(payment?.materials, payment?.materials?.material)
   })
-  
-  wsBills.cell(lastRow+1, 2).formula(`SUM(${xl.getExcelCellRef(firstPaymentRow, 2)}:${xl.getExcelCellRef(lastRow-1, 2)})`).style(styles["importantCell"])
+
+  wsBills.cell(lastRow + 1, 2).formula(`SUM(${xl.getExcelCellRef(firstPaymentRow, 2)}:${xl.getExcelCellRef(lastRow - 1, 2)})`).style(styles["importantCell"])
 
   return wb
 }
@@ -242,16 +245,16 @@ export const budgetWhiteExcel = (budget, payments) => {
   }
 
   const writeRows = (rows) => {
-    rows.sort((a,b) => {
+    rows.sort((a, b) => {
       const date1 = moment(a[1])
       const date2 = moment(b[1])
       return date1.diff(date2)
     })
     rows = rows.map((row) => [row[1].format("DD-MM-YYYY"), row[2], row[3], row[4], row[5]])
-    rows.forEach((row,i) => writeRow(i+3, ...row))
+    rows.forEach((row, i) => writeRow(i + 3, ...row))
   }
 
-  const addRow = (row, date, code, description, credit = 0, debit = 0) => rows.push([row,date,code,description,credit,debit])
+  const addRow = (row, date, code, description, credit = 0, debit = 0) => rows.push([row, date, code, description, credit, debit])
 
   const rows = []
 

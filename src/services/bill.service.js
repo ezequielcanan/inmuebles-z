@@ -13,14 +13,23 @@ class BillService {
     return result;
   };
 
-  addBalanceNote = async (bid, note) => billModel.findOneAndUpdate({_id: bid}, {$push: {"notes": note}}, {new: true})
+  updateBill = async (bid, bill) => billModel.findOneAndUpdate({ _id: bid }, { $set: bill }, { new: true })
+
+  addBalanceNote = async (bid, note) => billModel.findOneAndUpdate({ _id: bid }, { $push: { "notes": note } }, { new: true })
 
   updateBalanceNote = async (bid, nid, note) => {
     const updateObj = {}
     Object.entries(note).forEach((entry) => {
       updateObj[`notes.$.${entry[0]}`] = entry[1]
     })
-    return billModel.findOneAndUpdate({_id: bid, "notes._id": nid}, {$set: updateObj}, {new: true})
+    return billModel.findOneAndUpdate({ _id: bid, "notes._id": nid }, { $set: updateObj }, { new: true })
+  }
+
+  deleteBill = async (bid, pid) => {
+    const result = await billModel.deleteOne({ _id: bid })
+    const pullBillFromPayment = await paymentService.pullBill(pid, bid)
+
+    return result
   }
 
   getBillById = async (bid) => billModel.findOne({ _id: bid })
