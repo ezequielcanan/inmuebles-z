@@ -22,3 +22,14 @@ export const getFiles = (req,res) => {
     res.sendServerError(e)
   }
 }
+
+export const deleteCheck = async (req,res) => {
+  try {
+    const result = await checkService.deleteCheck(req?.body?.payment, req?.body?.check, req?.body?.sid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
