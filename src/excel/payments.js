@@ -184,7 +184,7 @@ export const paymentExcel = (payment, lastPayment) => {
       writeCheckOrPaymentMethod(check)
     })
     payment?.transfers?.forEach((transfer) => {
-      writeCheckOrPaymentMethod(transfer)
+      writeCheckOrPaymentMethod(transfer, "Transferencia")
     })
     payment?.materials?.amount && writeCheckOrPaymentMethod(payment?.materials, payment?.materials?.material)
   })

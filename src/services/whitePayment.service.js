@@ -12,5 +12,10 @@ export default class WhitePaymentService {
     return result
   }
 
-  getWhitePayment = async (sid) => whitePaymentModel.findOne({_id: sid})
+  getWhitePayment = async (sid) => whitePaymentModel.findOne({ _id: sid })
+
+  updateWhitePayment = async (sid, data) => {
+    const result = await whitePaymentModel.updateOne({ _id: sid }, { $set: data })
+    return result
+  }
 }

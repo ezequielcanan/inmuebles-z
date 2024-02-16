@@ -68,3 +68,14 @@ export const updateBill = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const getFiles = (req, res) => {
+  try {
+    const result = billService.getFiles(req?.body?.thumbnail)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}

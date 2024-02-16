@@ -95,13 +95,24 @@ export const deleteNote = async (req, res) => {
   }
 }
 
-export const getBudgetExcel = async (req,res) => {
+export const getBudgetExcel = async (req, res) => {
   try {
     const budget = await budgetService.getBudget(req?.params?.bid)
     const payments = await paymentService.getBudgetPayments(req?.params?.bid)
 
     const wb = budgetWhiteExcel(budget, payments)
     wb.write(`Cuenta corriente ${budget?.title} - ${budget?.supplier?.name || ""}.xlsx`, res)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getBudgetsBySuppliers = async (req, res) => {
+  try {
+    const result = await budgetService.getBudgetsBySupplier(req?.params?.sid)
+    res.sendSuccess(result)
   }
   catch (e) {
     console.error(e)

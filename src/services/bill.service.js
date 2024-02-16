@@ -32,6 +32,12 @@ class BillService {
     return result
   }
 
+  getFiles = (thumbnail) => {
+    const files = []
+    fs.readdirSync(__dirname + thumbnail).forEach(file => files.push(file))
+    return files
+  }
+
   getBillById = async (bid) => billModel.findOne({ _id: bid })
 }
 

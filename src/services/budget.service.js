@@ -64,6 +64,8 @@ class BudgetService {
     return result
   }
 
+  getBudgetsBySupplier = async sid => budgetModel.find({ supplier: sid })
+
   getBudgets = async () => budgetModel.find()
 
   getBudget = async (bid) => budgetModel.findOne({ _id: bid })
