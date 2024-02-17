@@ -2,6 +2,9 @@ import paymentModel from "../models/payment.model.js"
 import BudgetService from "./budget.service.js"
 import WhitePaymentService from "./whitePayment.service.js"
 import BlackPaymentService from "./blackPayment.service.js"
+import billModel from "../models/bill.model.js"
+import __dirname from "../utils.js"
+import fs from "fs"
 
 const whitePaymentService = new WhitePaymentService()
 const blackPaymentService = new BlackPaymentService()
@@ -48,7 +51,7 @@ class PaymentService {
   pullPayment = async (pid, sid, type = "white") => {
     const updateObj = {}
     updateObj[`${type}.payments`] = sid
-    const result = await paymentModel.updateOne({_id: pid}, {$pull: updateObj})
+    const result = await paymentModel.updateOne({ _id: pid }, { $pull: updateObj })
     return result
   }
 
@@ -74,21 +77,27 @@ class PaymentService {
 
   deletePayment = async (pid) => {
     const payment = await this.getPayment(pid)
-    
+
     await Promise.all(payment?.white?.payments?.map(async (subpayment) => {
       const result = await whitePaymentService.deleteWhitePayment(pid, subpayment?._id)
       return {}
     }))
-    
+
+    await Promise.all(payment?.white?.bills?.map(async (bill) => {
+      const result = await billModel.deleteOne({ _id: bill?.bill?._id })
+      return result
+    }))
+
     await Promise.all(payment?.black?.payments?.map(async (subpayment) => {
       const result = await blackPaymentService.deleteBlackPayment(pid, subpayment?._id)
       return {}
     }))
-    
-    const deleteResult = await paymentModel.deleteOne({_id: pid})
-    const payments = await paymentModel.find({budget: payment?.budget?._id}).sort({paymentNumber: "desc"})
+    fs.rmSync(`${__dirname}/public/projects/${payment?.budget?.project?._id}/budgets/${payment?.budget?._id}/payments/${payment?._id}`, { recursive: true, force: true })
 
-    await budgetService.updateBudget(payment?.budget?._id, {lastPayment: payments[0]?._id, advanced: payment?.budget?.advanced - (payment?.percentageOfTotal * payment?.budget?.total / 100)})
+    const deleteResult = await paymentModel.deleteOne({ _id: pid })
+    const payments = await paymentModel.find({ budget: payment?.budget?._id }).sort({ paymentNumber: "desc" })
+
+    await budgetService.updateBudget(payment?.budget?._id, { lastPayment: payments[0]?._id, advanced: payment?.budget?.advanced - (payment?.percentageOfTotal * payment?.budget?.total / 100) })
 
     return payment
   }

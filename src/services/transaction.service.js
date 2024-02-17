@@ -16,7 +16,7 @@ class TransactionService {
   }
 
   insertApartmentByPayment = async data => {
-    const buyer = await ownerModel.findOne({name: data.supplier?.name})
+    const buyer = await ownerModel.findOne({ name: data.supplier?.name })
     const apartment = await apartmentService.getApartmentById(data.apartment?._id)
     const transactionObject = {
       apartment: data.apartment?.apartment,
@@ -32,10 +32,9 @@ class TransactionService {
       }
     }
 
-    console.log(data.apartment)
     const transactionResult = await this.createTransaction(transactionObject)
     const apartmentResult = await apartmentService.updateApartment(transactionResult?.apartment, { owner: transactionResult?.buyer, forSale: false })
-    const budgetResult = await budgetModel.findOneAndUpdate({_id: data?.bid}, {$push: {"paidApartments": {apartment: transactionResult?._id, discount: data?.apartment?.subtractType}}, $inc: {"advanced": data?.apartment?.subtractType == "total" ? (data?.apartment?.total * data?.apartment?.dollar) || 0 : 0}}, {new: true})
+    const budgetResult = await budgetModel.findOneAndUpdate({ _id: data?.bid }, { $push: { "paidApartments": { apartment: transactionResult?._id, discount: data?.apartment?.subtractType } }, $inc: { "advanced": data?.apartment?.subtractType == "total" ? (data?.apartment?.total * data?.apartment?.dollar) || 0 : 0 } }, { new: true })
     return budgetResult
   }
 

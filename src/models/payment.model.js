@@ -8,6 +8,7 @@ const paymentsSchema = new mongoose.Schema({
   percentageOfTotal: Number,
   amount: Number,
   discountByApartments: Number,
+  date: Date,
   total: Number,
   indexCac: Number,
   notes: {
@@ -49,7 +50,7 @@ const paymentsSchema = new mongoose.Schema({
 paymentsSchema.pre("find", function () {
   this.populate("white.bills.bill")
   this.populate("white.payments")
-  this.populate("black.payments.payment")
+  this.populate("black.payments")
 })
 
 paymentsSchema.pre("findOne", function () {

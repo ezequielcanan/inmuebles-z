@@ -1,4 +1,4 @@
-import { budgetWhiteExcel } from "../excel/payments.js"
+import { budgetBlackExcel, budgetWhiteExcel } from "../excel/payments.js"
 import BudgetService from "../services/budget.service.js"
 import PaymentService from "../services/payment.service.js"
 
@@ -109,11 +109,13 @@ export const getBudgetExcel = async (req, res) => {
   }
 }
 
-export const getBudgetBlackExcel = async (req,res) => {
+export const getBudgetBlackExcel = async (req, res) => {
   try {
     const budget = await budgetService.getBudget(req?.params?.bid)
     const payments = await paymentService.getBudgetPayments(req?.params?.bid)
-    
+
+    const wb = budgetBlackExcel(budget, payments)
+    wb.write(`Cuenta corriente B ${budget?.title} - ${budget?.supplier?.name || ""}.xlsx`, res)
   }
   catch (e) {
     console.error(e)
