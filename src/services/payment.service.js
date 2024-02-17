@@ -1,4 +1,11 @@
 import paymentModel from "../models/payment.model.js"
+import BudgetService from "./budget.service.js"
+import WhitePaymentService from "./whitePayment.service.js"
+import BlackPaymentService from "./blackPayment.service.js"
+
+const whitePaymentService = new WhitePaymentService()
+const blackPaymentService = new BlackPaymentService()
+const budgetService = new BudgetService()
 
 class PaymentService {
   constructor() { }
@@ -28,13 +35,20 @@ class PaymentService {
     return result
   }
 
-  inserBill = async (pid, bill) => {
+  insertBill = async (pid, bill) => {
     const result = await paymentModel.findOneAndUpdate({ _id: pid }, { $push: { "white.bills": bill } })
     return result
   }
 
   pullBill = async (pid, bid) => {
     const result = await paymentModel.updateOne({ _id: pid }, { $pull: { "white.bills": { "bill": bid } } })
+    return result
+  }
+
+  pullPayment = async (pid, sid, type = "white") => {
+    const updateObj = {}
+    updateObj[`${type}.payments`] = sid
+    const result = await paymentModel.updateOne({_id: pid}, {$pull: updateObj})
     return result
   }
 
@@ -56,6 +70,27 @@ class PaymentService {
   deleteNote = async (id, nid) => {
     const result = await paymentModel.findOneAndUpdate({ _id: id }, { $pull: { "notes": { "_id": nid } } }, { new: true })
     return result
+  }
+
+  deletePayment = async (pid) => {
+    const payment = await this.getPayment(pid)
+    
+    await Promise.all(payment?.white?.payments?.map(async (subpayment) => {
+      const result = await whitePaymentService.deleteWhitePayment(pid, subpayment?._id)
+      return {}
+    }))
+    
+    await Promise.all(payment?.black?.payments?.map(async (subpayment) => {
+      const result = await blackPaymentService.deleteBlackPayment(pid, subpayment?._id)
+      return {}
+    }))
+    
+    const deleteResult = await paymentModel.deleteOne({_id: pid})
+    const payments = await paymentModel.find({budget: payment?.budget?._id}).sort({paymentNumber: "desc"})
+
+    await budgetService.updateBudget(payment?.budget?._id, {lastPayment: payments[0]?._id, advanced: payment?.budget?.advanced - (payment?.percentageOfTotal * payment?.budget?.total / 100)})
+
+    return payment
   }
 
   getPayment = async (id) => paymentModel.findOne({ _id: id })

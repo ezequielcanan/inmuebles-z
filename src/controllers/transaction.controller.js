@@ -101,3 +101,14 @@ export const deleteTransaction = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const insertApartmentByPayment = async (req,res) => {
+  try {
+    const result = await transactionService.insertApartmentByPayment(req?.body)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}

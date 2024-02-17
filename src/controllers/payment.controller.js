@@ -83,3 +83,14 @@ export const deleteNote = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const deletePayment = async (req,res) => {
+  try {
+    const result = await paymentService.deletePayment(req?.params?.pid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}

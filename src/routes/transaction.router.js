@@ -1,5 +1,5 @@
 import Z_Router from "./router.js";
-import { createTransaction, getApartmentTransactions, getTransactionById, createTransactionXlsx, createFutureQuotasXlsx, updateTransaction, deleteTransaction } from "../controllers/transaction.controller.js";
+import { createTransaction, getApartmentTransactions, getTransactionById, createTransactionXlsx, createFutureQuotasXlsx, updateTransaction, deleteTransaction, insertApartmentByPayment } from "../controllers/transaction.controller.js";
 
 export default class TransactionRouter extends Z_Router {
   init() {
@@ -9,6 +9,7 @@ export default class TransactionRouter extends Z_Router {
     this.get("/excel/project/:pid", ["ADMIN", "SECRETARY", "USER"], createFutureQuotasXlsx)
 
     this.post("/", ["ADMIN", "SECRETARY"], createTransaction)
+    this.post("/budget", ["ADMIN", "SECRETARY"], insertApartmentByPayment)
 
     this.put("/:tid/:type", ["ADMIN", "SECRETARY"], updateTransaction)
 

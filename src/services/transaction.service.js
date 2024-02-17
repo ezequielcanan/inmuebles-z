@@ -1,6 +1,11 @@
 import transactionModel from "../models/transaction.model.js"
 import quotaModel from "../models/quota.model.js"
+import ApartmentService from "./apartment.service.js"
 import mongoose from "mongoose"
+import ownerModel from "../models/owner.model.js"
+import budgetModel from "../models/budget.model.js"
+
+const apartmentService = new ApartmentService()
 
 class TransactionService {
   constructor() { }
@@ -8,6 +13,30 @@ class TransactionService {
   createTransaction = async (data) => {
     const result = await transactionModel.create(data)
     return result
+  }
+
+  insertApartmentByPayment = async data => {
+    const buyer = await ownerModel.findOne({name: data.supplier?.name})
+    const apartment = await apartmentService.getApartmentById(data.apartment?._id)
+    const transactionObject = {
+      apartment: data.apartment?.apartment,
+      seller: apartment?.owner?._id,
+      buyer: buyer?._id,
+      dolar: data?.apartment.dollar,
+      total: data?.apartment?.total,
+      black: {
+        quotas: 0
+      },
+      white: {
+        quotas: 0
+      }
+    }
+
+    console.log(data.apartment)
+    const transactionResult = await this.createTransaction(transactionObject)
+    const apartmentResult = await apartmentService.updateApartment(transactionResult?.apartment, { owner: transactionResult?.buyer, forSale: false })
+    const budgetResult = await budgetModel.findOneAndUpdate({_id: data?.bid}, {$push: {"paidApartments": {apartment: transactionResult?._id, discount: data?.apartment?.subtractType}}, $inc: {"advanced": data?.apartment?.subtractType == "total" ? (data?.apartment?.total * data?.apartment?.dollar) || 0 : 0}}, {new: true})
+    return budgetResult
   }
 
   getApartmentTransactions = async (aid) => {

@@ -1,14 +1,10 @@
-import whitePaymentModel from "../models/whitePayment.model.js";
-import PaymentService from "./payment.service.js"
+import whitePaymentModel from "../models/whitePayment.model.js"
 
-const paymentService = new PaymentService()
 export default class WhitePaymentService {
   constructor() { }
 
   createWhitePayment = async (payment, pid) => {
     const result = await whitePaymentModel.create(payment)
-    const updateResult = await paymentService.insertSubPayment(pid, "white.payments", result?._id)
-
     return result
   }
 
@@ -16,6 +12,11 @@ export default class WhitePaymentService {
 
   updateWhitePayment = async (sid, data) => {
     const result = await whitePaymentModel.updateOne({ _id: sid }, { $set: data })
+    return result
+  }
+
+  deleteWhitePayment = async (pid, sid) => {
+    const result = await whitePaymentModel.findOneAndDelete({_id: sid})
     return result
   }
 }

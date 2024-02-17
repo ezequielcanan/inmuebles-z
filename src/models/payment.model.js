@@ -6,7 +6,6 @@ const paymentsSchema = new mongoose.Schema({
   budget: { type: mongoose.Schema.Types.ObjectId, ref: "budgets" },
   paymentNumber: Number,
   percentageOfTotal: Number,
-  balanceAdjustment: Number,
   amount: Number,
   discountByApartments: Number,
   total: Number,

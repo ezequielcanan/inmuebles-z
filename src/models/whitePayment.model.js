@@ -31,5 +31,10 @@ whitePaymentsSchema.pre("findOne", function () {
   this.populate("transfers")
 })
 
+whitePaymentsSchema.pre("findOneAndDelete", function () {
+  this.populate("checks")
+  this.populate("transfers")
+})
+
 
 export default mongoose.model(whitePaymentsCollection, whitePaymentsSchema)

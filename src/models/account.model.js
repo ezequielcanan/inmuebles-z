@@ -7,7 +7,8 @@ const accountsSchema = new mongoose.Schema({
   bank: String,
   name: String,
   alias: String,
-  cuit: String
+  cuit: String,
+  society: String
 })
 
 export default mongoose.model(accountsCollection, accountsSchema)

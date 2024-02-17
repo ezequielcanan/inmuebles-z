@@ -109,6 +109,18 @@ export const getBudgetExcel = async (req, res) => {
   }
 }
 
+export const getBudgetBlackExcel = async (req,res) => {
+  try {
+    const budget = await budgetService.getBudget(req?.params?.bid)
+    const payments = await paymentService.getBudgetPayments(req?.params?.bid)
+    
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
 export const getBudgetsBySuppliers = async (req, res) => {
   try {
     const result = await budgetService.getBudgetsBySupplier(req?.params?.sid)

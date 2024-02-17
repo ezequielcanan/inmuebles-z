@@ -92,9 +92,12 @@ export const paymentExcel = (payment, lastPayment) => {
     const lastMcpApartments = (lastPayment?.discountByApartments * percentage / 100) * (lastPayment?.indexCac / payment?.budget?.baseIndex - 1)
     const lastMcdApartments = (lastPayment?.discountByApartments * percentage / 100) * (payment?.indexCac / payment?.budget?.baseIndex - 1)
 
+    const lastMcp = lastPayment[type]?.mcp
+    const lastMcd = lastPayment[type]?.mcd
+
     ws.cell(4, col).formula(`B1 * ${percentage}%`).style(styles["cell"])
     ws.cell(5, col).formula(`${xl.getExcelCellRef(4, col)} * ${adjustmentCell}`).style(styles["cell"])
-    ws.cell(6, col).number(0).style(styles["cell"])
+    ws.cell(6, col).number((lastMcd - lastMcp) || 0).style(styles["cell"])
     ws.cell(7, col).formula(`SUM(${xl.getExcelCellRef(4, col)}:${xl.getExcelCellRef(6, col)})`).style(styles["cell"])
     type == "white" && ws.cell(8, col).formula(`${xl.getExcelCellRef(7, col)} * ${(payment?.bill?.iva || 0)}% `).style(styles["cell"])
     type == "white" && ws.cell(9, col).formula(`${xl.getExcelCellRef(7, col)} * ${(payment?.bill?.taxes || 0)}% `).style(styles["cell"])
@@ -179,6 +182,10 @@ export const paymentExcel = (payment, lastPayment) => {
 
   const firstPaymentRow = lastRow
 
+  wsBills.cell(lastRow, 1).string(`Descuento UF`).style(styles["cell"])
+  wsBills.cell(lastRow, 2).formula(`'CERTIFICADO'!H16`).style(styles["cell"])
+  lastRow++
+
   payment?.white?.payments?.forEach((payment) => {
     payment?.checks?.forEach((check) => {
       writeCheckOrPaymentMethod(check)
@@ -196,7 +203,7 @@ export const paymentExcel = (payment, lastPayment) => {
 
 export const budgetWhiteExcel = (budget, payments) => {
   const wb = new xl.Workbook()
-  const ws = wb.addWorksheet("CERTIFICADO", {
+  const ws = wb.addWorksheet("CUENTA CORRIENTE", {
     sheetFormat: {
       'defaultColWidth': 35,
       'defaultRowHeight': 30,
@@ -287,6 +294,92 @@ export const budgetWhiteExcel = (budget, payments) => {
         lastRow++
       )
     })
+  })
+
+  writeRows(rows)
+
+  return wb
+}
+
+
+export const budgetBlackExcel = (budget, payments) => {
+  const wb = new xl.Workbook()
+  const ws = wb.addWorksheet("CUENTA CORRIENTE", {
+    sheetFormat: {
+      'defaultColWidth': 35,
+      'defaultRowHeight': 30,
+    }
+  })
+
+  const styles = {
+    sectionHead: wb.createStyle({
+      ...fontHeadStyle,
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    }),
+    importantCell: wb.createStyle({
+      font: {
+        bold: true
+      },
+      ...textCenterStyle,
+      ...thinBorder,
+      ...bgSectionInfo,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    }),
+    cell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    })
+  }
+
+  ws.cell(1, 1, 1, 6, true).string(`Cuenta corriente B presupuesto ${budget.title} - ${budget?.supplier?.name}`).style(styles["sectionHead"])
+  ws.cell(2, 1).string("Fecha").style(styles["importantCell"])
+  ws.cell(2, 2).string("Descripción").style(styles["importantCell"])
+  ws.cell(2, 3).string("Crédito").style(styles["importantCell"])
+  ws.cell(2, 4).string("Débito").style(styles["importantCell"])
+  ws.cell(2, 5).string("Saldo").style(styles["importantCell"])
+
+  const writeRow = (row, date, code, description, credit = 0, debit = 0) => {
+    ws.cell(row, 1).string(date).style(styles["cell"])
+    ws.cell(row, 2).string(description || code).style(styles["cell"])
+    ws.cell(row, 3).number(credit).style(styles["cell"])
+    ws.cell(row, 4).number(debit).style(styles["cell"])
+    ws.cell(row, 5).formula(row == 3 ? `+${xl.getExcelCellRef(row, 3)} - ${xl.getExcelCellRef(row, 4)}` : `+${xl.getExcelCellRef(row - 1, 5)} + ${xl.getExcelCellRef(row, 3)} - ${xl.getExcelCellRef(row, 4)}`).style(styles["cell"])
+  }
+
+  const writeRows = (rows) => {
+    rows.sort((a, b) => {
+      const date1 = moment(a[1])
+      const date2 = moment(b[1])
+      return date1.diff(date2)
+    })
+    rows = rows.map((row) => [row[1].format("DD-MM-YYYY"), row[2], row[3], row[4]])
+    rows.forEach((row, i) => writeRow(i + 3, ...row))
+  }
+
+  const addRow = (row, date, description, credit = 0, debit = 0) => rows.push([row, date, description, credit, debit])
+
+  const rows = []
+
+
+  let lastRow = 3
+  payments?.forEach((payment, i) => {
+    const percentage = (100 - payment?.budget?.percentage) || 40
+    const adjustment = payment?.indexCac / payment?.budget?.baseIndex - 1
+    const lastPayment = payments[i-1] || {}
+    const lastMcpApartments = (lastPayment?.discountByApartments * percentage / 100) * (lastPayment?.indexCac / payment?.budget?.baseIndex - 1)
+    const lastMcdApartments = (lastPayment?.discountByApartments * percentage / 100) * (payment?.indexCac / payment?.budget?.baseIndex - 1)
+    const discountByApartments = payment?.discountByApartments
+
+    const totalApartmentsDiscount = (discountByApartments * percentage / 100) * (1 + adjustment) + (lastMcdApartments - lastMcpApartments) || 0
+
+    addRow(lastRow, moment.utc(payment?.date || ""), "Certificado", 0, (payment?.black?.amount + payment?.black?.mcp + ((lastPayment?.black?.mcd - lastPayment?.black?.mcp) || 0)))
+    lastRow++
+    addRow(lastRow, moment.utc(payment?.date || ""), "Descuento UF", totalApartmentsDiscount, 0)
+    lastRow++
   })
 
   writeRows(rows)
