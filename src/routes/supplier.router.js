@@ -3,8 +3,8 @@ import Z_Router from "./router.js";
 
 export default class SupplierRouter extends Z_Router {
   init() {
-    this.get("/", ["ADMIN"], getSuppliers)
-    this.get("/:sid", ["ADMIN"], getSupplier)
-    this.post("/", ["ADMIN"], addSupplier)
+    this.get("/", ["ADMIN", "EXECUTIVE", "USER"], getSuppliers)
+    this.get("/:sid", ["ADMIN", "EXECUTIVE", "USER"], getSupplier)
+    this.post("/", ["ADMIN", "EXECUTIVE"], addSupplier)
   }
 }

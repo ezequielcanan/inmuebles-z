@@ -75,6 +75,11 @@ class BudgetService {
     fs.readdirSync(__dirname + "/public/projects/" + project + "/budgets/" + budget).forEach(file => files.push(file))
     return files
   }
+
+  deleteFile = thumbnail => {
+    fs.unlinkSync(`${__dirname}/public/${thumbnail}`)
+    return true
+  }
 }
 
 export default BudgetService

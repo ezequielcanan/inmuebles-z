@@ -4,14 +4,14 @@ import Z_Router from "./router.js";
 
 export default class PaymentRouter extends Z_Router {
   init() {
-    this.get("/budget/:bid", ["ADMIN"], getBudgetPayments)
-    this.get("/:pid", ["ADMIN"], getPayment)
-    this.get("/excel/:pid", ["ADMIN"], getExcelPayment)
-    this.post("/", ["ADMIN"], createPayment)
-    this.post("/:pid/notes", ["ADMIN"], addNote)
-    this.post("/files", ["ADMIN"], uploader.array("files"), (req, res) => res.sendSuccess(req.body))
-    this.put("/:pid/notes/:nid", ["ADMIN"], updateNote)
-    this.delete("/:pid/notes/:nid", ["ADMIN"], deleteNote)
-    this.delete("/:pid", ["ADMIN"], deletePayment)
+    this.get("/budget/:bid", ["ADMIN", "EXECUTIVE", "USER"], getBudgetPayments)
+    this.get("/:pid", ["ADMIN", "EXECUTIVE", "USER"], getPayment)
+    this.get("/excel/:pid", ["ADMIN", "EXECUTIVE", "USER"], getExcelPayment)
+    this.post("/", ["ADMIN", "EXECUTIVE"], createPayment)
+    this.post("/:pid/notes", ["ADMIN", "EXECUTIVE"], addNote)
+    this.post("/files", ["ADMIN", "EXECUTIVE"], uploader.array("files"), (req, res) => res.sendSuccess(req.body))
+    this.put("/:pid/notes/:nid", ["ADMIN", "EXECUTIVE"], updateNote)
+    this.delete("/:pid/notes/:nid", ["ADMIN", "EXECUTIVE"], deleteNote)
+    this.delete("/:pid", ["ADMIN", "EXECUTIVE"], deletePayment)
   }
 }

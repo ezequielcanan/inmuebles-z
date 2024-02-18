@@ -4,10 +4,10 @@ import Z_Router from "./router.js"
 
 export default class TransferRouter extends Z_Router {
   init() {
-    this.post("/", ["ADMIN"], createTransfers)
-    this.post("/file", ["ADMIN"], uploader.single("file"), (req, res) => res.sendSuccess(true))
-    this.put("/", ["ADMIN"], updateTransfers)
-    this.patch("/file", ["ADMIN"], getFiles)
-    this.delete("/file", ["ADMIN"], deleteTransfer)
+    this.post("/", ["ADMIN", "EXECUTIVE"], createTransfers)
+    this.post("/file", ["ADMIN", "EXECUTIVE"], uploader.single("file"), (req, res) => res.sendSuccess(true))
+    this.put("/", ["ADMIN", "EXECUTIVE"], updateTransfers)
+    this.patch("/file", ["ADMIN", "EXECUTIVE", "USER"], getFiles)
+    this.delete("/file", ["ADMIN", "EXECUTIVE"], deleteTransfer)
   }
 }

@@ -8,6 +8,7 @@ class UserService {
     const roles = {
       status: true,
       admin: users.filter(u => u.role == "admin"),
+      executive: users.filter(u => u.role == "executive"),
       secretary: users.filter(u => u.role == "secretary"),
       user: users.filter(u => u.role == "user"),
       unknow: users.filter(u => u.role == "unknow")
@@ -21,7 +22,7 @@ class UserService {
   }
 
   updateUser = async (id, user) => {
-    const result = await userModel.updateOne({_id: id}, { $set: user })
+    const result = await userModel.updateOne({ _id: id }, { $set: user })
     return result
   }
 }

@@ -3,9 +3,9 @@ import Z_Router from "./router.js";
 
 export default class BlackPaymentRouter extends Z_Router {
   init() {
-    this.get("/:sid", ["ADMIN"], getBlackPayment)
-    this.post("/:pid", ["ADMIN"], createBlackPayment)
-    this.put("/:sid", ["ADMIN"], updateBlackPayment)
-    this.delete("/:pid/:sid", ["ADMIN"], deleteBlackPayment)
+    this.get("/:sid", ["ADMIN", "EXECUTIVE", "USER"], getBlackPayment)
+    this.post("/:pid", ["ADMIN", "EXECUTIVE"], createBlackPayment)
+    this.put("/:sid", ["ADMIN", "EXECUTIVE"], updateBlackPayment)
+    this.delete("/:pid/:sid", ["ADMIN", "EXECUTIVE"], deleteBlackPayment)
   }
 }

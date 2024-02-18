@@ -133,3 +133,15 @@ export const getBudgetsBySuppliers = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+
+export const deleteFile = (req, res) => {
+  try {
+    const result = budgetService.deleteFile(req?.body?.thumbnail)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
