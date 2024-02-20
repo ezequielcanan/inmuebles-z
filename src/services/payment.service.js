@@ -105,6 +105,17 @@ class PaymentService {
   getPayment = async (id) => paymentModel.findOne({ _id: id })
 
   getPaymentByNumber = async (number) => paymentModel.findOne({ paymentNumber: number })
+
+  getFiles = (project, budget, payment) => {
+    const files = []
+    fs.readdirSync(__dirname + "/public/projects/" + project + "/budgets/" + budget + "/payments/" + payment).forEach(file => files.push(file))
+    return files
+  }
+
+  deleteFile = thumbnail => {
+    fs.unlinkSync(`${__dirname}/public/${thumbnail}`)
+    return true
+  }
 }
 
 export default PaymentService

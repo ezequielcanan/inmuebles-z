@@ -5,7 +5,7 @@ import { uploader } from "../utils.js"
 export default class ProjectsRouter extends Z_Router {
   init() {
     this.get("/", ["ADMIN", "SECRETARY", "USER"], getProjects)
-    this.get("/:pid", ["ADMIN", "SECRETARY", "USER"], getProject)
+    this.get("/:pid", ["ADMIN", "SECRETARY", "EXECUTIVE", "USER"], getProject)
     this.get("/excel/:pid", ["ADMIN", "SECRETARY", "USER"], createExcelProject)
     this.get("/rooms/:rooms/:pid", ["ADMIN", "SECRETARY", "USER"], getApartmentsByRooms)
     this.get("/meters/:pid", ["ADMIN", "SECRETARY", "USER"], getProjectTotalMeters)

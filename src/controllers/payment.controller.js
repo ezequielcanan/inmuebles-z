@@ -94,3 +94,26 @@ export const deletePayment = async (req,res) => {
     res.sendServerError(e)
   }
 }
+
+export const deleteFile = (req, res) => {
+  try {
+    const result = paymentService.deleteFile(req?.body?.thumbnail)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getPaymentFiles = (req, res) => {
+  try {
+    const {projectId, bid, pid} = req?.params
+    const result = paymentService.getFiles(projectId, bid, pid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}

@@ -1,4 +1,4 @@
-import { addBalanceNote, createBill, deleteBill, getBill, getFiles, updateBalanceNote, updateBill } from "../controllers/bill.controller.js"
+import { addBalanceNote, createBill, deleteBalanceNote, deleteBill, getBill, getFiles, updateBalanceNote, updateBill } from "../controllers/bill.controller.js"
 import { uploader } from "../utils.js"
 import Z_Router from "./router.js"
 
@@ -16,5 +16,6 @@ export default class BillRouter extends Z_Router {
     this.put("/:bid", ["ADMIN", "EXECUTIVE"], updateBill)
 
     this.delete("/:bid/:pid", ["ADMIN", "EXECUTIVE"], deleteBill)
+    this.delete("/balance-note/:bid/:nid", ["ADMIN", "EXECUTIVE"], deleteBalanceNote)
   }
 }

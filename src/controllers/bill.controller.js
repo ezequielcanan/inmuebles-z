@@ -79,3 +79,14 @@ export const getFiles = (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const deleteBalanceNote = async (req,res) => {
+  try {
+    const result = await billService.deleteBalanceNote(req?.params?.bid, req?.params?.nid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}

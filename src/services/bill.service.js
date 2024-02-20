@@ -1,5 +1,7 @@
 import billModel from "../models/bill.model.js";
 import PaymentService from "./payment.service.js";
+import fs from "fs"
+import __dirname from "../utils.js";
 
 const paymentService = new PaymentService();
 class BillService {
@@ -23,6 +25,11 @@ class BillService {
       updateObj[`notes.$.${entry[0]}`] = entry[1]
     })
     return billModel.findOneAndUpdate({ _id: bid, "notes._id": nid }, { $set: updateObj }, { new: true })
+  }
+
+  deleteBalanceNote = async (bid, nid) => {
+    const result = await billModel.findOneAndUpdate({_id: bid}, {$pull: {"notes": {_id: nid}}}, {new: true})
+    return result
   }
 
   deleteBill = async (bid, pid) => {

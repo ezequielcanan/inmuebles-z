@@ -134,6 +134,16 @@ export const getBudgetsBySuppliers = async (req, res) => {
   }
 }
 
+export const getBudgetsByProjects = async (req, res) => {
+  try {
+    const result = await budgetService.getBudgetsByProject(req?.params?.pid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
 
 export const deleteFile = (req, res) => {
   try {
