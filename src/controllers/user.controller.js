@@ -22,3 +22,27 @@ export const updateUser = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const getUserById = async (req, res) => {
+  try {
+    const { user } = req?.user
+    const result = await userService.getUserById(user?._id)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
+
+export const toggleUserNotificationsPermission = async (req, res) => {
+  try {
+    const { uid, tid } = req?.params
+    const result = await userService.toggleUserNotificationsPermission(uid, tid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}

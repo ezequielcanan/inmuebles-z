@@ -12,7 +12,8 @@ const usersSchema = new mongoose.Schema({
       project: { type: mongoose.Schema.Types.ObjectId, ref: "projects" },
       action: { type: String, enum: ["edit", "view"] }
     }]
-  }
+  },
+  notifications: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }]
 })
 
 export default mongoose.model(usersCollection, usersSchema)

@@ -25,6 +25,12 @@ class UserService {
     const result = await userModel.updateOne({ _id: id }, { $set: user })
     return result
   }
+
+  toggleUserNotificationsPermission = async (uid, tid) => {
+    let result = await userModel.updateOne({ _id: uid }, { $addToSet: { notifications: tid } })
+    result = !result?.modifiedCount ? await userModel.updateOne({ _id: uid }, { $pull: { notifications: tid } }) : result
+    return result
+  }
 }
 
 export default UserService
