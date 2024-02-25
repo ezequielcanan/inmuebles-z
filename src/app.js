@@ -25,6 +25,7 @@ import cors from "cors"
 import __dirname from "./utils.js"
 import initializePassport from "./config/passport.config.js"
 import passport from "passport"
+import ioFunction from "./sockets.js"
 import { Server as SocketServer } from "socket.io"
 import { addLogger } from "./utils/logger.js"
 
@@ -86,7 +87,8 @@ app.use("/api/transfer", transferRouter.getRouter())
 mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGO_DB })
   .then(() => {
     const httpServer = app.listen(process.env.PORT, () => console.log("Running on port " + process.env.PORT))
-    const io = new SocketServer(httpServer)
+    const io = new SocketServer(httpServer, { cors: { origin: "*" } })
+    ioFunction(io)
   })
   .catch(e => console.error(e))
 
