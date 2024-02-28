@@ -6,12 +6,13 @@ class QuotaService {
 
   createQuota = async (data) => {
     const result = await quotaModel.create(data)
+    const transaction = await transactionModel.findOne({ _id: result?.transaction })
     const update = { $set: {} }
 
     update["$set"][result.type + ".lastQuota"] = result._id
 
 
-    result.paidUSD ? (update["$set"][result.type + ".updatedQuota"] = result.total) : result.indexCac ? (update["$set"][result.type + ".updatedQuota"] = result.total) : (update["$set"][result.type + ".updatedQuota"] = result.total + (result.total * result.cac / 100) + (data.balance < 0 ? data.balance : 0))
+    result.paidUSD ? (update["$set"][result.type + ".updatedQuota"] = result.total + result.interest) : result.indexCac ? (update["$set"][result.type + ".updatedQuota"] = result.total + result.interest / transaction?.dolar) : (update["$set"][result.type + ".updatedQuota"] = result.total + (result.total * result.cac / 100) + (data.balance < 0 ? data.balance : 0) + result.interest / transaction?.dolar)
     const updateLastQuota = await transactionModel.updateOne({ _id: result.transaction }, update)
     return result
   }
@@ -22,20 +23,19 @@ class QuotaService {
   }
 
   deleteQuotaAndUpdateTransaction = async (qid) => {
-    const deleted = await quotaModel.findOneAndDelete({_id: qid})
-    const result = await quotaModel.findOne({transaction: deleted.transaction, quota: deleted.quota - 1, type: deleted.type})
-    const previousQuota = await quotaModel.findOne({transaction: deleted.transaction, quota: deleted.quota - 2, type: deleted.type})
+    const deleted = await quotaModel.findOneAndDelete({ _id: qid })
+    const result = await quotaModel.findOne({ transaction: deleted.transaction, quota: deleted.quota - 1, type: deleted.type })
+    const previousQuota = await quotaModel.findOne({ transaction: deleted.transaction, quota: deleted.quota - 2, type: deleted.type })
     const update = { $set: {}, $unset: {} }
 
     deleted.quota == 1 && (update["$unset"][deleted.type + ".baseIndex"] = 1)
     update[result?._id ? "$set" : "$unset"][deleted.type + ".lastQuota"] = result?._id || 1
-    update[result?._id ? "$set" : "$unset"][deleted.type + ".updatedQuota"] = result?._id ? ((result?.paidUSD || result?.indexCac) ? result?.total : result?.total + (result?.total * result?.cac / 100) + (previousQuota?.balance < 0 ? previousQuota?.balance : 0)) : 1
-    console.log(result?.total + (result?.total * result?.cac / 100) + (previousQuota?.balance < 0 ? previousQuota?.balance : 0), result?.total, result?.cac, (previousQuota?.balance < 0 ? previousQuota?.balance : 0), previousQuota)
+    update[result?._id ? "$set" : "$unset"][deleted.type + ".updatedQuota"] = result?._id ? ((result?.paidUSD || result?.indexCac) ? result?.total + (result?.paidUSD ? result?.interest : result.interest / result?.transaction?.dolar) : result?.total + (result?.total * result?.cac / 100) + (previousQuota?.balance < 0 ? previousQuota?.balance : 0)) + (result?.interest / result?.transaction?.dolar) : 1
 
-    const updateTransaction = await transactionModel.findOneAndUpdate({_id: deleted.transaction}, update, {new: true})
+    const updateTransaction = await transactionModel.findOneAndUpdate({ _id: deleted.transaction }, update, { new: true })
     return updateTransaction
   }
-  
+
   getQuotaById = async (qid) => {
     const result = await quotaModel.findOne({ _id: qid })
     return result
