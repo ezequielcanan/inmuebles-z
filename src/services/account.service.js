@@ -9,6 +9,8 @@ class AccountService {
   }
 
   getAccounts = async () => accountModel.find()
+
+  getAccountById = async (aid) => accountModel.findOne({ _id: aid })
 }
 
 export default AccountService
