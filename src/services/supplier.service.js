@@ -79,6 +79,9 @@ class SupplierService {
 
     return result ? result[0] : undefined
   }
+
+  updateSupplier = async (sid, supplier) => supplierModel.updateOne({_id: sid}, {$set: supplier})
+  deleteSupplier = async (sid) => supplierModel.findOneAndDelete({_id: sid}, {new: true})
 }
 
 export default SupplierService

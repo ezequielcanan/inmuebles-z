@@ -33,3 +33,25 @@ export const getSupplier = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const updateSupplier = async (req, res) => {
+  try {
+    const result = await supplierService.updateSupplier(req?.params?.sid, req?.body)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const deleteSupplier = async (req, res) => {
+  try {
+    const result = await supplierService.deleteSupplier(req?.params?.sid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
