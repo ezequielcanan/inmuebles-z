@@ -10,9 +10,8 @@ class QuotaService {
     const update = { $set: {} }
 
     update["$set"][result.type + ".lastQuota"] = result._id
-
-    console.log(result)
-    result.paidUSD ? (update["$set"][result.type + ".updatedQuota"] = result.total + result.interest) : result.indexCac ? (update["$set"][result.type + ".updatedQuota"] = result.total + result.interest / transaction?.dolar) : (update["$set"][result.type + ".updatedQuota"] = result.total + (result.total * result.cac / 100) + (data.balance < 0 ? data.balance : 0) + result.interest / transaction?.dolar)
+    
+    result.paidUSD ? (update["$set"][result.type + ".updatedQuota"] = result.total) : (result?.indexCac ? (update["$set"][result.type + ".updatedQuota"] = result.total) : update["$set"][result.type + ".updatedQuota"] = result.total + (result.total * result.cac / 100) + (data.balance < 0 ? data.balance : 0))
     const updateLastQuota = await transactionModel.updateOne({ _id: result.transaction }, update)
     return result
   }
@@ -30,7 +29,7 @@ class QuotaService {
 
     deleted.quota == 1 && (update["$unset"][deleted.type + ".baseIndex"] = 1)
     update[result?._id ? "$set" : "$unset"][deleted.type + ".lastQuota"] = result?._id || 1
-    update[result?._id ? "$set" : "$unset"][deleted.type + ".updatedQuota"] = result?._id ? ((result?.paidUSD || result?.indexCac) ? result?.total + (result?.paidUSD ? result?.interest : result.interest / result?.transaction?.dolar) : result?.total + (result?.total * result?.cac / 100) + (previousQuota?.balance < 0 ? previousQuota?.balance : 0) + (result?.interest / result?.transaction?.dolar))  : 1
+    update[result?._id ? "$set" : "$unset"][deleted.type + ".updatedQuota"] = result?._id ? ((result?.paidUSD || result?.indexCac) ? result?.total : result?.total + (result?.total * result?.cac / 100) + (previousQuota?.balance < 0 ? previousQuota?.balance : 0)) : 1
 
     const updateTransaction = await transactionModel.findOneAndUpdate({ _id: deleted.transaction }, update, { new: true })
     return updateTransaction
