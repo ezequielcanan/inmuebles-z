@@ -1,4 +1,4 @@
-import { createBudget, getBudgets, getBudgetFiles, getBudget, updateBudget, addNote, updateNote, deleteNote, getBudgetExcel, getBudgetsBySuppliers, getBudgetBlackExcel, deleteFile, getBudgetsByProjects } from "../controllers/budget.controller.js";
+import { createBudget, getBudgets, getBudgetFiles, getBudget, updateBudget, addNote, updateNote, deleteNote, getBudgetExcel, getBudgetsBySuppliers, getBudgetBlackExcel, deleteFile, getBudgetsByProjects, deleteBudget } from "../controllers/budget.controller.js";
 import { uploader } from "../utils.js";
 import Z_Router from "./router.js";
 
@@ -16,6 +16,8 @@ export default class BudgetRouter extends Z_Router {
     this.post("/file", ["ADMIN", "EXECUTIVE"], uploader.single("file"), (req, res) => res.sendSuccess(true))
     this.put("/:bid", ["ADMIN", "EXECUTIVE"], updateBudget)
     this.put("/:bid/notes/:nid", ["ADMIN", "EXECUTIVE"], updateNote)
+
+    this.delete(`/budget/:bid`, ["ADMIN", "EXECUTIVE"], deleteBudget)
     this.delete("/:bid/notes/:nid", ["ADMIN", "EXECUTIVE"], deleteNote)
     this.delete("/file", ["ADMIN", "EXECUTIVE"], deleteFile)
   }

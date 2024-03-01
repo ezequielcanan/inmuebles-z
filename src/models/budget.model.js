@@ -58,4 +58,10 @@ budgetsSchema.pre("findOneAndUpdate", function () {
   this.populate("paidApartments.apartment")
 })
 
+budgetsSchema.pre("findOneAndDelete", function () {
+  this.populate("supplier")
+  this.populate("lastPayment")
+  this.populate("paidApartments.apartment")
+})
+
 export default mongoose.model(budgetsCollection, budgetsSchema);

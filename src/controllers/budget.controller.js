@@ -155,3 +155,20 @@ export const deleteFile = (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const deleteBudget = async (req, res) => {
+  try {
+    const { bid } = req?.params
+    const payments = await paymentService.getBudgetPayments(bid)
+    await Promise.all(payments?.map(async payment => {
+      await paymentService?.deletePayment(payment?._id)
+    }))
+
+    const budget = await budgetService.deleteBudget(bid)
+    res.sendSuccess(budget)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}

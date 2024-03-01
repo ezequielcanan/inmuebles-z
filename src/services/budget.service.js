@@ -81,6 +81,17 @@ class BudgetService {
     fs.unlinkSync(`${__dirname}/public/${thumbnail}`)
     return true
   }
+
+  deleteBudget = async bid => {
+    const budget = await budgetModel?.findOneAndDelete({ _id: bid }, { new: true })
+    fs.rmSync(`${__dirname}/public/projects/${budget?.project}/budgets/${budget?._id}`, { recursive: true, force: true })
+    await Promise.all(budget?.paidApartments?.map(async (apartment) => {
+      const transaction = await transactionService.getTransactionById(apartment?.apartment)
+      await transactionService.deleteTransaction(apartment?.apartment)
+      await apartmentService.updateApartment(transaction?.apartment?._id, { owner: transaction?.seller?._id, forSale: false })
+    }))
+    return budget
+  }
 }
 
 export default BudgetService
