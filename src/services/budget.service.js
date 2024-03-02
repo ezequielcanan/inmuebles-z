@@ -65,7 +65,11 @@ class BudgetService {
   }
 
   getBudgetsBySupplier = async sid => budgetModel.find({ supplier: sid })
-  getBudgetsByProject = async pid => budgetModel.find({ project: pid })
+  getBudgetsByProject = async (pid, sid = "") => {
+    const queryObj = {project: pid}
+    sid?.length && (queryObj.supplier = sid)
+    return budgetModel.find(queryObj)
+  }
 
   getBudgets = async () => budgetModel.find()
 

@@ -28,7 +28,7 @@ const paymentsSchema = new mongoose.Schema({
       type: [
         {
           bill: { type: mongoose.Schema.Types.ObjectId, ref: "bills" },
-          concept: { type: String, enum: ["mcd", "mcp", "certificate"] }
+          concept: String
         }
       ],
       default: []

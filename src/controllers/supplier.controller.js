@@ -14,7 +14,7 @@ export const addSupplier = async (req, res) => {
 
 export const getSuppliers = async (req, res) => {
   try {
-    const result = await supplierService.getSuppliers()
+    const result = await supplierService.getSuppliers(req?.query?.pid || "")
     res.sendSuccess(result)
   }
   catch (e) {

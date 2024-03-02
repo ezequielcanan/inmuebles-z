@@ -12,7 +12,9 @@ class SupplierService {
     return result
   }
 
-  getSuppliers = async () => {
+  getSuppliers = async (pid = "") => {
+    console.log(pid)
+    const condObj = !pid?.length ? { $eq: ["$$budget.supplier", "$_id"] } : { $and: [{ $eq: ["$$budget.supplier", "$_id"] }, { $eq: ["$$budget.project", new mongoose.Types.ObjectId(pid)] }] }
     const result = await supplierModel.aggregate([
       {
         $lookup: {
@@ -32,14 +34,14 @@ class SupplierService {
               $filter: {
                 input: "$budgets",
                 as: "budget",
-                cond: { $eq: ["$$budget.supplier", "$_id"] }
+                cond: condObj
               }
             }
           }
         }
       }
     ])
-
+    console.log(result)
     return result
 
   }
@@ -78,6 +80,10 @@ class SupplierService {
     ])
 
     return result ? result[0] : undefined
+  }
+
+  getSuppliersByProject = async (pid) => {
+
   }
 
   updateSupplier = async (sid, supplier) => supplierModel.updateOne({_id: sid}, {$set: supplier})

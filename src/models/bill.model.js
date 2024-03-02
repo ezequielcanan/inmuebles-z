@@ -8,6 +8,9 @@ const billsSchema = new mongoose.Schema({
   amount: Number,
   iva: Number,
   taxes: Number,
+  cuit: String,
+  type: {type: String, enum: ["A", "B", "C"]},
+  hasCertificate: {type: Boolean, default: true},
   notes: {
     type: [
       {
@@ -18,7 +21,8 @@ const billsSchema = new mongoose.Schema({
       }
     ]
   },
-  receiver: { type: mongoose.Schema.Types.ObjectId, ref: "suppliers" }
+  receiver: { type: mongoose.Schema.Types.ObjectId, ref: "suppliers" },
+  project: { type: mongoose.Schema.Types.ObjectId, ref: "projects" }
 })
 
 export default mongoose.model(billsCollection, billsSchema)

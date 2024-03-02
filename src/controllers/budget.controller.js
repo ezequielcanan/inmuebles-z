@@ -136,7 +136,7 @@ export const getBudgetsBySuppliers = async (req, res) => {
 
 export const getBudgetsByProjects = async (req, res) => {
   try {
-    const result = await budgetService.getBudgetsByProject(req?.params?.pid)
+    const result = await budgetService.getBudgetsByProject(req?.params?.pid, req?.query?.sid || "")
     res.sendSuccess(result)
   }
   catch (e) {
