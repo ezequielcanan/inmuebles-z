@@ -13,7 +13,9 @@ class BillService {
 
     const updatePayment = await paymentService.insertBill(payment, { bill: result?._id, concept: bill.concept });
     return result;
-  };
+  }
+
+  createBillWithoutPayment = async (bill) => billModel.create(bill)
 
   updateBill = async (bid, bill) => billModel.findOneAndUpdate({ _id: bid }, { $set: bill }, { new: true })
 

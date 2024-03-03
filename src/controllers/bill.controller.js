@@ -13,6 +13,17 @@ export const createBill = async (req, res) => {
   }
 }
 
+export const createBillWithoutPayment = async (req,res) => {
+  try {
+    const result = await billService.createBillWithoutPayment(req?.body)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
 export const getBill = async (req, res) => {
   try {
     const result = await billService.getBillById(req?.params?.bid)
