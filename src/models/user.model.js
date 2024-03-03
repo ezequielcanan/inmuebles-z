@@ -13,7 +13,12 @@ const usersSchema = new mongoose.Schema({
       action: { type: String, enum: ["edit", "view"] }
     }]
   },
-  notifications: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }]
+  notifications: [
+    {
+      role: { type: String, enum: ["incomes", "expenses", "both"] },
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "users" }
+    }
+  ]
 })
 
 export default mongoose.model(usersCollection, usersSchema)

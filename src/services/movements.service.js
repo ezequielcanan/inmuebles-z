@@ -5,7 +5,7 @@ class MovementsService {
 
   createMovement = async (movement) => movementModel.create(movement)
 
-  getAccountMovements = async (aid) => movementModel.find({ account: aid })
+  getAccountMovements = async (aid) => movementModel.find({ account: aid }).sort({ emissionDate: 1 })
 
   updateMovement = async (mid, movement) => movementModel.updateOne({ _id: mid }, { $set: movement })
 

@@ -38,7 +38,19 @@ export const getUserById = async (req, res) => {
 export const toggleUserNotificationsPermission = async (req, res) => {
   try {
     const { uid, tid } = req?.params
-    const result = await userService.toggleUserNotificationsPermission(uid, tid)
+    const result = await userService.toggleUserNotificationsPermission(uid, tid, req?.query?.role)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
+
+export const changeUserNotificationsRole = async (req, res) => {
+  try {
+    const { uid, tid } = req?.params
+    const result = await userService.changeNotificationsRole(uid, tid, req?.query?.role)
     res.sendSuccess(result)
   }
   catch (e) {

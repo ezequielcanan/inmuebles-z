@@ -8,7 +8,15 @@ const accountsSchema = new mongoose.Schema({
   name: String,
   alias: String,
   cuit: String,
-  society: String
+  society: { type: mongoose.Schema.Types.ObjectId, ref: "projects" }
+})
+
+accountsSchema.pre("find", function () {
+  this.populate("society")
+})
+
+accountsSchema.pre("findOne", function () {
+  this.populate("society")
 })
 
 export default mongoose.model(accountsCollection, accountsSchema)

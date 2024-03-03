@@ -30,7 +30,7 @@ class BillService {
   }
 
   deleteBalanceNote = async (bid, nid) => {
-    const result = await billModel.findOneAndUpdate({_id: bid}, {$pull: {"notes": {_id: nid}}}, {new: true})
+    const result = await billModel.findOneAndUpdate({ _id: bid }, { $pull: { "notes": { _id: nid } } }, { new: true })
     return result
   }
 
@@ -48,6 +48,8 @@ class BillService {
   }
 
   getBillById = async (bid) => billModel.findOne({ _id: bid })
+
+  getBillsByProjectAndSupplier = async (pid, sid) => billModel.find({ project: pid, receiver: sid })
 }
 
 export default BillService;

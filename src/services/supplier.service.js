@@ -13,7 +13,6 @@ class SupplierService {
   }
 
   getSuppliers = async (pid = "") => {
-    console.log(pid)
     const condObj = !pid?.length ? { $eq: ["$$budget.supplier", "$_id"] } : { $and: [{ $eq: ["$$budget.supplier", "$_id"] }, { $eq: ["$$budget.project", new mongoose.Types.ObjectId(pid)] }] }
     const result = await supplierModel.aggregate([
       {
@@ -41,7 +40,7 @@ class SupplierService {
         }
       }
     ])
-    console.log(result)
+
     return result
 
   }
@@ -86,8 +85,8 @@ class SupplierService {
 
   }
 
-  updateSupplier = async (sid, supplier) => supplierModel.updateOne({_id: sid}, {$set: supplier})
-  deleteSupplier = async (sid) => supplierModel.findOneAndDelete({_id: sid}, {new: true})
+  updateSupplier = async (sid, supplier) => supplierModel.updateOne({ _id: sid }, { $set: supplier })
+  deleteSupplier = async (sid) => supplierModel.findOneAndDelete({ _id: sid }, { new: true })
 }
 
 export default SupplierService

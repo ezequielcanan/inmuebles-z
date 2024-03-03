@@ -13,7 +13,7 @@ export const createBill = async (req, res) => {
   }
 }
 
-export const createBillWithoutPayment = async (req,res) => {
+export const createBillWithoutPayment = async (req, res) => {
   try {
     const result = await billService.createBillWithoutPayment(req?.body)
     res.sendSuccess(result)
@@ -27,6 +27,17 @@ export const createBillWithoutPayment = async (req,res) => {
 export const getBill = async (req, res) => {
   try {
     const result = await billService.getBillById(req?.params?.bid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getBillsByProjectAndSupplier = async (req, res) => {
+  try {
+    const result = await billService.getBillsByProjectAndSupplier(req?.params?.pid, req?.params?.sid)
     res.sendSuccess(result)
   }
   catch (e) {
@@ -86,12 +97,13 @@ export const getFiles = (req, res) => {
     res.sendSuccess(result)
   }
   catch (e) {
+    if (e.code == "ENOENT") return res.sendNotFoundError()
     console.error(e)
     res.sendServerError(e)
   }
 }
 
-export const deleteBalanceNote = async (req,res) => {
+export const deleteBalanceNote = async (req, res) => {
   try {
     const result = await billService.deleteBalanceNote(req?.params?.bid, req?.params?.nid)
     res.sendSuccess(result)

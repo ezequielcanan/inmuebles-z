@@ -3,7 +3,8 @@ import mongoose from "mongoose"
 const movementCollection = "movements"
 
 const movementsSchema = new mongoose.Schema({
-  date: { type: Date, required: true },
+  emissionDate: { type: Date, required: true },
+  expirationDate: { type: Date, required: true },
   checkCode: String,
   detail: { type: String, required: true },
   credit: Number,
