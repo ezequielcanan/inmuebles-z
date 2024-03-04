@@ -16,7 +16,7 @@ export const createMovement = async (req, res) => {
 
 export const getAccountMovements = async (req, res) => {
   try {
-    const result = await movementsService.getAccountMovements(req?.params?.aid)
+    const result = await movementsService.getAccountMovements(req?.params?.aid, (req?.query?.filter == "true" ? true : false))
     res.sendSuccess(result)
   }
   catch (e) {

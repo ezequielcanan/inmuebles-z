@@ -6,14 +6,17 @@ export default io => {
       const uid = user._id
       socket.join(uid)
 
-      socket.on("getMessages", async () => {
-        const userMessages = await messageModel.find({ to: uid }).lean().exec()
-        socket.emit("messages", userMessages)
-      })
+      const sendMessages = async (receiver) => {
+        const userMessages = await messageModel.find({ to: receiver || uid }).lean().exec()
+        !receiver ? socket.emit("messages", userMessages) : io.to(receiver).emit("messages", userMessages)
+      }
+
+      sendMessages()
 
       socket.on("sendMessage", async ({ message, receiver }) => {
         const result = await messageModel.create(message)
         io.to(receiver).emit("newMessage", result)
+        sendMessages(receiver)
       })
     })
   })

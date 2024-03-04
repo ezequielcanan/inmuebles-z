@@ -11,6 +11,8 @@ class AccountService {
   getAccounts = async () => accountModel.find()
 
   getAccountById = async (aid) => accountModel.findOne({ _id: aid })
+
+  updateAccount = async (aid, account) => accountModel.updateOne({ _id: aid }, { $set: account })
 }
 
 export default AccountService

@@ -5,6 +5,7 @@ const transferCollection = "transfers"
 const transferSchema = new mongoose.Schema({
   emissionDate: Date,
   code: String,
+  detail: String,
   amount: Number,
   account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts" }
 })

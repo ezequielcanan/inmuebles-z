@@ -38,6 +38,8 @@ class CheckService {
     return checksResult
   }
 
+  getChecksByAccount = async (aid) => checkModel.find({ account: aid }).sort({ emissionDate: 1 })
+
 }
 
 export default CheckService

@@ -4,16 +4,16 @@ import { getAllFromFloor, createApartment, getApartmentById, updateApartment, ge
 
 export default class ApartmentRouter extends Z_Router {
   init() {
-    this.get("/project/:pid", ["ADMIN", "SECRETARY", "USER"], getAllFromProject)
-    this.get("/floor/:fid", ["ADMIN", "SECRETARY", "USER"], getAllFromFloor)
-    this.get("/:aid", ["ADMIN", "SECRETARY", "USER"], getApartmentById)
-    this.get("/files/:type", ["ADMIN", "SECRETARY", "USER"], getFiles)
+    this.get("/project/:pid", ["ADMIN", "SECRETARY", "EXECUTIVE", "USER"], getAllFromProject)
+    this.get("/floor/:fid", ["ADMIN", "SECRETARY", "EXECUTIVE", "USER"], getAllFromFloor)
+    this.get("/:aid", ["ADMIN", "SECRETARY", "EXECUTIVE", "USER"], getApartmentById)
+    this.get("/files/:type", ["ADMIN", "SECRETARY", "EXECUTIVE", "USER"], getFiles)
 
-    this.post("/", ["ADMIN", "SECRETARY"], createApartment)
-    this.post("/file", ["ADMIN", "SECRETARY"], uploader.single("file"), (req, res) => res.sendSuccess(true))
+    this.post("/", ["ADMIN", "EXECUTIVE", "SECRETARY"], createApartment)
+    this.post("/file", ["ADMIN", "EXECUTIVE", "SECRETARY"], uploader.single("file"), (req, res) => res.sendSuccess(true))
 
-    this.put("/:aid", ["ADMIN", "SECRETARY"], updateApartment)
+    this.put("/:aid", ["ADMIN", "EXECUTIVE", "SECRETARY"], updateApartment)
 
-    this.delete("/files", ["ADMIN", "SECRETARY"], deleteFile)
+    this.delete("/files", ["ADMIN", "EXECUTIVE", "SECRETARY"], deleteFile)
   }
 }

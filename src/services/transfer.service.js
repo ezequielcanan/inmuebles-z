@@ -38,6 +38,8 @@ class TransferService {
     }))
     return transfersResult
   }
+
+  getTransfersByAccount = async (aid) => transferModel.find({ account: aid }).sort({ emissionDate: 1 })
 }
 
 export default TransferService;

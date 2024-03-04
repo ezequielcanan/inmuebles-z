@@ -33,3 +33,14 @@ export const createAccount = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const updateAccount = async (req, res) => {
+  try {
+    const result = await accountService.updateAccount(req?.params?.aid, req?.body)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
