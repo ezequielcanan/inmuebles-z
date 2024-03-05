@@ -22,7 +22,33 @@ const billsSchema = new mongoose.Schema({
     ]
   },
   receiver: { type: mongoose.Schema.Types.ObjectId, ref: "suppliers" },
-  project: { type: mongoose.Schema.Types.ObjectId, ref: "projects" }
+  project: { type: mongoose.Schema.Types.ObjectId, ref: "projects" },
+  transfers: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "transfers" }
+  ],
+  checks: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "checks" }
+  ],
+  retention: {
+    amount: Number,
+    code: String,
+    date: Date,
+    account: {type: mongoose.Schema.Types.ObjectId, ref: "accounts"}
+  }
+})
+
+billsSchema.pre("find", function () {
+  this.populate("checks")
+  this.populate("transfers")
+  this.populate("receiver")
+  this.populate("project")
+})
+
+billsSchema.pre("findOne", function () {
+  this.populate("checks")
+  this.populate("transfers")
+  this.populate("receiver")
+  this.populate("project")
 })
 
 export default mongoose.model(billsCollection, billsSchema)
