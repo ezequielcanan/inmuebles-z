@@ -15,6 +15,7 @@ export default io => {
 
       socket.on("sendMessage", async ({ message, receiver }) => {
         const result = await messageModel.create(message)
+        socket.emit("result", result)
         io.to(receiver).emit("newMessage", result)
         sendMessages(receiver)
       })

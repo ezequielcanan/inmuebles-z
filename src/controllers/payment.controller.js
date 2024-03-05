@@ -84,7 +84,7 @@ export const deleteNote = async (req, res) => {
   }
 }
 
-export const deletePayment = async (req,res) => {
+export const deletePayment = async (req, res) => {
   try {
     const result = await paymentService.deletePayment(req?.params?.pid)
     res.sendSuccess(result)
@@ -108,8 +108,21 @@ export const deleteFile = (req, res) => {
 
 export const getPaymentFiles = (req, res) => {
   try {
-    const {projectId, bid, pid} = req?.params
+    const { projectId, bid, pid } = req?.params
     const result = paymentService.getFiles(projectId, bid, pid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    if (e.code == "ENOENT") return res.sendNotFoundError()
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getProjectSupplierPayments = async (req, res) => {
+  try {
+    const { pid, sid } = req?.params
+    const result = await paymentService.getProjectSupplierPayments(pid, sid)
     res.sendSuccess(result)
   }
   catch (e) {

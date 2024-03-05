@@ -16,6 +16,7 @@ const budgetsSchema = new mongoose.Schema({
   code: String,
   date: Date,
   dollarPrice: Number,
+  active: { type: Boolean, default: true },
   notes: {
     type: [
       {

@@ -8,7 +8,7 @@ const accountsSchema = new mongoose.Schema({
   name: String,
   alias: String,
   cuit: String,
-  initialBalance: Number,
+  initialBalance: { type: Number, default: 0 },
   society: { type: mongoose.Schema.Types.ObjectId, ref: "projects" }
 })
 

@@ -9,8 +9,8 @@ const billsSchema = new mongoose.Schema({
   iva: Number,
   taxes: Number,
   cuit: String,
-  type: {type: String, enum: ["A", "B", "C"]},
-  hasCertificate: {type: Boolean, default: true},
+  type: { type: String, enum: ["A", "B", "C"] },
+  hasCertificate: { type: Boolean, default: true },
   notes: {
     type: [
       {
@@ -33,7 +33,8 @@ const billsSchema = new mongoose.Schema({
     amount: Number,
     code: String,
     date: Date,
-    account: {type: mongoose.Schema.Types.ObjectId, ref: "accounts"}
+    detail: String,
+    account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts" }
   }
 })
 

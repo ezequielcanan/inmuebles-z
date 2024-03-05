@@ -116,6 +116,18 @@ class PaymentService {
     fs.unlinkSync(`${__dirname}/public/${thumbnail}`)
     return true
   }
+
+  getProjectSupplierPayments = async (pid, sid) => {
+    const budgets = await budgetService.getBudgetsByProject(pid, sid)
+    const payments = []
+
+    await Promise.all(budgets?.map(async (budget) => {
+      const budgetPayments = await this.getBudgetPayments(budget?._id)
+      payments.push(...budgetPayments)
+    }))
+
+    return payments
+  }
 }
 
 export default PaymentService

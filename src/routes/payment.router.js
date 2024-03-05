@@ -1,10 +1,11 @@
-import { createPayment, getBudgetPayments, getExcelPayment, getPayment, addNote, updateNote, deleteNote, deletePayment, deleteFile, getPaymentFiles } from "../controllers/payment.controller.js";
+import { createPayment, getBudgetPayments, getExcelPayment, getPayment, addNote, updateNote, deleteNote, deletePayment, deleteFile, getPaymentFiles, getProjectSupplierPayments } from "../controllers/payment.controller.js";
 import { uploader } from "../utils.js";
 import Z_Router from "./router.js";
 
 export default class PaymentRouter extends Z_Router {
   init() {
     this.get("/budget/:bid", ["ADMIN", "EXECUTIVE", "USER"], getBudgetPayments)
+    this.get("/project/:pid/:sid", ["ADMIN", "EXECUTIVE", "USER"], getProjectSupplierPayments)
     this.get("/:pid", ["ADMIN", "EXECUTIVE", "USER"], getPayment)
     this.get("/excel/:pid", ["ADMIN", "EXECUTIVE", "USER"], getExcelPayment)
     this.get("/file/:projectId/:bid/:pid", ["ADMIN", "EXECUTIVE", "USER"], getPaymentFiles)

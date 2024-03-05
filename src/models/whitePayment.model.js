@@ -12,7 +12,10 @@ const whitePaymentsSchema = new mongoose.Schema({
   ],
   retention: {
     amount: Number,
-    code: String
+    code: String,
+    date: Date,
+    detail: String,
+    account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts" }
   },
   materials: {
     amount: Number,

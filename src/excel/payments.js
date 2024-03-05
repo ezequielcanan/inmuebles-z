@@ -393,4 +393,212 @@ export const budgetBlackExcel = (budget, payments) => {
   writeRows(rows)
 
   return wb
-} 
+}
+
+export const projectSupplierExcel = (project, supplier, payments, bills) => {
+  const wb = new xl.Workbook()
+  const ws = wb.addWorksheet("CUENTA CORRIENTE", {
+    sheetFormat: {
+      'defaultColWidth': 35,
+      'defaultRowHeight': 30,
+    }
+  })
+
+  const styles = {
+    sectionHead: wb.createStyle({
+      ...fontHeadStyle,
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    }),
+    importantCell: wb.createStyle({
+      font: {
+        bold: true
+      },
+      ...textCenterStyle,
+      ...thinBorder,
+      ...bgSectionInfo,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    }),
+    cell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    })
+  }
+
+  ws.cell(1, 1, 1, 6, true).string(`Cuenta corriente projecto ${project.title} - ${supplier?.name}`).style(styles["sectionHead"])
+  ws.cell(2, 1).string("Fecha").style(styles["importantCell"])
+  ws.cell(2, 2).string("Comprobante").style(styles["importantCell"])
+  ws.cell(2, 3).string("Descripción").style(styles["importantCell"])
+  ws.cell(2, 4).string("Crédito").style(styles["importantCell"])
+  ws.cell(2, 5).string("Débito").style(styles["importantCell"])
+  ws.cell(2, 6).string("Saldo").style(styles["importantCell"])
+
+  const writeRow = (row, date, code, description, credit = 0, debit = 0) => {
+    ws.cell(row, 1).string(date).style(styles["cell"])
+    ws.cell(row, 2).string(code).style(styles["cell"])
+    ws.cell(row, 3).string(description || code).style(styles["cell"])
+    ws.cell(row, 4).number(credit).style(styles["cell"])
+    ws.cell(row, 5).number(debit).style(styles["cell"])
+    ws.cell(row, 6).formula(row == 3 ? `+${xl.getExcelCellRef(row, 4)} - ${xl.getExcelCellRef(row, 5)}` : `+${xl.getExcelCellRef(row - 1, 6)} + ${xl.getExcelCellRef(row, 4)} - ${xl.getExcelCellRef(row, 5)}`).style(styles["cell"])
+  }
+
+  const writeRows = (rows) => {
+    rows.sort((a, b) => {
+      const date1 = moment(a[1])
+      const date2 = moment(b[1])
+      return date1.diff(date2)
+    })
+    rows = rows.map((row) => [row[1].format("DD-MM-YYYY"), row[2], row[3], row[4], row[5]])
+    rows.forEach((row, i) => writeRow(i + 3, ...row))
+  }
+
+  const addRow = (row, date, code, description, credit = 0, debit = 0) => rows.push([row, date, code, description, credit, debit])
+
+  const rows = []
+
+
+  let lastRow = 3
+  payments?.forEach((payment, i) => {
+    payment?.white?.bills?.forEach((bill) => {
+      addRow(lastRow, moment.utc(bill?.bill?.emissionDate), bill?.bill?.code, "Factura", 0, bill?.bill?.amount * (1 + (bill?.bill?.iva + bill?.bill?.taxes) / 100))
+      lastRow++
+      bill?.bill?.notes?.forEach((note) => {
+        addRow(lastRow, moment.utc(note?.date), note?.code, `Nota de ${note?.type == "credit" ? "crédito" : "débito"}`, (note?.type == "credit" ? note?.amount : 0), (note?.type == "debit" ? note?.amount : 0))
+        lastRow++
+      })
+    })
+    payment?.white?.payments?.forEach((payment, i) => {
+      payment?.checks?.forEach(check => {
+        addRow(lastRow, moment.utc(check?.emissionDate), check?.code, "Cheque", check?.amount)
+        lastRow++
+      })
+      payment?.transfers?.forEach(transfer => {
+        addRow(lastRow, moment.utc(transfer?.emissionDate), transfer?.code, "Transferencia", transfer?.amount)
+        lastRow++
+      })
+      payment?.retention?.amount && (
+        addRow(lastRow, moment.utc(payment?.date), payment?.retention?.code, "Retencion", payment?.retention?.amount),
+        lastRow++
+      )
+      payment?.materials?.amount && (
+        addRow(lastRow, moment.utc(payment?.materials?.date), "", payment?.materials?.material, payment?.materials?.amount),
+        lastRow++
+      )
+    })
+  })
+
+  bills.forEach((bill) => {
+    addRow(lastRow, moment.utc(bill?.emissionDate), bill?.code, "Factura", 0, bill?.amount * (1 + (bill?.iva + bill?.taxes) / 100))
+    lastRow++
+    bill?.checks?.forEach(check => {
+      addRow(lastRow, moment.utc(check?.emissionDate), check?.code, "Cheque", check?.amount)
+      lastRow++
+    })
+    bill?.transfers?.forEach((transfer) => {
+      addRow(lastRow, moment.utc(transfer?.emissionDate), transfer?.code, "Transferencia", transfer?.amount)
+      lastRow++
+    })
+    bill?.notes?.forEach((note) => {
+      addRow(lastRow, moment.utc(note?.date), note?.code, `Nota de ${note?.type == "credit" ? "crédito" : "débito"}`, (note?.type == "credit" ? note?.amount : 0), (note?.type == "debit" ? note?.amount : 0))
+      lastRow++
+    })
+    bill?.retention?.amount && (
+      addRow(lastRow, moment.utc(bill?.retention?.date), bill?.retention?.code, "Retencion", bill?.retention?.amount),
+      lastRow++
+    )
+  })
+
+  writeRows(rows)
+
+  return wb
+}
+
+export const getAccountExcel = (account, movements) => {
+  const wb = new xl.Workbook()
+  const ws = wb.addWorksheet(`BANCO ${account?.bank || ""}`, {
+    defaultFont: {
+      size: 9,
+      name: 'Ebrima',
+    }
+  })
+
+  const styles = {
+    sectionHead: wb.createStyle({
+      ...fontHeadStyle,
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    }),
+    header: wb.createStyle({
+      ...fontHeadStyle,
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9,
+        name: "Ebrima",
+        color: "#FFFFFF"
+      }
+    }),
+    importantCell: wb.createStyle({
+      font: {
+        bold: true
+      },
+      ...textCenterStyle,
+      ...thinBorder,
+      ...bgSectionInfo,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      }
+    }),
+    cell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      }
+    })
+  }
+
+  ws.column(4).setWidth(80);
+  ws.row(1).setHeight(40)
+
+  ws.cell(1, 1, 1, 9, true).string(account?.society?.title || "").style(styles["sectionHead"])
+  ws.cell(2, 1, 2, 2, true).string(`BANCO ${account?.bank?.toUpperCase() || ""}`).style({ ...styles["cell"], ...bgSectionInfo })
+  ws.cell(3, 1, 3, 2, true).string(`CUIT ${account?.cuit?.toUpperCase() || ""}`).style({ ...styles["cell"], ...bgSectionInfo })
+  ws.cell(4, 1, 4, 2, true).string(`CBU ${account?.cbu?.toUpperCase() || ""}`).style({ ...styles["cell"], ...bgSectionInfo })
+  ws.cell(5, 1, 5, 2, true).string(`ALIAS ${account?.alias?.toUpperCase() || ""}`).style({ ...styles["cell"], ...bgSectionInfo })
+
+
+  ws.cell(6, 1).string("EMISION").style(styles["header"])
+  ws.cell(6, 2).string("VENCIMIENTO").style(styles["header"])
+  ws.cell(6, 3).string("N° CH").style(styles["header"])
+  ws.cell(6, 4).string("DETALLE").style(styles["header"])
+  ws.cell(6, 5).string("CREDITO").style(styles["header"])
+  ws.cell(6, 6).string("DEBITO").style(styles["header"])
+  ws.cell(6, 7).string("SIRCREB").style(styles["header"])
+  ws.cell(6, 8).string("6XMIL").style(styles["header"])
+  ws.cell(6, 9).string("SALDO").style(styles["header"])
+  ws.row(6).freeze()
+
+  movements.forEach((movement, i) => {
+    ws.cell(7 + i, 1).string(movement?.emissionDate || "").style(styles["cell"])
+    ws.cell(7 + i, 2).string(movement?.expirationDate || "").style(styles["cell"])
+    ws.cell(7 + i, 3).string(movement?.checkCode || "").style(styles["cell"])
+    ws.cell(7 + i, 4).string(movement?.detail || "").style(styles["cell"])
+    ws.cell(7 + i, 5).number(movement?.credit || 0).style(styles["cell"])
+    ws.cell(7 + i, 6).number(movement?.debit || 0).style(styles["cell"])
+    ws.cell(7 + i, 7).formula(`${xl.getExcelCellRef(7 + i, 5)} * ${movement?.tax}%`).style(styles["cell"])
+    ws.cell(7 + i, 8).formula(`(${xl.getExcelCellRef(7 + i, 5)} + ${xl.getExcelCellRef(7 + i, 6)}) * 0.006`).style(styles["cell"])
+    ws.cell(7 + i, 9).formula(`${`${i ? xl.getExcelCellRef(6 + i, 9) : account?.initialBalance} + `}${xl.getExcelCellRef(7 + i, 5)} - ${xl.getExcelCellRef(7 + i, 6)} - ${xl.getExcelCellRef(7 + i, 7)} - ${xl.getExcelCellRef(7 + i, 8)}`).style(styles["cell"])
+  })
+
+  return wb
+}

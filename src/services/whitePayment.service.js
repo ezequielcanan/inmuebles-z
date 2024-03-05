@@ -1,4 +1,6 @@
 import whitePaymentModel from "../models/whitePayment.model.js"
+import checkModel from "../models/check.model.js"
+import transferModel from "../models/transfer.model.js"
 
 export default class WhitePaymentService {
   constructor() { }
@@ -15,8 +17,16 @@ export default class WhitePaymentService {
     return result
   }
 
+  getWhitePaymentsByRetentionAccount = async aid => whitePaymentModel.find({ "retention.account": aid })
+
   deleteWhitePayment = async (pid, sid) => {
-    const result = await whitePaymentModel.findOneAndDelete({_id: sid})
+    const result = await whitePaymentModel.findOneAndDelete({ _id: sid })
+    await Promise.all(result?.checks?.map(async check => {
+      await checkModel.deleteOne({ _id: check?._id })
+    }))
+    await Promise.all(result?.transfers?.map(async transfer => {
+      await transferModel.deleteOne({ _id: transfer?._id })
+    }))
     return result
   }
 }

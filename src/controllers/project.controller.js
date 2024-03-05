@@ -2,12 +2,21 @@ import ApartmentService from "../services/apartment.service.js"
 import ProjectService from "../services/project.service.js"
 import FloorService from "../services/floor.service.js"
 import TransactionService from "../services/transaction.service.js"
+import BudgetService from "../services/budget.service.js"
+import SupplierService from "../services/supplier.service.js"
+import PaymentService from "../services/payment.service.js"
+import BillService from "../services/bill.service.js"
 import { createProjectExcel } from "../excel/index.js"
+import { projectSupplierExcel } from "../excel/payments.js"
 
 const apartmentService = new ApartmentService()
 const projectService = new ProjectService()
 const floorService = new FloorService()
 const transactionService = new TransactionService()
+const budgetService = new BudgetService()
+const supplierService = new SupplierService()
+const paymentService = new PaymentService()
+const billService = new BillService()
 
 export const getProjects = async (req, res) => {
   try {
@@ -107,6 +116,30 @@ export const createExcelProject = async (req, res) => {
   }
   catch (e) {
     console.log(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getProjectSupplierExcel = async (req, res) => {
+  try {
+    const { sid, pid } = req?.params
+    const project = await projectService.getProject(pid)
+    const supplier = await supplierService.getSupplier(sid)
+    const budgets = await budgetService.getBudgetsByProject(pid, sid)
+    const bills = await billService.getBillsByProjectAndSupplier(pid, sid)
+    const payments = []
+
+    await Promise.all(budgets?.map(async (budget) => {
+      const budgetPayments = await paymentService.getBudgetPayments(budget?._id)
+      payments?.push(...budgetPayments)
+    }))
+
+
+    const wb = projectSupplierExcel(project, supplier, payments, bills)
+    wb.write(`Cuenta corriente general ${project?.title} - ${supplier?.name || ""}.xlsx`, res)
+  }
+  catch (e) {
+    console.error(e)
     res.sendServerError(e)
   }
 }

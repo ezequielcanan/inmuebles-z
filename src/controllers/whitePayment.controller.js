@@ -12,7 +12,7 @@ export const createWhitePayment = async (req, res) => {
   try {
     const result = await whitePaymentService.createWhitePayment(req?.body, req?.params?.pid)
     const updateResult = await paymentService.insertSubPayment(req?.params?.pid, "white.payments", result?._id)
-    
+
     res.sendSuccess(result)
   }
   catch (e) {
@@ -43,9 +43,9 @@ export const updateWhitePayment = async (req, res) => {
   }
 }
 
-export const deleteWhitePayment = async (req,res) => {
+export const deleteWhitePayment = async (req, res) => {
   try {
-    const {sid, pid} = req?.params
+    const { sid, pid } = req?.params
     const result = await whitePaymentService.deleteWhitePayment(pid, sid)
 
     const payment = await paymentService.getPayment(pid)

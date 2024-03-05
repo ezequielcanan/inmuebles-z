@@ -48,13 +48,15 @@ class BillService {
   }
 
   updateBill = async (bid, data) => {
-    const result = await billModel.updateOne({_id: bid}, {$set: data})
+    const result = await billModel.updateOne({ _id: bid }, { $set: data })
     return result
   }
 
   getBillById = async (bid) => billModel.findOne({ _id: bid })
 
   getBillsByProjectAndSupplier = async (pid, sid) => billModel.find({ project: pid, receiver: sid })
+
+  getBillsByRetentionAccount = async (aid) => billModel.find({ "retention.account": aid })
 }
 
 export default BillService;
