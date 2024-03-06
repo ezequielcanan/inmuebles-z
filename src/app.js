@@ -22,6 +22,7 @@ import BillRouter from "./routes/bill.router.js"
 import CheckRouter from "./routes/check.router.js"
 import TransferRouter from "./routes/transfer.router.js"
 import MovementRouter from "./routes/movement.router.js"
+import MessageRouter from "./routes/message.router.js"
 import cors from "cors"
 import __dirname from "./utils.js"
 import initializePassport from "./config/passport.config.js"
@@ -61,6 +62,7 @@ const billRouter = new BillRouter()
 const checkRouter = new CheckRouter()
 const transferRouter = new TransferRouter()
 const movementRouter = new MovementRouter()
+const messageRouter = new MessageRouter()
 
 initializePassport()
 app.use(passport.initialize())
@@ -85,6 +87,7 @@ app.use("/api/black-payment", blackPaymentRouter.getRouter())
 app.use("/api/check", checkRouter.getRouter())
 app.use("/api/transfer", transferRouter.getRouter())
 app.use("/api/movement", movementRouter.getRouter())
+app.use("/api/message", messageRouter.getRouter())
 
 // MONGO CONNECTION AND RUNNING SERVER
 mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGO_DB })
