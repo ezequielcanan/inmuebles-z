@@ -8,6 +8,7 @@ class UserService {
     const roles = {
       status: true,
       admin: users.filter(u => u.role == "admin"),
+      bank: users.filter(u => u.role == "bank"),
       executive: users.filter(u => u.role == "executive"),
       secretary: users.filter(u => u.role == "secretary"),
       user: users.filter(u => u.role == "user"),

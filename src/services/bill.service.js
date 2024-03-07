@@ -1,8 +1,12 @@
 import billModel from "../models/bill.model.js";
 import PaymentService from "./payment.service.js";
+import CheckService from "./check.service.js";
+import TransferService from "./transfer.service.js"
 import fs from "fs"
 import __dirname from "../utils.js";
 
+const transferService = new TransferService()
+const checkService = new CheckService()
 const paymentService = new PaymentService();
 class BillService {
   constructor() { }
@@ -35,8 +39,16 @@ class BillService {
   }
 
   deleteBill = async (bid, pid) => {
-    const result = await billModel.deleteOne({ _id: bid })
+    const result = await billModel.findOneAndDelete({ _id: bid })
     const pullBillFromPayment = await paymentService.pullBill(pid, bid)
+
+    await Promise.all(result?.checks?.map(async (check) => {
+      await checkService.deleteCheckFromBill(check?._id)
+    }))
+
+    await Promise.all(result?.transfers?.map(async (transfer) => {
+      await transferService.deleteTransferFromBill(transfer?._id)
+    }))
 
     return result
   }

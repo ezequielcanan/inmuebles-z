@@ -3,12 +3,12 @@ import Z_Router from "./router.js";
 
 export default class MovementRouter extends Z_Router {
   init() {
-    this.get("/:aid", ["ADMIN", "EXECUTIVE", "USER"], getAccountMovements)
+    this.get("/:aid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getAccountMovements)
 
-    this.post("/", ["ADMIN", "EXECUTIVE"], createMovement)
+    this.post("/", ["ADMIN", "BANK"], createMovement)
 
-    this.put("/:mid", ["ADMIN", "EXECUTIVE"], updateMovement)
+    this.put("/:mid", ["ADMIN", "BANK"], updateMovement)
 
-    this.delete("/:mid", ["ADMIN", "EXECUTIVE"], deleteMovement)
+    this.delete("/:mid", ["ADMIN", "BANK"], deleteMovement)
   }
 }

@@ -29,6 +29,12 @@ class CheckService {
     return updateSubpaymentResult
   }
 
+  deleteCheckFromBill = async (cid) => {
+    const result = await checkModel.deleteOne({ _id: cid })
+
+    return result
+  }
+
   updateChecks = async (checks) => {
     const checksResult = []
     await Promise.all(checks.map(async (check) => {

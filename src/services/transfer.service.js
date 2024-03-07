@@ -30,6 +30,12 @@ class TransferService {
     return updateSubpaymentResult
   }
 
+  deleteTransferFromBill = async (tid) => {
+    const result = await transferModel.deleteOne({ _id: tid })
+
+    return result
+  }
+
   updateTransfers = async (transfers) => {
     const transfersResult = []
     await Promise.all(transfers.map(async (transfer) => {

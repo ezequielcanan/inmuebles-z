@@ -4,11 +4,11 @@ import Z_Router from "./router.js";
 
 export default class PaymentRouter extends Z_Router {
   init() {
-    this.get("/budget/:bid", ["ADMIN", "EXECUTIVE", "USER"], getBudgetPayments)
-    this.get("/project/:pid/:sid", ["ADMIN", "EXECUTIVE", "USER"], getProjectSupplierPayments)
-    this.get("/:pid", ["ADMIN", "EXECUTIVE", "USER"], getPayment)
-    this.get("/excel/:pid", ["ADMIN", "EXECUTIVE", "USER"], getExcelPayment)
-    this.get("/file/:projectId/:bid/:pid", ["ADMIN", "EXECUTIVE", "USER"], getPaymentFiles)
+    this.get("/budget/:bid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getBudgetPayments)
+    this.get("/project/:pid/:sid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getProjectSupplierPayments)
+    this.get("/:pid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getPayment)
+    this.get("/excel/:pid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getExcelPayment)
+    this.get("/file/:projectId/:bid/:pid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getPaymentFiles)
     this.post("/", ["ADMIN", "EXECUTIVE"], createPayment)
     this.post("/:pid/notes", ["ADMIN", "EXECUTIVE"], addNote)
     this.post("/file", ["ADMIN", "EXECUTIVE"], uploader.single("file"), (req, res) => res.sendSuccess(true))

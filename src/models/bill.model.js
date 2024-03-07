@@ -52,4 +52,11 @@ billsSchema.pre("findOne", function () {
   this.populate("project")
 })
 
+billsSchema.pre("findOneAndDelete", function () {
+  this.populate("checks")
+  this.populate("transfers")
+  this.populate("receiver")
+  this.populate("project")
+})
+
 export default mongoose.model(billsCollection, billsSchema)
