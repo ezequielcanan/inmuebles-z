@@ -33,6 +33,7 @@ const billsSchema = new mongoose.Schema({
     amount: Number,
     code: String,
     date: Date,
+    expirationDate: Date,
     detail: String,
     account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts" }
   }

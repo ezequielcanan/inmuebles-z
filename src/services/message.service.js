@@ -4,6 +4,7 @@ class MessageService {
   constructor() { }
 
   createMessage = async (message) => messageModel.create(message)
+  getUserMessages = async (uid) => messageModel.find({ to: uid })
 
 }
 

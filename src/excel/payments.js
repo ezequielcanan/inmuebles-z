@@ -2,6 +2,8 @@ import xl from "excel4node"
 import { textCenterStyle, thinBorder, boldBorder, bgHead, bgSectionInfo, fontHeadStyle, bgSectionHead } from "./index.js"
 import moment from "moment"
 
+moment.locale('es')
+
 export const paymentExcel = (payment, lastPayment) => {
   const wb = new xl.Workbook()
   const ws = wb.addWorksheet("CERTIFICADO", {
@@ -516,7 +518,7 @@ export const projectSupplierExcel = (project, supplier, payments, bills) => {
   return wb
 }
 
-export const getAccountExcel = (account, movements) => {
+export const getAccountExcel = (account, movements, filtered) => {
   const wb = new xl.Workbook()
   const ws = wb.addWorksheet(`BANCO ${account?.bank || ""}`, {
     defaultFont: {
@@ -588,16 +590,30 @@ export const getAccountExcel = (account, movements) => {
   ws.cell(6, 9).string("SALDO").style(styles["header"])
   ws.row(6).freeze()
 
+  const orderProperty = filtered ? "expirationDate" : "emissionDate"
+  let plusRows = 0
+  let lastMonth = ""
+
   movements.forEach((movement, i) => {
-    ws.cell(7 + i, 1).string(movement?.emissionDate || "").style(styles["cell"])
-    ws.cell(7 + i, 2).string(movement?.expirationDate || "").style(styles["cell"])
-    ws.cell(7 + i, 3).string(movement?.checkCode || "").style(styles["cell"])
-    ws.cell(7 + i, 4).string(movement?.detail || "").style(styles["cell"])
-    ws.cell(7 + i, 5).number(movement?.credit || 0).style(styles["cell"])
-    ws.cell(7 + i, 6).number(movement?.debit || 0).style(styles["cell"])
-    ws.cell(7 + i, 7).formula(`${xl.getExcelCellRef(7 + i, 5)} * ${movement?.tax}%`).style(styles["cell"])
-    ws.cell(7 + i, 8).formula(`(${xl.getExcelCellRef(7 + i, 5)} + ${xl.getExcelCellRef(7 + i, 6)}) * 0.006`).style(styles["cell"])
-    ws.cell(7 + i, 9).formula(`${`${i ? xl.getExcelCellRef(6 + i, 9) : account?.initialBalance} + `}${xl.getExcelCellRef(7 + i, 5)} - ${xl.getExcelCellRef(7 + i, 6)} - ${xl.getExcelCellRef(7 + i, 7)} - ${xl.getExcelCellRef(7 + i, 8)}`).style(styles["cell"])
+    let thisMonth = moment(movement[orderProperty], "DD-MM-YYYY").format("MMMM")
+    thisMonth = thisMonth.charAt(0).toUpperCase() + thisMonth.substring(1)
+
+    if (lastMonth != thisMonth) {
+      const addThreeRows = !i ? 0 : 3
+      ws.cell(7 + i + plusRows + addThreeRows, 1, 7 + i + plusRows + addThreeRows, 9, true).string(`${thisMonth} ${moment(movement[orderProperty], "DD-MM-YYYY").format("YYYY")}`).style(styles["importantCell"]).style({ font: { size: 14, name: "Ebrima" } })
+      plusRows += addThreeRows + 1
+    }
+    ws.cell(7 + i + plusRows, 1).string(movement?.emissionDate || "").style(styles["cell"])
+    ws.cell(7 + i + plusRows, 2).string(movement?.expirationDate || "").style(styles["cell"])
+    ws.cell(7 + i + plusRows, 3).string(movement?.checkCode || "").style(styles["cell"])
+    ws.cell(7 + i + plusRows, 4).string(movement?.detail || "").style(styles["cell"])
+    ws.cell(7 + i + plusRows, 5).number(movement?.credit || 0).style(styles["cell"])
+    ws.cell(7 + i + plusRows, 6).number(movement?.debit || 0).style(styles["cell"])
+    ws.cell(7 + i + plusRows, 7).formula(`${xl.getExcelCellRef(7 + i + plusRows, 5)} * ${movement?.tax}%`).style(styles["cell"])
+    ws.cell(7 + i + plusRows, 8).formula(`(${xl.getExcelCellRef(7 + i + plusRows, 5)} + ${xl.getExcelCellRef(7 + i + plusRows, 6)}) * 0.006`).style(styles["cell"])
+    ws.cell(7 + i + plusRows, 9).formula(`${`${i ? xl.getExcelCellRef(lastMonth == thisMonth ? 6 + i + plusRows : 6 + i - 4 + plusRows, 9) : account?.initialBalance} + `}${xl.getExcelCellRef(7 + i + plusRows, 5)} - ${xl.getExcelCellRef(7 + i + plusRows, 6)} - ${xl.getExcelCellRef(7 + i + plusRows, 7)} - ${xl.getExcelCellRef(7 + i + plusRows, 8)}`).style(styles["cell"])
+
+    if (lastMonth != thisMonth) lastMonth = thisMonth
   })
 
   return wb

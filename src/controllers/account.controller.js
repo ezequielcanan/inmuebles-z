@@ -55,7 +55,7 @@ export const getExcelAccount = async (req, res) => {
     const account = await accountService.getAccountById(aid)
     const movements = await movementsService.getAccountMovements(aid, req?.query?.filter == "true", false)
 
-    const wb = getAccountExcel(account, movements)
+    const wb = getAccountExcel(account, movements, req?.query?.filter == "true")
     wb.write(`BANCO ${account?.society?.title} - ${account?.bank || ""}.xlsx`, res)
   }
   catch (e) {

@@ -54,7 +54,7 @@ class MovementsService {
     retentions.push(...bills?.map((b) => {
       return {
         emissionDate: b?.retention?.date,
-        expirationDate: b?.retention?.date,
+        expirationDate: b?.retention?.expirationDate || b?.retention?.date,
         detail: b?.retention?.detail,
         credit: 0,
         tax: 0,
@@ -67,7 +67,7 @@ class MovementsService {
     retentions.push(...whitePaymentsWithRetention.map((p) => {
       return {
         emissionDate: p?.retention?.date,
-        expirationDate: p?.retention?.date,
+        expirationDate: p?.retention?.expirationDate || p?.retention?.date,
         detail: p?.retention?.detail,
         credit: 0,
         tax: 0,
