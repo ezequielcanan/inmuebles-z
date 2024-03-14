@@ -10,7 +10,7 @@ class QuotaService {
     const update = { $set: {} }
 
     update["$set"][result.type + ".lastQuota"] = result._id
-    
+
     result.paidUSD ? (update["$set"][result.type + ".updatedQuota"] = result.total) : (result?.indexCac ? (update["$set"][result.type + ".updatedQuota"] = result.total) : update["$set"][result.type + ".updatedQuota"] = result.total + (result.total * result.cac / 100) + (data.balance < 0 ? data.balance : 0))
     const updateLastQuota = await transactionModel.updateOne({ _id: result.transaction }, update)
     return result
@@ -44,6 +44,8 @@ class QuotaService {
     const result = await quotaModel.find({ transaction: tid }).lean().exec()
     return result
   }
+
+  updateQuota = async (qid, quota) => quotaModel.updateOne({ _id: qid }, { $set: quota })
 
 }
 
