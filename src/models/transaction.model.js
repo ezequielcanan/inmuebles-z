@@ -36,7 +36,8 @@ const transactionsSchema = new mongoose.Schema({
       updatedQuota: Number,
       lastQuota: { type: mongoose.Schema.Types.ObjectId, ref: "quotas" }
     }
-  }
+  },
+  quotasExpiration: String
 });
 
 transactionsSchema.pre("find", function () {
