@@ -21,7 +21,7 @@ class MovementsService {
   getAccountMovements = async (aid, filter = false, finished = true) => {
     const account = await accountService.getAccountById(aid)
     const movements = await movementModel.find({ account: aid }).sort({ emissionDate: 1 }).lean().exec()
-    const transfers = (await transferService.getTransfersByAccount(aid))?.map((t) => {
+    /*const transfers = (await transferService.getTransfersByAccount(aid))?.map((t) => {
       return {
         emissionDate: t?.emissionDate,
         expirationDate: t?.emissionDate,
@@ -75,10 +75,10 @@ class MovementsService {
         debit: p?.retention?.amount,
         account: p?.retention?.account
       }
-    }))
+    }))*/
 
 
-    const orderedByDateRows = [...movements, ...transfers, ...checks, ...retentions].sort((a, b) => {
+    const orderedByDateRows = [...movements/*, ...transfers, ...checks, ...retentions*/].sort((a, b) => {
       if (filter) return new Date(a.expirationDate) - new Date(b.expirationDate)
       return new Date(a.emissionDate) - new Date(b.emissionDate)
     })

@@ -609,7 +609,7 @@ export const getAccountExcel = (account, movements, filtered) => {
     ws.cell(7 + i + plusRows, 4).string(movement?.detail || "").style(styles["cell"])
     ws.cell(7 + i + plusRows, 5).number(movement?.credit || 0).style(styles["cell"])
     ws.cell(7 + i + plusRows, 6).number(movement?.debit || 0).style(styles["cell"])
-    ws.cell(7 + i + plusRows, 7).formula(`${xl.getExcelCellRef(7 + i + plusRows, 5)} * ${movement?.tax}%`).style(styles["cell"])
+    ws.cell(7 + i + plusRows, 7).formula(`${xl.getExcelCellRef(7 + i + plusRows, 5)} * ${movement?.tax || 0}%`).style(styles["cell"])
     ws.cell(7 + i + plusRows, 8).formula(`(${xl.getExcelCellRef(7 + i + plusRows, 5)} + ${xl.getExcelCellRef(7 + i + plusRows, 6)}) * 0.006`).style(styles["cell"])
     ws.cell(7 + i + plusRows, 9).formula(`${`${i ? xl.getExcelCellRef(lastMonth == thisMonth ? 6 + i + plusRows : 6 + i - 4 + plusRows, 9) : account?.initialBalance} + `}${xl.getExcelCellRef(7 + i + plusRows, 5)} - ${xl.getExcelCellRef(7 + i + plusRows, 6)} - ${xl.getExcelCellRef(7 + i + plusRows, 7)} - ${xl.getExcelCellRef(7 + i + plusRows, 8)}`).style(styles["cell"])
 
