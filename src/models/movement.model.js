@@ -10,7 +10,8 @@ const movementsSchema = new mongoose.Schema({
   credit: Number,
   debit: Number,
   tax: Number,
-  account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts" }
+  account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts" },
+  cashAccount: { type: mongoose.Schema.Types.ObjectId, ref: "cashAccounts", required: false }
 })
 
 export default mongoose.model(movementCollection, movementsSchema)

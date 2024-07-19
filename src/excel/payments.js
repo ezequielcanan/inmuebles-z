@@ -430,7 +430,7 @@ export const projectSupplierExcel = (project, supplier, payments, bills) => {
     })
   }
 
-  ws.cell(1, 1, 1, 6, true).string(`Cuenta corriente projecto ${project.title} - ${supplier?.name}`).style(styles["sectionHead"])
+  ws.cell(1, 1, 1, 6, true).string(`Cuenta corriente proyecto ${project.title} - ${supplier?.name}`).style(styles["sectionHead"])
   ws.cell(2, 1).string("Fecha").style(styles["importantCell"])
   ws.cell(2, 2).string("Comprobante").style(styles["importantCell"])
   ws.cell(2, 3).string("Descripción").style(styles["importantCell"])
@@ -576,7 +576,7 @@ export const getAccountExcel = (account, movements, filtered) => {
   ws.cell(2, 1, 2, 2, true).string(`BANCO ${account?.bank?.toUpperCase() || ""}`).style({ ...styles["cell"], ...bgSectionInfo })
   ws.cell(3, 1, 3, 2, true).string(`CUIT ${account?.cuit?.toUpperCase() || ""}`).style({ ...styles["cell"], ...bgSectionInfo })
   ws.cell(4, 1, 4, 2, true).string(`CBU ${account?.cbu?.toUpperCase() || ""}`).style({ ...styles["cell"], ...bgSectionInfo })
-  ws.cell(5, 1, 5, 2, true).string(`ALIAS ${account?.alias?.toUpperCase() || ""}`).style({ ...styles["cell"], ...bgSectionInfo })
+  ws.cell(5, 1, 5, 2, true).string(`ALIAS ${account?.alias || ""}`).style({ ...styles["cell"], ...bgSectionInfo })
 
 
   ws.cell(6, 1).string("EMISION").style(styles["header"])
