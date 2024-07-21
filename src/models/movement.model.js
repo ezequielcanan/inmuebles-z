@@ -14,4 +14,8 @@ const movementsSchema = new mongoose.Schema({
   cashAccount: { type: mongoose.Schema.Types.ObjectId, ref: "cashAccounts", required: false }
 })
 
+movementsSchema.pre("find", function () {
+  this.populate("account")
+})
+
 export default mongoose.model(movementCollection, movementsSchema)

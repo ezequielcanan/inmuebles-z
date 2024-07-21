@@ -40,7 +40,8 @@ export const deleteCashAccount = async (req, res) => {
 
 export const getExcelCashAccount = async (req, res) => {
   try {
-    const movements = await movementsService.getCashAccountMovements(req?.params?.cid)
+    let movements = await movementsService.getCashAccountMovements(req?.params?.cid)
+    movements = movements.sort((a,b) => new Date(a.emissionDate) - new Date(b.emissionDate))
     const account = await cashAccountService.getAccount(req?.params?.cid)
 
 
