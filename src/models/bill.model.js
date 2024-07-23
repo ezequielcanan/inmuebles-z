@@ -6,6 +6,7 @@ const billsSchema = new mongoose.Schema({
   code: String,
   emissionDate: Date,
   amount: Number,
+  freeAmount: { type: Number, default: 0 },
   iva: Number,
   taxes: Number,
   cuit: String,

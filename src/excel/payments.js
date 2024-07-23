@@ -97,12 +97,13 @@ export const paymentExcel = (payment, lastPayment) => {
     const lastMcp = lastPayment ? lastPayment[type]?.mcp : 0
     const lastMcd = lastPayment ? lastPayment[type]?.mcd : 0
 
+    const conceptBill = payment?.white?.bills?.find(b => b.concept == "certificate")?.bill
     ws.cell(4, col).formula(`B1 * ${percentage}%`).style(styles["cell"])
     ws.cell(5, col).formula(`${xl.getExcelCellRef(4, col)} * ${adjustmentCell}`).style(styles["cell"])
     ws.cell(6, col).number((lastMcd - lastMcp) || 0).style(styles["cell"])
     ws.cell(7, col).formula(`SUM(${xl.getExcelCellRef(4, col)}:${xl.getExcelCellRef(6, col)})`).style(styles["cell"])
-    type == "white" && ws.cell(8, col).formula(`${xl.getExcelCellRef(7, col)} * ${(payment?.bill?.iva || 0)}% `).style(styles["cell"])
-    type == "white" && ws.cell(9, col).formula(`${xl.getExcelCellRef(7, col)} * ${(payment?.bill?.taxes || 0)}% `).style(styles["cell"])
+    type == "white" && ws.cell(8, col).formula(`${xl.getExcelCellRef(7, col)} * ${(conceptBill?.iva || 0)}% `).style(styles["cell"])
+    type == "white" && ws.cell(9, col).formula(`${xl.getExcelCellRef(7, col)} * ${(conceptBill?.taxes || 0)}% `).style(styles["cell"])
     ws.cell(10, col).formula(`SUM(${xl.getExcelCellRef(7, col)}: ${xl.getExcelCellRef(9, col)})`).style(styles["cell"])
     ws.cell(12, col).formula(`E1 * ${percentage}% `).style(styles["cell"])
     ws.cell(13, col).formula(`${xl.getExcelCellRef(12, col)} * ${adjustmentCell} `).style(styles["cell"])
@@ -125,7 +126,8 @@ export const paymentExcel = (payment, lastPayment) => {
     wsBills.cell(5, col).number(bill?.amount).style(styles["cell"])
     wsBills.cell(6, col).formula(`${xl.getExcelCellRef(5, col)}*${bill?.iva / 100}`).style(styles["cell"])
     wsBills.cell(7, col).formula(`${xl.getExcelCellRef(5, col)}*${bill?.taxes / 100}`).style(styles["cell"])
-    wsBills.cell(8, col).formula(`SUM(${xl.getExcelCellRef(5, col)} : ${xl.getExcelCellRef(7, col)})`).style(styles["importantCell"])
+    wsBills.cell(8, col).number(bill?.freeAmount || 0).style(styles["cell"])
+    wsBills.cell(9, col).formula(`SUM(${xl.getExcelCellRef(5, col)} : ${xl.getExcelCellRef(8, col)})`).style(styles["importantCell"])
   }
 
   wsBills.cell(1, 1, 1, 5, true).string(payment?.budget?.supplier?.name).style(styles["sectionHead"])
@@ -134,7 +136,7 @@ export const paymentExcel = (payment, lastPayment) => {
   const billCells = []
   payment?.white?.bills?.forEach((bill, i) => {
     lastBillCol = 3 * i + 1
-    billCells.push(xl.getExcelCellRef(8, lastBillCol))
+    billCells.push(xl.getExcelCellRef(9, lastBillCol))
     writeBillInfo(bill?.bill, bill?.concept == "certificate" ? "CERTIFICADO" : (bill.concept == "mcp" ? "MCP" : "MCD"), 3 * i + 1)
   })
 
@@ -144,6 +146,7 @@ export const paymentExcel = (payment, lastPayment) => {
     wsBills.cell(6, totalCol).formula(`SUM(${xl.getExcelCellRef(6, 1)}:${xl.getExcelCellRef(6, lastBillCol)})`).style(styles["importantCell"])
     wsBills.cell(7, totalCol).formula(`SUM(${xl.getExcelCellRef(7, 1)}:${xl.getExcelCellRef(7, lastBillCol)})`).style(styles["importantCell"])
     wsBills.cell(8, totalCol).formula(`SUM(${xl.getExcelCellRef(8, 1)}:${xl.getExcelCellRef(8, lastBillCol)})`).style(styles["importantCell"])
+    wsBills.cell(9, totalCol).formula(`SUM(${xl.getExcelCellRef(9, 1)}:${xl.getExcelCellRef(9, lastBillCol)})`).style(styles["importantCell"])
     wsBills.cell(12, 1, 12, 2, true).string("DETALLE PAGO").style(styles["header"])
   }
 
@@ -271,7 +274,7 @@ export const budgetWhiteExcel = (budget, payments) => {
   let lastRow = 3
   payments?.forEach((payment, i) => {
     payment?.white?.bills?.forEach((bill) => {
-      addRow(lastRow, moment.utc(bill?.bill?.emissionDate), bill?.bill?.code, "Factura", 0, bill?.bill?.amount * (1 + (bill?.bill?.iva + bill?.bill?.taxes) / 100))
+      addRow(lastRow, moment.utc(bill?.bill?.emissionDate), bill?.bill?.code, "Factura", 0, bill?.bill?.amount * (1 + (bill?.bill?.iva + bill?.bill?.taxes) / 100) + bill?.bill?.freeAmount)
       lastRow++
       bill?.bill?.notes?.forEach((note) => {
         addRow(lastRow, moment.utc(note?.date), note?.code, `Nota de ${note?.type == "credit" ? "crédito" : "débito"}`, (note?.type == "credit" ? note?.amount : 0), (note?.type == "debit" ? note?.amount : 0))
@@ -465,7 +468,7 @@ export const projectSupplierExcel = (project, supplier, payments, bills) => {
   let lastRow = 3
   payments?.forEach((payment, i) => {
     payment?.white?.bills?.forEach((bill) => {
-      addRow(lastRow, moment.utc(bill?.bill?.emissionDate), bill?.bill?.code, "Factura", 0, bill?.bill?.amount * (1 + (bill?.bill?.iva + bill?.bill?.taxes) / 100))
+      addRow(lastRow, moment.utc(bill?.bill?.emissionDate), bill?.bill?.code, "Factura", 0, bill?.bill?.amount * (1 + (bill?.bill?.iva + bill?.bill?.taxes) / 100) + bill?.bill?.freeAmount)
       lastRow++
       bill?.bill?.notes?.forEach((note) => {
         addRow(lastRow, moment.utc(note?.date), note?.code, `Nota de ${note?.type == "credit" ? "crédito" : "débito"}`, (note?.type == "credit" ? note?.amount : 0), (note?.type == "debit" ? note?.amount : 0))
@@ -493,7 +496,7 @@ export const projectSupplierExcel = (project, supplier, payments, bills) => {
   })
 
   bills.forEach((bill) => {
-    addRow(lastRow, moment.utc(bill?.emissionDate), bill?.code, "Factura", 0, bill?.amount * (1 + (bill?.iva + bill?.taxes) / 100))
+    addRow(lastRow, moment.utc(bill?.emissionDate), bill?.code, "Factura", 0, bill?.amount * (1 + (bill?.iva + bill?.taxes) / 100) + bill?.freeAmount)
     lastRow++
     bill?.checks?.forEach(check => {
       addRow(lastRow, moment.utc(check?.emissionDate), check?.code, "Cheque", check?.amount)

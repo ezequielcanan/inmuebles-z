@@ -9,7 +9,7 @@ export default class BillRouter extends Z_Router {
 
     this.post("/", ["ADMIN", "EXECUTIVE"], createBillWithoutPayment)
     this.post("/:pid", ["ADMIN", "EXECUTIVE"], createBill)
-    this.post("/:bid/pay", ["ADMIN", "BANK"], payBill)
+    this.post("/:bid/pay", ["ADMIN", "BANK", "EXECUTIVE"], payBill)
     this.post("/balance-note/:bid", ["ADMIN", "EXECUTIVE", "BANK"], addBalanceNote)
     this.post("/file/:pid", ["ADMIN", "EXECUTIVE"], uploader.single("file"), (req, res) => res.sendSuccess(true))
 

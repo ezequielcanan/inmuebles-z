@@ -4,9 +4,9 @@ import Z_Router from "./router.js";
 export default class WhitePaymentRouter extends Z_Router {
   init() {
     this.get("/:sid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getWhitePayment)
-    this.put("/:sid", ["ADMIN", "BANK"], updateWhitePayment)
-    this.post("/:pid", ["ADMIN", "BANK"], createWhitePayment)
+    this.put("/:sid", ["ADMIN", "EXECUTIVE"], updateWhitePayment)
+    this.post("/:pid", ["ADMIN", "EXECUTIVE"], createWhitePayment)
 
-    this.delete("/:pid/:sid", ["ADMIN", "BANK"], deleteWhitePayment)
+    this.delete("/:pid/:sid", ["ADMIN", "EXECUTIVE"], deleteWhitePayment)
   }
 }
