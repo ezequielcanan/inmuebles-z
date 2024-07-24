@@ -11,6 +11,8 @@ const quotaSchema = new mongoose.Schema({
   transaction: { type: mongoose.Schema.Types.ObjectId, ref: "transactions" },
   adjustment: Number,
   extraAdjustment: Number,
+  adjustmentToQuota: Boolean,
+  extraAdjustmentToQuota: Boolean,
   date: String,
   dollarPrice: Number,
   paid: Number,
