@@ -10,7 +10,17 @@ const accountsSchema = new mongoose.Schema({
   cuit: String,
   accountNumber: String,
   initialBalance: { type: Number, default: 0 },
-  society: { type: mongoose.Schema.Types.ObjectId, ref: "projects" }
+  society: { type: mongoose.Schema.Types.ObjectId, ref: "projects" },
+  signatories: {
+    type: [
+      {
+        from: Date,
+        to: Date,
+        name: String
+      }
+    ],
+    default: []
+  }
 })
 
 accountsSchema.pre("find", function () {
