@@ -13,6 +13,7 @@ const quotaSchema = new mongoose.Schema({
   extraAdjustment: Number,
   adjustmentToQuota: Boolean,
   extraAdjustmentToQuota: Boolean,
+  doubleAdjustmentToBalance: Boolean,
   date: String,
   dollarPrice: Number,
   paid: Number,
