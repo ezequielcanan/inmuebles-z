@@ -48,7 +48,7 @@ export const updateService = async (req, res) => {
 
 export const deleteService = async (req, res) => {
   try {
-    const result = await serviceService.updateService(req?.params?.sid)
+    const result = await serviceService.deleteService(req?.params?.sid)
     res.sendSuccess(result)
   }
   catch (e) {

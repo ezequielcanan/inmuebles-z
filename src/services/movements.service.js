@@ -80,12 +80,13 @@ class MovementsService {
 
     const orderedByDateRows = [...movements/*, ...transfers, ...checks, ...retentions*/].sort((a, b) => {
       if (filter) return new Date(a.expirationDate) - new Date(b.expirationDate)
-      return new Date(a.emissionDate) - new Date(b.emissionDate)
+      return new Date(a.date || a.emissionDate) - new Date(b.date || b.emissionDate)
     })
 
     if (!finished) return orderedByDateRows.map((row) => {
       return {
         ...row,
+        date: moment.utc(row?.date).format("DD-MM-YYYY"),
         emissionDate: moment.utc(row?.emissionDate).format("DD-MM-YYYY"),
         expirationDate: moment.utc(row?.expirationDate).format("DD-MM-YYYY")
       }
@@ -97,6 +98,7 @@ class MovementsService {
       const sixThousandths = (row?.credit + row?.debit) * 0.006
       rows.push({
         ...row,
+        date: moment.utc(row?.date).format("DD-MM-YYYY"),
         emissionDate: moment.utc(row?.emissionDate).format("DD-MM-YYYY"),
         expirationDate: moment.utc(row?.expirationDate).format("DD-MM-YYYY"),
         tax,
@@ -106,6 +108,11 @@ class MovementsService {
     })
 
     return rows
+  }
+
+  getExpiredChecks = async (aid) => {
+    const movements = await this.getAccountMovements(aid)
+    return movements.filter(movement => !movement.paid && movement.movementType == "Cheque" && moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) && !movements.some(m => m?.lastCheck?.code == movement?.code))
   }
 
   updateMovement = async (mid, movement) => movementModel.updateOne({ _id: mid }, { $set: movement })

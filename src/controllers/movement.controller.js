@@ -46,3 +46,14 @@ export const deleteMovement = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const getExpiredChecks = async (req, res) => {
+  try {
+    const result = await movementsService.getExpiredChecks(req?.params?.aid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}

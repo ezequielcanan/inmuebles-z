@@ -3,6 +3,7 @@ import mongoose from "mongoose"
 const movementCollection = "movements"
 
 const movementsSchema = new mongoose.Schema({
+  date: Date,
   emissionDate: { type: Date, required: true },
   expirationDate: { type: Date, required: true },
   code: String,
@@ -12,13 +13,18 @@ const movementsSchema = new mongoose.Schema({
   credit: Number,
   debit: Number,
   tax: Number,
+  lastCheck: { type: mongoose.Schema.Types.ObjectId, ref: "movements" },
   account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts" },
   cashAccount: { type: mongoose.Schema.Types.ObjectId, ref: "cashAccounts", required: false },
-  supplier: { type: mongoose.Schema.Types.ObjectId, ref: "suppliers", required: false }
+  supplier: { type: mongoose.Schema.Types.ObjectId, ref: "suppliers", required: false },
+  service: { type: mongoose.Schema.Types.ObjectId, ref: "services", required: false },
 })
 
 movementsSchema.pre("find", function () {
   this.populate("account")
+  this.populate("supplier")
+  this.populate("service")
+  this.populate("lastCheck")
 })
 
 export default mongoose.model(movementCollection, movementsSchema)
