@@ -1,7 +1,13 @@
+import { getSupplierOrServiceExcel } from "../excel/payments.js"
 import MovementsService from "../services/movements.service.js"
-
+import ProjectService from "../services/project.service.js"
+import SupplierService from "../services/supplier.service.js"
+import ServiceService from "../services/service.service.js"
 
 const movementsService = new MovementsService()
+const projectService = new ProjectService()
+const supplierService = new SupplierService()
+const serviceService = new ServiceService()
 
 export const createMovement = async (req, res) => {
   try {
@@ -18,6 +24,36 @@ export const getAccountMovements = async (req, res) => {
   try {
     const result = await movementsService.getAccountMovements(req?.params?.aid, (req?.query?.filter == "true" ? true : false))
     res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getSupplierExcel = async (req, res) => {
+  try {
+    let movements = await movementsService.getSupplierMovements(req?.params?.sid)
+    movements = movements.sort((a, b) => new Date(a.date || a.emissionDate) - new Date(b.date || b.emissionDate)).filter(m => m?.account?.society?._id == req?.params?.pid)
+    const project = await projectService.getProject(req?.params?.pid)
+    const supplier = await supplierService.getSupplier(req?.params?.sid)
+
+    const wb = getSupplierOrServiceExcel(supplier, project, movements)
+    wb.write(`${supplier?.name} ${project?.title} BANCOS.xlsx`, res)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getServiceExcel = async (req, res) => {
+  try {
+    let movements = await movementsService.getServiceMovements(req?.params?.sid)
+    movements = movements.sort((a, b) => new Date(a.date || a.emissionDate) - new Date(b.date || b.emissionDate))
+    const service = await serviceService.getServiceById(req?.params?.sid)
+    const wb = getSupplierOrServiceExcel(service, {}, movements, false, true)
+    wb.write(`${service?.name} - ${service?.code} BANCOS.xlsx`, res)
   }
   catch (e) {
     console.log(e)

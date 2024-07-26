@@ -15,6 +15,8 @@ class SupplierService {
   getSuppliers = async (pid = "") => {
     const condObj = !pid?.length ? { $eq: ["$$budget.supplier", "$_id"] } : { $and: [{ $eq: ["$$budget.supplier", "$_id"] }, { $eq: ["$$budget.project", new mongoose.Types.ObjectId(pid)] }] }
     const billsCondObj = !pid?.length ? { $eq: ["$$bill.receiver", "$_id"] } : { $and: [{ $eq: ["$$bill.receiver", "$_id"] }, { $eq: ["$$bill.project", new mongoose.Types.ObjectId(pid)] }] }
+    const movementCondObj = { $eq: ["$$movement.supplier", "$_id"] }
+
     const result = await supplierModel.aggregate([
       {
         $lookup: {
@@ -32,6 +34,15 @@ class SupplierService {
           pipeline: [
           ],
           as: "bills"
+        }
+      },
+      {
+        $lookup: {
+          from: "movements",
+          let: { supplier: "supplier" },
+          pipeline: [
+          ],
+          as: "movements"
         }
       },
       {
@@ -55,11 +66,20 @@ class SupplierService {
                 cond: billsCondObj
               }
             }
+          },
+          movements: {
+            $size: {
+              $filter: {
+                input: "$movements",
+                as: "movement",
+                cond: movementCondObj
+              }
+            }
           }
         }
       },
       {
-        $sort: {name: 1}
+        $sort: { name: 1 }
       }
     ])
 

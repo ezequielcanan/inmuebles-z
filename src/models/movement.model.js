@@ -7,7 +7,7 @@ const movementsSchema = new mongoose.Schema({
   emissionDate: { type: Date, required: true },
   expirationDate: { type: Date, required: true },
   code: String,
-  movementType: {type: String, enum: ["Cheque", "Transferencia"]},
+  movementType: { type: String, enum: ["Cheque", "Transferencia"] },
   paid: Boolean,
   detail: { type: String, required: true },
   credit: Number,
@@ -21,6 +21,7 @@ const movementsSchema = new mongoose.Schema({
 })
 
 movementsSchema.pre("find", function () {
+  this.populate("cashAccount")
   this.populate("account")
   this.populate("supplier")
   this.populate("service")

@@ -119,7 +119,10 @@ class MovementsService {
 
   deleteMovement = async (mid) => movementModel.deleteOne({ _id: mid })
 
-  getCashAccountMovements = async (cid) => movementModel.find({cashAccount: cid})
+  getCashAccountMovements = async (cid) => movementModel.find({ cashAccount: cid })
+  getSupplierMovements = async (sid) => movementModel.find({ supplier: sid })
+  getServiceMovements = async (sid) => movementModel.find({ service: sid })
+
 }
 
 export default MovementsService

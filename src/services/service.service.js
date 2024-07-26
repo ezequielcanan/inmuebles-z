@@ -32,13 +32,13 @@ class ServiceService {
         }
       },
       {
-        $sort: {name: 1}
+        $sort: { name: 1 }
       }
     ])
 
     return result
   }
-  getServiceById = id => serviceModel.find({ _id: id })
+  getServiceById = id => serviceModel.findOne({ _id: id })
   updateService = (id, data) => serviceModel.updateOne({ _id: id }, { $set: data })
   deleteService = id => serviceModel.deleteOne({ _id: id })
 }
