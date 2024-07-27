@@ -103,7 +103,8 @@ class MovementsService {
         expirationDate: moment.utc(row?.expirationDate).format("DD-MM-YYYY"),
         tax,
         sixThousandths,
-        balance: ((!i ? account?.initialBalance : rows[i - 1]?.balance) || 0) + row?.credit - row?.debit - tax - sixThousandths
+        balance: ((!i ? account?.initialBalance : rows[i - 1]?.balance) || 0) + ((moment(row?.expirationDate, "DD-MM-YYYY").isBefore(moment()) && !row?.paid) ? 0 : row?.credit - row?.debit - tax - sixThousandths),
+        realBalance: ((!i ? account?.initialBalance : rows[i - 1]?.realBalance) || 0) + ((!row?.paid) ? 0 : row?.credit - row?.debit - tax - sixThousandths)
       })
     })
 
