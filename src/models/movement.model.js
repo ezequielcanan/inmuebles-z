@@ -13,6 +13,7 @@ const movementsSchema = new mongoose.Schema({
   credit: Number,
   debit: Number,
   tax: Number,
+  note: String,
   lastCheck: { type: mongoose.Schema.Types.ObjectId, ref: "movements" },
   account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts" },
   cashAccount: { type: mongoose.Schema.Types.ObjectId, ref: "cashAccounts", required: false },
