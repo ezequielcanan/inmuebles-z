@@ -34,7 +34,7 @@ class BudgetService {
       }
       const transactionResult = await transactionService.createTransaction(transactionObject)
       const apartmentResult = await apartmentService.updateApartment(transactionResult?.apartment, { owner: transactionResult?.buyer, forSale: false })
-      return { apartment: transactionResult._id, discount: transaction?.subtractType }
+      return { apartment: transactionResult._id, discount: transaction?.subtractType, percentage: transaction?.percentage }
     }))
 
     data.advanced = data?.paidApartments?.reduce((acc, apartment) => apartment.subtractType == "total" ? acc + Number(apartment?.total * apartment?.dollar) : acc, Number(data?.booking)) || Number(data?.booking) || 0

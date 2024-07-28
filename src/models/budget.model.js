@@ -13,6 +13,7 @@ const budgetsSchema = new mongoose.Schema({
   baseIndex: Number,
   advanced: Number,
   booking: Number,
+  bookingPercentage: Number,
   code: String,
   date: Date,
   dollarPrice: Number,
@@ -31,6 +32,7 @@ const budgetsSchema = new mongoose.Schema({
     type: [
       {
         apartment: { type: mongoose.Schema.Types.ObjectId, ref: "transactions" },
+        percentage: Number,
         discount: { type: String, enum: ["quota", "total"] }
       }
     ],
