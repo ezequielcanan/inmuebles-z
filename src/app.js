@@ -25,6 +25,7 @@ import MovementRouter from "./routes/movement.router.js"
 import MessageRouter from "./routes/message.router.js"
 import CashAccountRouter from "./routes/cashAccount.router.js"
 import ServiceRouter from "./routes/service.router.js"
+import TaxRouter from "./routes/tax.router.js"
 import cors from "cors"
 import __dirname from "./utils.js"
 import initializePassport from "./config/passport.config.js"
@@ -67,6 +68,7 @@ const movementRouter = new MovementRouter()
 const messageRouter = new MessageRouter()
 const cashAccountRouter = new CashAccountRouter()
 const serviceRouter = new ServiceRouter()
+const taxRouter = new TaxRouter()
 
 
 initializePassport()
@@ -95,6 +97,7 @@ app.use("/api/movement", movementRouter.getRouter())
 app.use("/api/message", messageRouter.getRouter())
 app.use("/api/cash-account", cashAccountRouter.getRouter())
 app.use("/api/service", serviceRouter.getRouter())
+app.use("/api/tax", taxRouter.getRouter())
 
 // MONGO CONNECTION AND RUNNING SERVER
 mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGO_DB })
