@@ -37,7 +37,7 @@ class BudgetService {
       return { apartment: transactionResult._id, discount: transaction?.subtractType, percentage: transaction?.percentage }
     }))
 
-    data.advanced = data?.paidApartments?.reduce((acc, apartment) => apartment.subtractType == "total" ? acc + Number(apartment?.total * apartment?.dollar) : acc, Number(data?.booking)) || Number(data?.booking) || 0
+    data.advanced = data?.paidApartments?.reduce((acc, apartment) => apartment.subtractType == "total" ? acc + Number(apartment?.total * apartment?.dollar) : acc, data.bookingType != "quotas" ? Number(data?.booking) : 0) || (data.bookingType != "quotas" && Number(data?.booking)) || 0
     data.paidApartments = transactions
 
     const result = await budgetModel.create(data)

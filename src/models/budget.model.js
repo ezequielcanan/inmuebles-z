@@ -13,6 +13,7 @@ const budgetsSchema = new mongoose.Schema({
   baseIndex: Number,
   advanced: Number,
   booking: Number,
+  bookingType: { type: String, enum: ["total", "quotas"] },
   bookingPercentage: Number,
   code: String,
   date: Date,
@@ -44,6 +45,7 @@ budgetsSchema.pre("find", function () {
   this.populate("project")
   this.populate("supplier")
   this.populate("lastPayment")
+  this.populate("paidApartments.apartment")
 })
 
 

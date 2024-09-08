@@ -55,12 +55,29 @@ export const paymentExcel = (payment, lastPayment) => {
     })
   }
 
+  const apartmentsWhitePercentageOfBudget = payment?.budget?.paidApartments?.reduce((acc, apartment, i) => {
+    if (apartment?.discount == "quota") {
+      return acc + ((apartment?.apartment?.total * apartment?.apartment?.dolar) * apartment?.percentage / 100)
+    } else return acc
+  }, 0) / (payment?.budget?.percentage * payment?.budget?.total / 100)
+
+  const apartmentsBlackPercentageOfBudget = payment?.budget?.paidApartments?.reduce((acc, apartment, i) => {
+    if (apartment?.discount == "quota") {
+      return acc + ((apartment?.apartment?.total * apartment?.apartment?.dolar) * (100 - apartment?.percentage) / 100)
+    } else return acc
+  }, 0) / ((100 - payment?.budget?.percentage) * payment?.budget?.total / 100)
+
+  const bookingWhitePercentageOfBudget = payment?.budget?.bookingType == "quotas" ? ((payment?.budget?.bookingPercentage * payment?.budget?.booking / 100) / (payment?.budget?.percentage * payment?.budget?.total / 100)) : 0
+
+
+  const bookingBlackPercentageOfBudget = payment?.budget?.bookingType == "quotas" ? (((100 - payment?.budget?.bookingPercentage) * payment?.budget?.booking / 100) / ((100 - payment?.budget?.percentage) * payment?.budget?.total / 100)) : 0
+
 
   ws.cell(1, 1).string("Total").style(styles["sectionHead"])
   ws.cell(1, 2).number(payment?.amount).style(styles["importantCell"])
 
-  ws.cell(1, 4).string("Total unidades").style(styles["sectionHead"])
-  ws.cell(1, 5).number(payment?.discountByApartments).style(styles["importantCell"])
+  /*ws.cell(1, 4).string("Total unidades").style(styles["sectionHead"])
+  ws.cell(1, 5).number(payment?.discountByApartments).style(styles["importantCell"])*/
 
   ws.cell(3, 4, 3, 5, true).string("Actualizacion").style(styles["importantCell"])
   ws.cell(4, 4).string("Indice base").style(styles["importantCell"])
@@ -70,26 +87,42 @@ export const paymentExcel = (payment, lastPayment) => {
   ws.cell(6, 4).string("Aumento").style(styles["importantCell"])
   ws.cell(6, 5).formula(`E5 / E4 - 1`).style(styles["importantCell"])
 
+  const subtotalRow = 4
+  const subtotalWithBookingRow = 5
+  const mayorCostoRow = 6
+  const mayorCostoDefRow = 7
+  const brutoRow = 8
+  const ivaRow = 9
+  const taxesRow = 10
+  const payRow = 11
+  const incomeSubtotalRow = 13
+  const incomeMayorCostoRow = 14
+  const incomeMayorCostoDefRow = 15
+  const incomeTotalRow = 16
+  const incomeTotalFinishedRow = 17
+  const balanceRow = 21
+
   const writeSectionImportantCells = (type = "A", col = 7) => {
     ws.cell(3, col, 3, col + 1, true).string(type).style(styles["sectionHead"])
-    ws.cell(4, col).string("Subtotal").style(styles["importantCell"])
-    ws.cell(5, col).string("Mayor costo").style(styles["cell"])
-    ws.cell(6, col).string("Mayor costo definitivo").style(styles["cell"])
-    ws.cell(7, col).string("Total").style(styles["cell"])
-    type == "A" && ws.cell(8, col).string("IVA:").style(styles["cell"])
-    type == "A" && ws.cell(9, col).string("Impuestos:").style(styles["cell"])
-    ws.cell(10, col).string("Total a pagar:").style(styles["header"])
-    ws.cell(12, col).string("A cobrar unidades:").style(styles["importantCell"])
-    ws.cell(13, col).string("Mayor costo").style(styles["cell"])
-    ws.cell(14, col).string("Mayor costo definitivo").style(styles["cell"])
-    ws.cell(15, col).string("Total:").style(styles["cell"])
-    ws.cell(16, col).string("Total a cobrar:").style(styles["header"])
-    ws.cell(20, col).string("SALDO A PAGAR").style(styles["importantCell"])
+    ws.cell(subtotalRow, col).string("Subtotal").style(styles["importantCell"])
+    ws.cell(subtotalWithBookingRow, col).string("Subtotal con anticipo").style(styles["importantCell"])
+    ws.cell(mayorCostoRow, col).string("Mayor costo").style(styles["cell"])
+    ws.cell(mayorCostoDefRow, col).string("Mayor costo definitivo").style(styles["cell"])
+    ws.cell(brutoRow, col).string("Total").style(styles["cell"])
+    type == "A" && ws.cell(ivaRow, col).string("IVA:").style(styles["cell"])
+    type == "A" && ws.cell(taxesRow, col).string("Impuestos:").style(styles["cell"])
+    ws.cell(payRow, col).string("Total a pagar:").style(styles["header"])
+    ws.cell(incomeSubtotalRow, col).string("A cobrar unidades:").style(styles["importantCell"])
+    ws.cell(incomeMayorCostoRow, col).string("Mayor costo").style(styles["cell"])
+    ws.cell(incomeMayorCostoDefRow, col).string("Mayor costo definitivo").style(styles["cell"])
+    ws.cell(incomeTotalRow, col).string("Total:").style(styles["cell"])
+    ws.cell(incomeTotalFinishedRow, col).string("Total a cobrar:").style(styles["header"])
+    ws.cell(balanceRow, col).string("SALDO A PAGAR").style(styles["importantCell"])
   }
 
   const adjustmentCell = "E6"
 
-  const writeSectionInfo = (percentage, type = "white", col = 8) => {
+  const writeSectionInfo = (percentage, apartmentsPercentage, bookingPercentage, type = "white", col = 8) => {
 
     const lastMcpApartments = (lastPayment?.discountByApartments * percentage / 100) * (lastPayment?.indexCac / payment?.budget?.baseIndex - 1)
     const lastMcdApartments = (lastPayment?.discountByApartments * percentage / 100) * (payment?.indexCac / payment?.budget?.baseIndex - 1)
@@ -98,26 +131,29 @@ export const paymentExcel = (payment, lastPayment) => {
     const lastMcd = lastPayment ? lastPayment[type]?.mcd : 0
 
     const conceptBill = payment?.white?.bills?.find(b => b.concept == "certificate")?.bill
-    ws.cell(4, col).formula(`B1 * ${percentage}%`).style(styles["cell"])
-    ws.cell(5, col).formula(`${xl.getExcelCellRef(4, col)} * ${adjustmentCell}`).style(styles["cell"])
-    ws.cell(6, col).number((lastMcd - lastMcp) || 0).style(styles["cell"])
-    ws.cell(7, col).formula(`SUM(${xl.getExcelCellRef(4, col)}:${xl.getExcelCellRef(6, col)})`).style(styles["cell"])
-    type == "white" && ws.cell(8, col).formula(`${xl.getExcelCellRef(7, col)} * ${(conceptBill?.iva || 0)}% `).style(styles["cell"])
-    type == "white" && ws.cell(9, col).formula(`${xl.getExcelCellRef(7, col)} * ${(conceptBill?.taxes || 0)}% `).style(styles["cell"])
-    ws.cell(10, col).formula(`SUM(${xl.getExcelCellRef(7, col)}: ${xl.getExcelCellRef(9, col)})`).style(styles["cell"])
-    ws.cell(12, col).formula(`E1 * ${percentage}% `).style(styles["cell"])
-    ws.cell(13, col).formula(`${xl.getExcelCellRef(12, col)} * ${adjustmentCell} `).style(styles["cell"])
-    ws.cell(14, col).number((lastMcdApartments - lastMcpApartments) || 0).style(styles["cell"])
-    ws.cell(15, col).formula(`SUM(${xl.getExcelCellRef(12, col)}: ${xl.getExcelCellRef(14, col)})`).style(styles["cell"])
-    ws.cell(16, col).formula(`${xl.getExcelCellRef(15, col)}`).style(styles["cell"])
-    ws.cell(20, col).formula(`${xl.getExcelCellRef(10, col)} - ${xl.getExcelCellRef(16, col)}`).style(styles["sectionHead"])
+    ws.cell(subtotalRow, col).formula(`B1 * ${percentage}%`).style(styles["cell"])
+    ws.cell(subtotalWithBookingRow, col + 1).formula(`${bookingPercentage} * 100`).style(styles["cell"])
+    ws.cell(subtotalWithBookingRow, col).formula(`${xl.getExcelCellRef(subtotalRow, col)} - (${xl.getExcelCellRef(subtotalRow, col)} * ${xl.getExcelCellRef(subtotalWithBookingRow, col + 1)}%)`).style(styles["cell"])
+    ws.cell(mayorCostoRow, col).formula(`${xl.getExcelCellRef(subtotalWithBookingRow, col)} * ${adjustmentCell}`).style(styles["cell"])
+    ws.cell(mayorCostoDefRow, col).number((lastMcd - lastMcp) || 0).style(styles["cell"])
+    ws.cell(brutoRow, col).formula(`SUM(${xl.getExcelCellRef(subtotalWithBookingRow, col)}:${xl.getExcelCellRef(mayorCostoDefRow, col)})`).style(styles["cell"])
+    type == "white" && ws.cell(ivaRow, col).formula(`${xl.getExcelCellRef(brutoRow, col)} * ${(conceptBill?.iva || 0)}% `).style(styles["cell"])
+    type == "white" && ws.cell(taxesRow, col).formula(`${xl.getExcelCellRef(brutoRow, col)} * ${(conceptBill?.taxes || 0)}% `).style(styles["cell"])
+    ws.cell(payRow, col).formula(`SUM(${xl.getExcelCellRef(brutoRow, col)}: ${xl.getExcelCellRef(taxesRow, col)})`).style(styles["cell"])
+    ws.cell(incomeSubtotalRow, col + 1).formula(`${apartmentsPercentage} * 100`).style(styles["cell"])
+    ws.cell(incomeSubtotalRow, col).formula(`${xl.getExcelCellRef(incomeSubtotalRow, col + 1)}% * ${xl.getExcelCellRef(subtotalRow, col)}`).style(styles["cell"])
+    ws.cell(incomeMayorCostoRow, col).formula(`${xl.getExcelCellRef(incomeSubtotalRow, col)} * ${adjustmentCell} `).style(styles["cell"])
+    ws.cell(incomeMayorCostoDefRow, col).number(0).style(styles["cell"])
+    ws.cell(incomeTotalRow, col).formula(`SUM(${xl.getExcelCellRef(incomeSubtotalRow, col)}: ${xl.getExcelCellRef(incomeMayorCostoDefRow, col)})`).style(styles["cell"])
+    ws.cell(incomeTotalFinishedRow, col).formula(`${xl.getExcelCellRef(incomeTotalRow, col)}`).style(styles["cell"])
+    ws.cell(balanceRow, col).formula(`${xl.getExcelCellRef(payRow, col)} - ${xl.getExcelCellRef(incomeTotalFinishedRow, col)}`).style(styles["sectionHead"])
     ws.column(col).setWidth(35)
   }
 
   writeSectionImportantCells("A")
   writeSectionImportantCells("B", 1)
-  writeSectionInfo(payment?.budget?.percentage)
-  writeSectionInfo((100 - payment?.budget?.percentage), "black", 2)
+  writeSectionInfo(payment?.budget?.percentage, apartmentsWhitePercentageOfBudget, bookingWhitePercentageOfBudget)
+  writeSectionInfo((100 - payment?.budget?.percentage), apartmentsBlackPercentageOfBudget, bookingBlackPercentageOfBudget, "black", 2)
 
   const writeBillInfo = (bill, concept, col = 1) => {
     wsBills.cell(3, col).string(bill?.code).style(styles["header"])
