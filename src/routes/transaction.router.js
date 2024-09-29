@@ -1,5 +1,5 @@
 import Z_Router from "./router.js";
-import { createTransaction, getApartmentTransactions, getTransactionById, createTransactionXlsx, createFutureQuotasXlsx, updateTransaction, deleteTransaction, insertApartmentByPayment } from "../controllers/transaction.controller.js";
+import { createTransaction, getApartmentTransactions, getTransactionById, toggleTransaction, createTransactionXlsx, createFutureQuotasXlsx, updateTransaction, deleteTransaction, insertApartmentByPayment } from "../controllers/transaction.controller.js";
 
 export default class TransactionRouter extends Z_Router {
   init() {
@@ -12,6 +12,7 @@ export default class TransactionRouter extends Z_Router {
     this.post("/budget", ["ADMIN", "SECRETARY"], insertApartmentByPayment)
 
     this.put("/:tid/:type", ["ADMIN", "SECRETARY"], updateTransaction)
+    this.put("/toggle/finished/:tid", ["ADMIN", "SECRETARY"], toggleTransaction)
 
     this.delete("/:tid", ["ADMIN", "SECRETARY"], deleteTransaction)
   }

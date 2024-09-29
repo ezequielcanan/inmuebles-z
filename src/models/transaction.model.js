@@ -19,6 +19,7 @@ const transactionsSchema = new mongoose.Schema({
   date: Date,
   dolar: Number,
   mode: String,
+  finished: Boolean,
   black: {
     type: {
       quotas: Number,

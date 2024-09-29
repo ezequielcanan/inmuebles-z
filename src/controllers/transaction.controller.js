@@ -48,6 +48,20 @@ export const updateTransaction = async (req, res) => {
   }
 }
 
+export const toggleTransaction = async (req, res) => {
+  try {
+    const oldTransaction = await transactionService.getTransactionById(req?.params?.tid)
+    const update = {}
+    update["finished"] = !oldTransaction?.finished
+    const transaction = await transactionService.updateTransaction(req?.params?.tid, update)
+    res.sendSuccess(transaction)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
+
 export const getTransactionById = async (req, res) => {
   try {
     const transaction = await transactionService.getTransactionById(req.params?.tid)
@@ -82,7 +96,7 @@ export const createFutureQuotasXlsx = async (req, res) => {
     const secondIndexCac = cacHistory[cacHistory.length - 3]?.general
     const lastIndexCac = cacHistory[cacHistory.length - 2]?.general
     const indexCac = cacHistory[cacHistory.length - 1]?.general
-    const wb = createFutureQuotasExcel(transactions, lastIndexCac, indexCac, secondIndexCac)
+    const wb = createFutureQuotasExcel(transactions.filter(t => !t.finished), lastIndexCac, indexCac, secondIndexCac)
     wb.write(`Cuotas ${transactions[0]?.apartment?.project?.title || ""}.xlsx`, res)
   }
   catch (e) {
@@ -102,7 +116,7 @@ export const deleteTransaction = async (req, res) => {
   }
 }
 
-export const insertApartmentByPayment = async (req,res) => {
+export const insertApartmentByPayment = async (req, res) => {
   try {
     const result = await transactionService.insertApartmentByPayment(req?.body)
     res.sendSuccess(result)

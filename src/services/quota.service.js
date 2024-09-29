@@ -11,7 +11,7 @@ class QuotaService {
 
     update["$set"][result.type + ".lastQuota"] = result._id
 
-    result.paidUSD ? (update["$set"][result.type + ".updatedQuota"] = result.total) : (result?.indexCac ? (update["$set"][result.type + ".updatedQuota"] = result.total) : update["$set"][result.type + ".updatedQuota"] = result.total + (result.total * result.cac / 100) + (data.balance < 0 ? data.balance : 0))
+    result.paidUSD ? (update["$set"][result.type + ".updatedQuota"] = result.total) : (result?.indexCac ? (update["$set"][result.type + ".updatedQuota"] = result.total) : update["$set"][result.type + ".updatedQuota"] = result.total + (result.total * result.cac / 100) + ((data.balance < 0 || !data.doubleAdjustmentToBalance) ? data.balance : 0))
     const updateLastQuota = await transactionModel.updateOne({ _id: result.transaction }, update)
     return result
   }

@@ -876,26 +876,54 @@ export const createFutureQuotasExcel = (transactions, lastIndexCac, indexCac, se
   let blackLastRow = 6
   transactions.forEach((t, i) => {
     if (t.white) {
+      const adjustmentIndex = indexCac / t?.white?.lastQuota?.indexCac * 100 - 100
       ws.cell(lastRow + i, 1).string(t.apartment?.unit || "").style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 2).string(t.apartment?.floor?.title || "").style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 3).string(t.buyer?.name || "").style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 4).number(t.white?.lastQuota?.quota + 1 || 1).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 5).number(t?.white?.lastQuota?.paid != null ? (t.white?.updatedQuota * (t?.dolar || 1) || 0) : t?.white?.updatedQuota || 0).style(styles["subsectionInfoCell"])
-      const balance = (t?.white?.lastQuota?.paid != null ? ((t.white?.updatedQuota || 0) - ((t.white?.lastQuota?.paid || 0))) : t?.white?.lastQuota?.total - t?.white?.lastQuota?.paidUSD) || 0
-      ws.cell(lastRow + i, 6).number(t?.white?.lastQuota?.paid != null ? (t.white?.baseIndex ? (indexCac / t.white?.baseIndex * 100 - 100) * (t.white?.baseQuota) / 100 + (t.white?.baseQuota) + (balance <= 0 ? balance : balance + cac * balance / 100) : ((balance > 0 ? (adjustment * balance / 100) : 0) + (balance > 0 ? balance : 0) + (adjustment * t.white?.lastQuota?.total / 100) + t.white?.updatedQuota) * cac / 100 + ((balance > 0 ? (adjustment * balance / 100) + (balance > 0 ? balance : 0) : balance) + (adjustment * t.white?.lastQuota?.total / 100) + t.white?.updatedQuota)) * (t?.dolar || 1) || 0 : t?.white?.baseQuota + balance).style(styles["subsectionInfoCell"])
+      const balance = (
+        t?.white?.lastQuota?.paid != null ? (
+          (t.white?.updatedQuota || 0) - ((t.white?.lastQuota?.paid || 0))
+        ) : t?.white?.lastQuota?.total - t?.white?.lastQuota?.paidUSD
+      ) || 0
+      ws.cell(lastRow + i, 6).number(
+        t?.white?.lastQuota?.paid != null ? (
+          t.white?.baseIndex ?
+            (indexCac / t.white?.baseIndex * 100 - 100) * (t.white?.baseQuota) / 100 + (t.white?.baseQuota) + (balance <= 0 ? balance : balance + (t?.white?.lastQuota?.doubleAdjustmentToBalance ? (adjustmentIndex * balance / 100) : 0)
+            ) : (
+              ((balance > 0 && t?.white?.lastQuota?.doubleAdjustmentToBalance) ? (adjustment * balance / 100) : 0) + ((balance > 0 && t?.white?.lastQuota?.doubleAdjustmentToBalance) ? balance : 0) + (adjustment * t.white?.lastQuota?.total / 100) + t.white?.updatedQuota
+            ) * cac / 100 + (
+              (t?.white?.lastQuota?.doubleAdjustmentToBalance ? (balance > 0 ? (adjustment * balance / 100) + (balance > 0 ? balance : 0) : balance) : balance) + (adjustment * t.white?.lastQuota?.total / 100) + t.white?.updatedQuota
+            )) * (t?.dolar || 1) || 0 : (
+          t?.white?.baseQuota + balance
+        )).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 7).number((t.white?.lastQuota?.interest || 0) || 0).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 8).formula(t?.white?.lastQuota?.paid != null ? `${xl.getExcelCellRef(lastRow + i, 6)}+${xl.getExcelCellRef(lastRow + i, 7)}` || "" : "").style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 9).formula(t?.white?.lastQuota?.paid == null ? `${xl.getExcelCellRef(lastRow + i, 6)}+${xl.getExcelCellRef(lastRow + i, 7)}` || "" : "").style(styles["subsectionInfoCell"])
       whiteLastRow++
     }
     if (t.black) {
+      const adjustmentIndex = indexCac / t?.black?.lastQuota?.indexCac * 100 - 100
       ws.cell(lastRow + i, 10).string(t.apartment?.unit || "").style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 11).string(t.apartment?.floor?.title || "").style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 12).string(t.buyer?.name || "").style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 13).number(t.black?.lastQuota?.quota + 1 || 1).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 14).number(t?.black?.lastQuota?.paid != null ? (t.black?.updatedQuota * (t?.dolar || 1) || 0) : t?.black?.updatedQuota || 0).style(styles["subsectionInfoCell"])
-      const balance = (t?.black?.lastQuota?.paid != null ? ((t.black?.updatedQuota || 0) - ((t.black?.lastQuota?.paid || 0))) : t?.black?.lastQuota?.total - t?.black?.lastQuota?.paidUSD) || 0
-      ws.cell(lastRow + i, 15).number(t?.black?.lastQuota?.paid != null ? (t.black?.baseIndex ? (indexCac / t.black?.baseIndex * 100 - 100) * (t.black?.baseQuota) / 100 + (t.black?.baseQuota) + (balance <= 0 ? balance : balance + cac * balance / 100) : ((balance > 0 ? (adjustment * balance / 100) : 0) + (balance > 0 ? balance : 0) + (adjustment * t.black?.lastQuota?.total / 100) + t.black?.updatedQuota) * cac / 100 + ((balance > 0 ? (adjustment * balance / 100) + (balance > 0 ? balance : 0) : balance) + (adjustment * t.black?.lastQuota?.total / 100) + t.black?.updatedQuota)) * (t?.dolar || 1) || 0 : t?.black?.baseQuota + balance).style(styles["subsectionInfoCell"])
+      const balance = (
+        t?.black?.lastQuota?.paid != null ?
+          ((t.black?.updatedQuota || 0) - ((t.black?.lastQuota?.paid || 0)))
+          : t?.black?.lastQuota?.total - t?.black?.lastQuota?.paidUSD
+      ) || 0
+      ws.cell(lastRow + i, 15).number(t?.black?.lastQuota?.paid != null ?
+        (t.black?.baseIndex ?
+          (indexCac / t.black?.baseIndex * 100 - 100) * (t.black?.baseQuota) / 100 + (t.black?.baseQuota) + (balance <= 0 ? balance : balance + (t?.black?.lastQuota?.doubleAdjustmentToBalance ? (adjustmentIndex * balance / 100) : 0)
+          ) : (
+            ((balance > 0 && t?.black?.lastQuota?.doubleAdjustmentToBalance) ? (adjustment * balance / 100) : 0) + ((balance > 0 && t?.black?.lastQuota?.doubleAdjustmentToBalance) ? balance : 0) + (adjustment * t.black?.lastQuota?.total / 100) + t.black?.updatedQuota
+          ) * cac / 100 + (
+            (t?.black?.lastQuota?.doubleAdjustmentToBalance ? (balance > 0 ? (adjustment * balance / 100) + (balance > 0 ? balance : 0) : balance) : balance) + (adjustment * t.black?.lastQuota?.total / 100) + t.black?.updatedQuota
+          )) * (t?.dolar || 1) || 0 : (
+          t?.black?.baseQuota + balance)).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 16).number((t.black?.lastQuota?.interest || 0) || 0).style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 17).formula(t?.black?.lastQuota?.paid != null ? `${xl.getExcelCellRef(lastRow + i, 15)}+${xl.getExcelCellRef(lastRow + i, 16)}` || "" : "").style(styles["subsectionInfoCell"])
       ws.cell(lastRow + i, 18).formula(t?.black?.lastQuota?.paid == null ? `${xl.getExcelCellRef(lastRow + i, 15)}+${xl.getExcelCellRef(lastRow + i, 16)}` || "" : "").style(styles["subsectionInfoCell"])
@@ -903,9 +931,11 @@ export const createFutureQuotasExcel = (transactions, lastIndexCac, indexCac, se
     }
   })
 
-  ws.cell(whiteLastRow, 8).formula(`SUM(${xl.getExcelCellRef(lastRow, 8)}:${xl.getExcelCellRef(whiteLastRow - 2, 8)})`).style(styles["subsectionInfoCell"])
-  ws.cell(blackLastRow, 17).formula(`SUM(${xl.getExcelCellRef(lastRow, 17)}:${xl.getExcelCellRef(blackLastRow - 2, 17)})`).style(styles["subsectionInfoCell"])
-  ws.cell(whiteLastRow, 9).formula(`SUM(${xl.getExcelCellRef(lastRow, 9)}:${xl.getExcelCellRef(whiteLastRow - 2, 9)})`).style(styles["subsectionInfoCell"])
-  ws.cell(blackLastRow, 18).formula(`SUM(${xl.getExcelCellRef(lastRow, 18)}:${xl.getExcelCellRef(blackLastRow - 2, 18)})`).style(styles["subsectionInfoCell"])
+  const lastRowTotal = whiteLastRow > blackLastRow ? whiteLastRow : blackLastRow
+
+  ws.cell(lastRowTotal, 8).formula(`SUM(${xl.getExcelCellRef(lastRow, 8)}:${xl.getExcelCellRef(lastRowTotal - 2, 8)})`).style(styles["subsectionInfoCell"])
+  ws.cell(lastRowTotal, 17).formula(`SUM(${xl.getExcelCellRef(lastRow, 17)}:${xl.getExcelCellRef(lastRowTotal - 2, 17)})`).style(styles["subsectionInfoCell"])
+  ws.cell(lastRowTotal, 9).formula(`SUM(${xl.getExcelCellRef(lastRow, 9)}:${xl.getExcelCellRef(lastRowTotal - 2, 9)})`).style(styles["subsectionInfoCell"])
+  ws.cell(lastRowTotal, 18).formula(`SUM(${xl.getExcelCellRef(lastRow, 18)}:${xl.getExcelCellRef(lastRowTotal - 2, 18)})`).style(styles["subsectionInfoCell"])
   return wb
 }
