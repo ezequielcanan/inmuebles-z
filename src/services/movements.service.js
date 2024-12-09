@@ -18,7 +18,7 @@ class MovementsService {
 
   createMovement = async (movement) => movementModel.create(movement)
 
-  getAccountMovements = async (aid, filter = false, finished = true) => {
+  getAccountMovements = async (aid, filter = false, finished = true, emission = false) => {
     const account = await accountService.getAccountById(aid)
     const movements = await movementModel.find({ account: aid }).sort({ emissionDate: 1 }).lean().exec()
     /*const transfers = (await transferService.getTransfersByAccount(aid))?.map((t) => {
@@ -80,7 +80,7 @@ class MovementsService {
 
     const orderedByDateRows = [...movements/*, ...transfers, ...checks, ...retentions*/].sort((a, b) => {
       if (filter) return new Date(a.expirationDate) - new Date(b.expirationDate)
-      return new Date(a.date || a.emissionDate) - new Date(b.date || b.emissionDate)
+      return new Date(emission ? (a.emissionDate || a.date) : (a.date || a.emissionDate)) - new Date(emission ? (a.emissionDate || a.date) : (a.date || a.emissionDate))
     })
 
     if (!finished) return orderedByDateRows.map((row) => {
@@ -103,8 +103,8 @@ class MovementsService {
         expirationDate: moment.utc(row?.expirationDate).format("DD-MM-YYYY"),
         tax,
         sixThousandths,
-        balance: ((!i ? account?.initialBalance : rows[i - 1]?.balance) || 0) + ((moment(row?.expirationDate, "DD-MM-YYYY").isBefore(moment()) && !row?.paid) ? 0 : row?.credit - row?.debit - tax - sixThousandths),
-        realBalance: ((!i ? account?.initialBalance : rows[i - 1]?.realBalance) || 0) + ((!row?.paid) ? 0 : row?.credit - row?.debit - tax - sixThousandths)
+        balance: ((!i ? account?.initialBalance : rows[i - 1]?.balance) || 0) + ((moment(row?.expirationDate, "DD-MM-YYYY").isBefore(moment()) && !row?.paid && row?.movementType == "Cheque") ? 0 : row?.credit - row?.debit - tax - sixThousandths),
+        realBalance: ((!i ? account?.initialBalance : rows[i - 1]?.realBalance) || 0) + ((!row?.paid && row?.movementType == "Cheque") ? 0 : row?.credit - row?.debit - tax - sixThousandths)
       })
     })
 
