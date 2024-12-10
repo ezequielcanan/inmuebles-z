@@ -5,6 +5,7 @@ import TransferService from "./transfer.service.js"
 import BillService from "./bill.service.js"
 import WhitePaymentService from "./whitePayment.service.js"
 import AccountService from "./account.service.js"
+import mongoose, { Types } from "mongoose"
 
 
 const checkService = new CheckService()
@@ -109,6 +110,94 @@ class MovementsService {
     })
 
     return rows
+  }
+
+  getProjectChecks = async (pid, filter = false, finished = true, emission = false) => {
+    console.log(pid)
+    const movements = await movementModel.aggregate([
+      {
+        $match: { movementType: "Cheque" } // Filtra por movementType
+      },
+      {
+        $lookup: {
+          from: "accounts",
+          localField: "account",
+          foreignField: "_id",
+          as: "accountDetails"
+        }
+      },
+      {
+        $unwind: "$accountDetails"
+      },
+      {
+        $lookup: {
+          from: "cashAccounts",
+          localField: "cashAccount",
+          foreignField: "_id",
+          as: "cashAccountDetails"
+        }
+      },
+      {
+        $unwind: { path: "$cashAccountDetails", preserveNullAndEmptyArrays: true } // Permite campos nulos
+      },
+      {
+        $lookup: {
+          from: "suppliers",
+          localField: "supplier",
+          foreignField: "_id",
+          as: "supplierDetails"
+        }
+      },
+      {
+        $unwind: { path: "$supplierDetails", preserveNullAndEmptyArrays: true }
+      },
+      {
+        $lookup: {
+          from: "services",
+          localField: "service",
+          foreignField: "_id",
+          as: "serviceDetails"
+        }
+      },
+      {
+        $unwind: { path: "$serviceDetails", preserveNullAndEmptyArrays: true }
+      },
+      {
+        $match: { "accountDetails.society": new Types.ObjectId(pid) } // Filtra por project._id
+      },
+      {
+        $project: {
+          date: 1,
+          emissionDate: 1,
+          expirationDate: 1,
+          code: 1,
+          movementType: 1,
+          paid: 1,
+          detail: 1,
+          credit: 1,
+          debit: 1,
+          tax: 1,
+          note: 1,
+          lastCheck: 1,
+          account: "$accountDetails",
+          cashAccount: "$cashAccountDetails",
+          supplier: "$supplierDetails",
+          service: "$serviceDetails"
+        }
+      }
+    ]);
+
+
+    const orderedByDateRows = [...movements].sort((a, b) => {
+      if (filter) return new Date(a.expirationDate) - new Date(b.expirationDate)
+      return new Date(emission ? (a.emissionDate || a.date) : (a.date || a.emissionDate)) - new Date(emission ? (a.emissionDate || a.date) : (a.date || a.emissionDate))
+    })
+
+    return orderedByDateRows.map(row => {
+      return {...row, date: moment.utc(row?.date).format("DD-MM-YYYY"),
+        emissionDate: moment.utc(row?.emissionDate).format("DD-MM-YYYY"),
+        expirationDate: moment.utc(row?.expirationDate).format("DD-MM-YYYY"),}
+    })
   }
 
   getExpiredChecks = async (aid) => {

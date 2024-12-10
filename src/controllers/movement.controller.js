@@ -1,4 +1,4 @@
-import { getSupplierOrServiceExcel } from "../excel/payments.js"
+import { getProjectChecks, getSupplierOrServiceExcel } from "../excel/payments.js"
 import MovementsService from "../services/movements.service.js"
 import ProjectService from "../services/project.service.js"
 import SupplierService from "../services/supplier.service.js"
@@ -90,6 +90,20 @@ export const getExpiredChecks = async (req, res) => {
   }
   catch (e) {
     console.log(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getChecksExcel = async (req, res) => {
+  try {
+    const society = await projectService.getProject(req?.params?.pid)
+    const movements = await movementsService.getProjectChecks(req?.params?.pid, req?.query?.filter == "true", false)
+    
+    const wb = getProjectChecks(movements, req?.query?.filter == "true")
+    wb.write(`Cheques ${society?.title}.xlsx`, res)
+  }
+  catch (e) {
+    console.error(e)
     res.sendServerError(e)
   }
 }

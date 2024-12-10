@@ -748,9 +748,161 @@ export const getAccountExcel = (account, movements, filtered) => {
     ws.cell(7 + i + plusRows, taxColumn).formula(`${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} * ${movement?.tax || 0}%`).style(styles[style])
     ws.cell(7 + i + plusRows, sixColumn).formula(`(${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} + ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)}) * 0.006`).style(styles[style])
     ws.cell(7 + i + plusRows, totalColumn).formula(`${`${i ? xl.getExcelCellRef(lastMonth == thisMonth ? 6 + i + plusRows : 6 + i - 4 + plusRows, totalColumn) : account?.initialBalance} + `} ${(!movement?.paid && movement?.movementType == "Cheque") ? "0" : `${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, sixColumn)}`}`).style(styles[style])
-    ws.cell(7 + i + plusRows, projectedColumn).formula(`${`${i ? xl.getExcelCellRef(lastMonth == thisMonth ? 6 + i + plusRows : 6 + i - 4 + plusRows, projectedColumn) : account?.initialBalance} + `} ${`${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, sixColumn)}`}`).style(styles[style])
+    ws.cell(7 + i + plusRows, projectedColumn).formula(`${`${i ? xl.getExcelCellRef(lastMonth == thisMonth ? 6 + i + plusRows : 6 + i - 4 + plusRows, projectedColumn) : account?.initialBalance} + `} ${((moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) && !movement?.paid && movement?.movementType == "Cheque")) ? 0 : `${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, sixColumn)}`}`).style(styles[style])
     ws.cell(7 + i + plusRows, noteColumn).string(movement?.note || "").style(styles[style])
     if (lastMonth != thisMonth) lastMonth = thisMonth
+  })
+
+  return wb
+}
+
+export const getProjectChecks = (movements, filtered) => {
+  const wb = new xl.Workbook()
+  const ws = wb.addWorksheet(`Cheques`, {
+    defaultFont: {
+      size: 9,
+      name: 'Ebrima',
+    }
+  })
+
+  const styles = {
+    sectionHead: wb.createStyle({
+      ...fontHeadStyle,
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    }),
+    header: wb.createStyle({
+      ...fontHeadStyle,
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9,
+        name: "Ebrima",
+        color: "#FFFFFF"
+      }
+    }),
+    importantCell: wb.createStyle({
+      font: {
+        bold: true
+      },
+      ...textCenterStyle,
+      ...thinBorder,
+      ...bgSectionInfo,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      }
+    }),
+    cell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      }
+    }),
+    notPaidCell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#e8cc84",
+        fgColor: "#e8cc84"
+      }
+    }),
+    notPaidCellTotal: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 12
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#e8cc84",
+        fgColor: "#e8cc84"
+      }
+    }),
+    expiredCell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#ff6969",
+        fgColor: "#ff6969"
+      }
+    })
+  }
+
+  ws.row(1).setHeight(40)
+
+  const dateColumn = 1
+  const codeColumn = 2
+  const emissionColumn = 3
+  const bankColumn = 4
+  const detailColumn = 5
+  const toTheOrderColumn = 6
+  const amountColumn = 7
+  const checkTypeColumn = 8
+  const stateColumn = 9
+  const replacedColumn = 10
+
+
+
+  ws.cell(1, dateColumn).string("FECHA").style(styles["header"])
+  ws.cell(1, codeColumn).string("N° DE CHEQUE").style(styles["header"])
+  ws.cell(1, emissionColumn).string("EMISION").style(styles["header"])
+  ws.cell(1, bankColumn).string("BANCO").style(styles["header"])
+  ws.cell(1, detailColumn).string("CONCEPTO").style(styles["header"])
+  ws.cell(1, toTheOrderColumn).string("A LA ORDEN").style(styles["header"])
+  ws.cell(1, amountColumn).string("IMPORTE").style(styles["header"])
+  ws.cell(1, checkTypeColumn).string("ECHEQ/FISICO").style(styles["header"])
+  ws.cell(1, stateColumn).string("ESTADO").style(styles["header"])
+  ws.cell(1, replacedColumn).string("REEMPLAZADO").style(styles["header"])
+  ws.row(1).freeze()
+
+  const orderProperty = filtered ? "expirationDate" : "emissionDate"
+  let plusRows = 0
+  let monthCount = 0
+  let lastMonth = ""
+
+
+  ws.column(detailColumn).setWidth(40);
+
+  let notPaidCount = 0
+
+  movements.forEach((movement, i) => {
+
+    const style = (!movement.paid && movement?.movementType == "Cheque") ? (moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) ? "expiredCell" : "notPaidCell") : "cell"
+    if (style == "notPaidCell") {
+      notPaidCount += movement?.debit * 1.006
+      notPaidCount -= (movement?.credit || 0) * 1.006
+    }
+
+    ws.cell(2 + i + plusRows, dateColumn).string(movement?.date || "").style(styles[style])
+    ws.cell(2 + i + plusRows, codeColumn).string(movement?.code || "").style(styles[style])
+    ws.cell(2 + i + plusRows, emissionColumn).string(movement?.emissionDate || "").style(styles[style])
+    ws.cell(2 + i + plusRows, bankColumn).string(movement?.account?.bank || "").style(styles[style])
+    ws.cell(2 + i + plusRows, detailColumn).string(movement?.code || "").style(styles[style])
+    ws.cell(2 + i + plusRows, toTheOrderColumn).string(movement?.lastCheck || "").style(styles[style])
+    ws.cell(2 + i + plusRows, amountColumn).string(movement?.cashAccount?.name || "").style(styles[style])
+    ws.cell(2 + i + plusRows, checkTypeColumn).string(movement?.supplier?.name || "").style(styles[style])
+    ws.cell(2 + i + plusRows, replacedColumn).string(movement?.service?.name || "").style(styles[style])
   })
 
   return wb
