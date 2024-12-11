@@ -80,8 +80,8 @@ class MovementsService {
 
 
     const orderedByDateRows = [...movements/*, ...transfers, ...checks, ...retentions*/].sort((a, b) => {
-      if (filter) return new Date(a.expirationDate) - new Date(b.expirationDate)
-      return new Date(emission ? (a.emissionDate || a.date) : (a.date || a.emissionDate)) - new Date(emission ? (a.emissionDate || a.date) : (a.date || a.emissionDate))
+      if (filter) return new Date(a.expirationDate || a.emissionDate) - new Date(b.expirationDate || b.emissionDate)
+      return new Date(emission ? (a.emissionDate || a.date) : (a.date || a.emissionDate)) - new Date(emission ? (b.emissionDate || b.date) : (b.date || b.emissionDate))
     })
 
     if (!finished) return orderedByDateRows.map((row) => {
@@ -177,6 +177,7 @@ class MovementsService {
           credit: 1,
           debit: 1,
           tax: 1,
+          state: 1,
           note: 1,
           lastCheck: 1,
           account: "$accountDetails",
@@ -190,13 +191,15 @@ class MovementsService {
 
     const orderedByDateRows = [...movements].sort((a, b) => {
       if (filter) return new Date(a.expirationDate) - new Date(b.expirationDate)
-      return new Date(emission ? (a.emissionDate || a.date) : (a.date || a.emissionDate)) - new Date(emission ? (a.emissionDate || a.date) : (a.date || a.emissionDate))
+      return new Date(emission ? (a.emissionDate || a.date) : (a.date || a.emissionDate)) - new Date(emission ? (b.emissionDate || b.date) : (b.date || b.emissionDate))
     })
 
     return orderedByDateRows.map(row => {
-      return {...row, date: moment.utc(row?.date).format("DD-MM-YYYY"),
+      return {
+        ...row, date: moment.utc(row?.date).format("DD-MM-YYYY"),
         emissionDate: moment.utc(row?.emissionDate).format("DD-MM-YYYY"),
-        expirationDate: moment.utc(row?.expirationDate).format("DD-MM-YYYY"),}
+        expirationDate: moment.utc(row?.expirationDate).format("DD-MM-YYYY"),
+      }
     })
   }
 

@@ -97,8 +97,8 @@ export const getExpiredChecks = async (req, res) => {
 export const getChecksExcel = async (req, res) => {
   try {
     const society = await projectService.getProject(req?.params?.pid)
-    const movements = await movementsService.getProjectChecks(req?.params?.pid, req?.query?.filter == "true", false)
-    
+    const movements = await movementsService.getProjectChecks(req?.params?.pid, req?.query?.filter == "true", true)
+
     const wb = getProjectChecks(movements, req?.query?.filter == "true")
     wb.write(`Cheques ${society?.title}.xlsx`, res)
   }

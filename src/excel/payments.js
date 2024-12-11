@@ -803,6 +803,20 @@ export const getProjectChecks = (movements, filtered) => {
       numberFormat: '#,##0.00; -#,##0.00; -',
       font: {
         size: 9
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#c6efce",
+        fgColor: "#c6efce"
+      }
+    }),
+    commonCell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
       }
     }),
     notPaidCell: wb.createStyle({
@@ -878,31 +892,33 @@ export const getProjectChecks = (movements, filtered) => {
 
   const orderProperty = filtered ? "expirationDate" : "emissionDate"
   let plusRows = 0
-  let monthCount = 0
-  let lastMonth = ""
+
 
 
   ws.column(detailColumn).setWidth(40);
+  ws.column(stateColumn).setWidth(25);
 
   let notPaidCount = 0
 
   movements.forEach((movement, i) => {
 
-    const style = (!movement.paid && movement?.movementType == "Cheque") ? (moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) ? "expiredCell" : "notPaidCell") : "cell"
+    const style = (!movement.paid && movement?.movementType == "Cheque") ? (moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) || movement?.error ? "expiredCell" : (moment(movement?.date, "DD-MM-YYYY").isAfter(moment()) ? "commonCell" : "notPaidCell")) : "cell"
     if (style == "notPaidCell") {
       notPaidCount += movement?.debit * 1.006
       notPaidCount -= (movement?.credit || 0) * 1.006
     }
 
+
     ws.cell(2 + i + plusRows, dateColumn).string(movement?.date || "").style(styles[style])
     ws.cell(2 + i + plusRows, codeColumn).string(movement?.code || "").style(styles[style])
     ws.cell(2 + i + plusRows, emissionColumn).string(movement?.emissionDate || "").style(styles[style])
     ws.cell(2 + i + plusRows, bankColumn).string(movement?.account?.bank || "").style(styles[style])
-    ws.cell(2 + i + plusRows, detailColumn).string(movement?.code || "").style(styles[style])
-    ws.cell(2 + i + plusRows, toTheOrderColumn).string(movement?.lastCheck || "").style(styles[style])
-    ws.cell(2 + i + plusRows, amountColumn).string(movement?.cashAccount?.name || "").style(styles[style])
-    ws.cell(2 + i + plusRows, checkTypeColumn).string(movement?.supplier?.name || "").style(styles[style])
-    ws.cell(2 + i + plusRows, replacedColumn).string(movement?.service?.name || "").style(styles[style])
+    ws.cell(2 + i + plusRows, detailColumn).string(movement?.detail || "").style(styles[style])
+    ws.cell(2 + i + plusRows, toTheOrderColumn).string(movement?.supplier?.name || movement?.service?.name || "").style(styles[style])
+    ws.cell(2 + i + plusRows, amountColumn).string(movement?.debit || movement?.credit || "").style(styles[style])
+    ws.cell(2 + i + plusRows, checkTypeColumn).string(movement?.checkType || "").style(styles[style])
+    ws.cell(2 + i + plusRows, stateColumn).string(`${movement?.state != "ERROR" ? (!movement?.paid && moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) ? "VENCIDO" : movement?.state) : `ERROR`}${movement?.note ? " - " + movement?.note : ""}`).style(styles[style])
+    ws.cell(2 + i + plusRows, replacedColumn).string(movement?.lastCheck || "").style(styles[style])
   })
 
   return wb

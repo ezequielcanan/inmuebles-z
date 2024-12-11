@@ -22,6 +22,7 @@ import BillRouter from "./routes/bill.router.js"
 import CheckRouter from "./routes/check.router.js"
 import TransferRouter from "./routes/transfer.router.js"
 import MovementRouter from "./routes/movement.router.js"
+import IncomingCheckRouter from "./routes/incomingCheck.router.js"
 import MessageRouter from "./routes/message.router.js"
 import CashAccountRouter from "./routes/cashAccount.router.js"
 import ServiceRouter from "./routes/service.router.js"
@@ -65,6 +66,7 @@ const billRouter = new BillRouter()
 const checkRouter = new CheckRouter()
 const transferRouter = new TransferRouter()
 const movementRouter = new MovementRouter()
+const incomingCheckRouter = new IncomingCheckRouter()
 const messageRouter = new MessageRouter()
 const cashAccountRouter = new CashAccountRouter()
 const serviceRouter = new ServiceRouter()
@@ -94,6 +96,7 @@ app.use("/api/black-payment", blackPaymentRouter.getRouter())
 app.use("/api/check", checkRouter.getRouter())
 app.use("/api/transfer", transferRouter.getRouter())
 app.use("/api/movement", movementRouter.getRouter())
+app.use("/api/incoming-check", incomingCheckRouter.getRouter())
 app.use("/api/message", messageRouter.getRouter())
 app.use("/api/cash-account", cashAccountRouter.getRouter())
 app.use("/api/service", serviceRouter.getRouter())
