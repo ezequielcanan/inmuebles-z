@@ -107,3 +107,14 @@ export const getChecksExcel = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const deleteMovementByIncomingCheck = async (req, res) => {
+  try {
+    const result = await movementsService.deleteMovementByIncomingCheck(req?.params?.cid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}

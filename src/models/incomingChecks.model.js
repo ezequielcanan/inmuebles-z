@@ -14,11 +14,19 @@ const incomingChecksSchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "owners" },
   cashAccount: { type: mongoose.Schema.Types.ObjectId, ref: "cashAccounts" },
   specialFrom: String,
-  detail: { type: String, required: true },
+  detail: String,
   amount: Number,
   state: String,
   checkType: { type: String, enum: ["ECHEQ", "FISICO"] },
   transferDetail: String,
+  account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts" },
+  transfer: {
+    type: {
+      supplier: { type: mongoose.Schema.Types.ObjectId, ref: "suppliers" },
+      cashAccount: { type: mongoose.Schema.Types.ObjectId, ref: "cashAccounts" },
+      other: String
+    }
+  },
   transfers: {
     type: [
       {
@@ -33,6 +41,19 @@ const incomingChecksSchema = new mongoose.Schema({
 incomingChecksSchema.pre("find", function () {
   this.populate("cashAccount")
   this.populate("owner")
+  this.populate("project")
+  this.populate("account")
+  this.populate("transfer.supplier")
+  this.populate("transfer.cashAccount")
+})
+
+incomingChecksSchema.pre("findOne", function () {
+  this.populate("cashAccount")
+  this.populate("owner")
+  this.populate("project")
+  this.populate("account")
+  this.populate("transfer.supplier")
+  this.populate("transfer.cashAccount")
 })
 
 export default mongoose.model(incomingCheckCollection, incomingChecksSchema)

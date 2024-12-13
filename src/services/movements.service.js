@@ -211,6 +211,7 @@ class MovementsService {
   updateMovement = async (mid, movement) => movementModel.updateOne({ _id: mid }, { $set: movement })
 
   deleteMovement = async (mid) => movementModel.deleteOne({ _id: mid })
+  deleteMovementByIncomingCheck = async (cid) => movementModel.deleteOne({ incomingCheck: cid })
 
   getCashAccountMovements = async (cid) => movementModel.find({ cashAccount: cid })
   getSupplierMovements = async (sid) => movementModel.find({ supplier: sid })

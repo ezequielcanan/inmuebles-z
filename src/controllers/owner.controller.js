@@ -26,6 +26,17 @@ export const ownerTextSearch = async (req, res) => {
   }
 }
 
+export const allOwners = async (req, res) => {
+  try {
+    const result = await ownerService.getOwners()
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
+
 export const getOwnerApartments = async (req, res) => {
   try {
     const result = await apartmentService.getApartmentsByOwner(req.params?.oid)

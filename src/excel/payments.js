@@ -924,6 +924,176 @@ export const getProjectChecks = (movements, filtered) => {
   return wb
 }
 
+export const incomingChecksExcel = (project, checks) => {
+  const wb = new xl.Workbook()
+  const ws = wb.addWorksheet(`Cheques Recibidos`, {
+    defaultFont: {
+      size: 9,
+      name: 'Ebrima',
+    }
+  })
+
+  const styles = {
+    sectionHead: wb.createStyle({
+      ...fontHeadStyle,
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    }),
+    header: wb.createStyle({
+      ...fontHeadStyle,
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 12,
+        name: "Calibri",
+        color: "#FFFFFF",
+        bold: true
+      }
+    }),
+    importantCell: wb.createStyle({
+      font: {
+        bold: true
+      },
+      ...textCenterStyle,
+      ...thinBorder,
+      ...bgSectionInfo,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      }
+    }),
+    cell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 11
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#c6efce",
+        fgColor: "#c6efce"
+      }
+    }),
+    commonCell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 11
+      }
+    }),
+    notPaidCell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#e8cc84",
+        fgColor: "#e8cc84"
+      }
+    }),
+    notPaidCellTotal: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 12
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#e8cc84",
+        fgColor: "#e8cc84"
+      }
+    }),
+    expiredCell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#ff6969",
+        fgColor: "#ff6969"
+      }
+    })
+  }
+
+  ws.row(1).setHeight(40)
+
+  const receivedDateColumn = 1
+  const codeColumn = 2
+  const emissionColumn = 3
+  const dateColumn = 4
+  const detailColumn = 5
+  const originColumn = 6
+  const amountColumn = 7
+  const stateColumn = 8
+  const operationDateColumn = 9
+  const checkTypeColumn = 10
+  const transferDetailColumn = 11
+
+
+  ws.cell(1, receivedDateColumn).string("RECIBIDO").style(styles["header"])
+  ws.cell(1, codeColumn).string("N° DE CHEQUE").style(styles["header"])
+  ws.cell(1, emissionColumn).string("EMISION").style(styles["header"])
+  ws.cell(1, dateColumn).string("PAGO").style(styles["header"])
+  ws.cell(1, detailColumn).string("CONCEPTO").style(styles["header"])
+  ws.cell(1, originColumn).string("LIBRADOR").style(styles["header"])
+  ws.cell(1, amountColumn).string("IMPORTE").style(styles["header"])
+  ws.cell(1, stateColumn).string("ESTADO").style(styles["header"])
+  ws.cell(1, operationDateColumn).string("F. OPERACION").style(styles["header"])
+  ws.cell(1, checkTypeColumn).string("ECHEQ/FISICO").style(styles["header"])
+  ws.cell(1, transferDetailColumn).string("DETALLE OPERACION").style(styles["header"])
+  ws.row(1).freeze()
+
+  let plusRows = 0
+
+  for (let i = 1; i < transferDetailColumn + 1; i++) {
+    ws.column(i).setWidth(16);
+  }
+
+  ws.column(detailColumn).setWidth(40);
+  ws.column(transferDetailColumn).setWidth(30);
+  ws.column(stateColumn).setWidth(25);
+
+  let notPaidCount = 0
+
+  checks.forEach((check, i) => {
+
+    //const style = (!check.paid && check?.checkType == "Cheque") ? (moment(check?.expirationDate, "DD-MM-YYYY").isBefore(moment()) || check?.error ? "expiredCell" : (moment(check?.date, "DD-MM-YYYY").isAfter(moment()) ? "commonCell" : "notPaidCell")) : "cell"
+    const style = check?.state == "RECHAZADO" ? "expiredCell" : ((check?.state == "ACEPTADO" || !check?.state) ? "commonCell" : "cell")
+
+
+    ws.cell(2 + i + plusRows, receivedDateColumn).string(moment.utc(check?.receivedDate).format("DD-MM-YYYY") || "").style(styles[style])
+    ws.cell(2 + i + plusRows, codeColumn).string(check?.code || "").style(styles[style])
+    ws.cell(2 + i + plusRows, emissionColumn).string(moment.utc(check?.emissionDate).format("DD-MM-YYYY") || "").style(styles[style])
+    ws.cell(2 + i + plusRows, dateColumn).string(moment.utc(check?.date).format("DD-MM-YYYY") || "").style(styles[style])
+    ws.cell(2 + i + plusRows, detailColumn).string(check?.detail || "").style(styles[style])
+    ws.cell(2 + i + plusRows, originColumn).string(check?.origin).style(styles[style])
+    ws.cell(2 + i + plusRows, amountColumn).number(check?.amount || "").style(styles[style])
+    ws.cell(2 + i + plusRows, stateColumn).string(check?.state || "En cartera").style(styles[style])
+    ws.cell(2 + i + plusRows, operationDateColumn).string(moment.utc(check?.operationDate).format("DD-MM-YYYY") || "").style(styles[style])
+    ws.cell(2 + i + plusRows, checkTypeColumn).string(check?.checkType || "").style(styles[style])
+    ws.cell(2 + i + plusRows, transferDetailColumn).string(check?.transferDetail || "").style(styles[style])
+  })
+
+  return wb
+}
+
 export const getCashAccountExcel = (account, movements, filtered = false) => {
   const wb = new xl.Workbook()
 

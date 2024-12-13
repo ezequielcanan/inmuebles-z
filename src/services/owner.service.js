@@ -25,6 +25,8 @@ class OwnerService {
     return result
   }
 
+  getOwners = async () => ownerModel.find().collation({ 'locale': 'en' }).sort({ name: "asc" })
+
   textSearch = async (text) => {
     const result = await ownerModel.find({ $text: { $search: text, $caseSensitive: false } }, { score: { $meta: "textScore" } }).sort({ score: { $meta: "textScore" } })
     return result

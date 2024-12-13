@@ -4,15 +4,15 @@ const movementCollection = "movements"
 
 const movementsSchema = new mongoose.Schema({
   date: Date,
-  emissionDate: { type: Date, required: true },
-  expirationDate: { type: Date, required: true },
+  emissionDate: { type: Date, required: false },
+  expirationDate: { type: Date, required: false },
   code: String,
   checkType: { type: String, enum: ["ECHEQ", "FISICO"] },
   movementType: { type: String, enum: ["Cheque", "Transferencia", "Pago Servicios"] },
   paid: Boolean,
   error: { type: Boolean, default: false },
   state: String,
-  detail: { type: String, required: true },
+  detail: { type: String, required: false },
   credit: Number,
   debit: Number,
   tax: Number,
@@ -22,6 +22,7 @@ const movementsSchema = new mongoose.Schema({
   cashAccount: { type: mongoose.Schema.Types.ObjectId, ref: "cashAccounts", required: false },
   supplier: { type: mongoose.Schema.Types.ObjectId, ref: "suppliers", required: false },
   service: { type: mongoose.Schema.Types.ObjectId, ref: "services", required: false },
+  incomingCheck: { type: mongoose.Schema.Types.ObjectId, ref: "incomingChecks", required: false },
 })
 
 movementsSchema.pre("find", function () {
