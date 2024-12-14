@@ -22,64 +22,36 @@ class MovementsService {
   getAccountMovements = async (aid, filter = false, finished = true, emission = false) => {
     const account = await accountService.getAccountById(aid)
     const movements = await movementModel.find({ account: aid }).sort({ emissionDate: 1 }).lean().exec()
-    /*const transfers = (await transferService.getTransfersByAccount(aid))?.map((t) => {
+    const incomingChecks = movements?.filter(m => m?.incomingCheck)
+
+    const checksAsMovements = incomingChecks.map(({_id, note, incomingCheck: check}) => {
       return {
-        emissionDate: t?.emissionDate,
-        expirationDate: t?.emissionDate,
-        detail: t?.detail,
-        credit: 0,
-        tax: 0,
-        canBeDeleted: false,
-        debit: t?.amount,
-        account: t?.account
+        _id,
+        credit: check.amount,
+        emissionDate: check.emissionDate,
+        date: check.operationDate,
+        expirationDate: check.date,
+        code: check.code,
+        checkType: check.checkType,
+        movementType: "Cheque",
+        paid: check.state === "DEPOSITADO",
+        error: check?.state === "RECHAZADO",
+        state:
+          check.state === "ACEPTADO"
+            ? "PENDIENTE"
+            : check.state === "DEPOSITADO"
+            ? "REALIZADO"
+            : check.state === "RECHAZADO"
+            ? "ERROR"
+            : check.state,
+        detail: `${check?.owner?.name || check?.cashAccount?.name || check?.specialFrom} ${check.detail}`,
+        incomingCheck: true,
+        note
       }
-    })
-    const checks = (await checkService.getChecksByAccount(aid))?.map((c) => {
-      return {
-        emissionDate: c?.emissionDate,
-        expirationDate: c?.expirationDate,
-        checkCode: c?.code,
-        detail: c?.detail,
-        credit: 0,
-        tax: 0,
-        canBeDeleted: false,
-        debit: c?.amount,
-        account: c?.account
-      }
-    })
-
-    const bills = await billService.getBillsByRetentionAccount(aid)
-    const whitePaymentsWithRetention = await whitePaymentService.getWhitePaymentsByRetentionAccount(aid)
-
-    const retentions = []
-    retentions.push(...bills?.map((b) => {
-      return {
-        emissionDate: b?.retention?.date,
-        expirationDate: b?.retention?.expirationDate || b?.retention?.date,
-        detail: b?.retention?.detail,
-        credit: 0,
-        tax: 0,
-        canBeDeleted: false,
-        debit: b?.retention?.amount,
-        account: b?.retention?.account
-      }
-    }))
-
-    retentions.push(...whitePaymentsWithRetention.map((p) => {
-      return {
-        emissionDate: p?.retention?.date,
-        expirationDate: p?.retention?.expirationDate || p?.retention?.date,
-        detail: p?.retention?.detail,
-        credit: 0,
-        tax: 0,
-        canBeDeleted: false,
-        debit: p?.retention?.amount,
-        account: p?.retention?.account
-      }
-    }))*/
+    });
 
 
-    const orderedByDateRows = [...movements/*, ...transfers, ...checks, ...retentions*/].sort((a, b) => {
+    const orderedByDateRows = [...movements?.filter(m => !m?.incomingCheck), ...checksAsMovements/*, ...transfers, ...checks, ...retentions*/].sort((a, b) => {
       if (filter) return new Date(a.expirationDate || a.emissionDate) - new Date(b.expirationDate || b.emissionDate)
       return new Date(emission ? (a.emissionDate || a.date) : (a.date || a.emissionDate)) - new Date(emission ? (b.emissionDate || b.date) : (b.date || b.emissionDate))
     })
@@ -95,8 +67,8 @@ class MovementsService {
 
     const rows = []
     orderedByDateRows.forEach((row, i) => {
-      const tax = row?.tax * row?.credit / 100
-      const sixThousandths = (row?.credit + row?.debit) * 0.006
+      const tax = (row?.tax * row?.credit / 100) || 0
+      const sixThousandths = (((row?.credit || 0) + (row?.debit || 0)) * 0.006) || 0
       rows.push({
         ...row,
         date: moment.utc(row?.date).format("DD-MM-YYYY"),
@@ -104,8 +76,8 @@ class MovementsService {
         expirationDate: moment.utc(row?.expirationDate).format("DD-MM-YYYY"),
         tax,
         sixThousandths,
-        balance: ((!i ? account?.initialBalance : rows[i - 1]?.balance) || 0) + ((moment(row?.expirationDate, "DD-MM-YYYY").isBefore(moment()) && !row?.paid && row?.movementType == "Cheque") ? 0 : row?.credit - row?.debit - tax - sixThousandths),
-        realBalance: ((!i ? account?.initialBalance : rows[i - 1]?.realBalance) || 0) + ((!row?.paid && row?.movementType == "Cheque") ? 0 : row?.credit - row?.debit - tax - sixThousandths)
+        balance: ((!i ? account?.initialBalance : rows[i - 1]?.balance) || 0) + (((moment(row?.expirationDate, "DD-MM-YYYY").isBefore(moment()) && !row?.paid && row?.movementType == "Cheque") || row?.error) ? 0 : (row?.credit || 0) - (row?.debit || 0) - tax - sixThousandths),
+        realBalance: ((!i ? account?.initialBalance : rows[i - 1]?.realBalance) || 0) + ((!row?.paid && row?.movementType == "Cheque") ? 0 : (row?.credit || 0) - (row?.debit || 0) - tax - sixThousandths)
       })
     })
 
@@ -113,7 +85,6 @@ class MovementsService {
   }
 
   getProjectChecks = async (pid, filter = false, finished = true, emission = false) => {
-    console.log(pid)
     const movements = await movementModel.aggregate([
       {
         $match: { movementType: "Cheque" } // Filtra por movementType

@@ -30,6 +30,7 @@ movementsSchema.pre("find", function () {
   this.populate("account")
   this.populate("supplier")
   this.populate("service")
+  this.populate("incomingCheck")
 })
 
 export default mongoose.model(movementCollection, movementsSchema)
