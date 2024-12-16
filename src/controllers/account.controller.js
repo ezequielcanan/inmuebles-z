@@ -7,7 +7,7 @@ const accountService = new AccountService()
 
 export const getAccounts = async (req, res) => {
   try {
-    const result = await accountService.getAccounts()
+    const result = await accountService.getAccounts(req?.query?.project)
     res.sendSuccess(result)
   }
   catch (e) {

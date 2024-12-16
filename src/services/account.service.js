@@ -8,7 +8,11 @@ class AccountService {
     return result
   }
 
-  getAccounts = async () => accountModel.find()
+  getAccounts = async (project) => {
+    const findObj = {}
+    if (project) findObj["society"] = project
+    return accountModel.find(findObj)
+  }
 
   getAccountById = async (aid) => accountModel.findOne({ _id: aid })
 

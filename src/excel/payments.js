@@ -1086,7 +1086,7 @@ export const incomingChecksExcel = (project, checks) => {
     ws.cell(2 + i + plusRows, detailColumn).string(check?.detail || "").style(styles[style])
     ws.cell(2 + i + plusRows, originColumn).string(check?.origin).style(styles[style])
     ws.cell(2 + i + plusRows, amountColumn).number(check?.amount || "").style(styles[style])
-    ws.cell(2 + i + plusRows, stateColumn).string(check?.state || "En cartera").style(styles[style])
+    ws.cell(2 + i + plusRows, stateColumn).string(`${check?.state || "En cartera"}${(check?.state == "ACEPTADO" || check?.state == "DEPOSITADO" || check?.state == "RECHAZADO") ? " - " + check?.account?.bank : ""}`).style(styles[style])
     ws.cell(2 + i + plusRows, operationDateColumn).string(moment.utc(check?.operationDate).format("DD-MM-YYYY") || "").style(styles[style])
     ws.cell(2 + i + plusRows, checkTypeColumn).string(check?.checkType || "").style(styles[style])
     ws.cell(2 + i + plusRows, transferDetailColumn).string(check?.transferDetail || "").style(styles[style])
