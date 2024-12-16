@@ -95,3 +95,14 @@ export const getIncomingChecksExcel = async (req, res) => {
     res.sendServerError(e)
   }
 }
+
+export const deleteIncomingCheck = async (req, res) => {
+  try {
+    const result = await incomingCheckService.deleteIncomingCheck(req?.params?.cid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}

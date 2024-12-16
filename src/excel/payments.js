@@ -747,7 +747,7 @@ export const getAccountExcel = (account, movements, filtered) => {
     ws.cell(7 + i + plusRows, creditColumn).number(movement?.credit || 0).style(styles[style])
     ws.cell(7 + i + plusRows, debitColumn).number(movement?.debit || 0).style(styles[style])
     ws.cell(7 + i + plusRows, taxColumn).formula(`${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} * ${movement?.tax || 0}%`).style(styles[style])
-    ws.cell(7 + i + plusRows, sixColumn).formula(`(${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} + ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)}) * 0.006`).style(styles[style])
+    ws.cell(7 + i + plusRows, sixColumn).formula(`(${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} + ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} + ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)}) * 0.006`).style(styles[style])
     ws.cell(7 + i + plusRows, totalColumn).formula(`${`${i ? xl.getExcelCellRef(lastMonth == thisMonth ? 6 + i + plusRows : 6 + i - 4 + plusRows, totalColumn) : account?.initialBalance} + `} ${(!movement?.paid && movement?.movementType == "Cheque") ? "0" : `${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, sixColumn)}`}`).style(styles[style])
     ws.cell(7 + i + plusRows, projectedColumn).formula(`${`${i ? xl.getExcelCellRef(lastMonth == thisMonth ? 6 + i + plusRows : 6 + i - 4 + plusRows, projectedColumn) : account?.initialBalance} + `} ${((moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) && !movement?.paid && movement?.movementType == "Cheque") || movement?.error) ? 0 : `${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, sixColumn)}`}`).style(styles[style])
     ws.cell(7 + i + plusRows, noteColumn).string(movement?.note || "").style(styles[style])
@@ -1090,6 +1090,161 @@ export const incomingChecksExcel = (project, checks) => {
     ws.cell(2 + i + plusRows, operationDateColumn).string(moment.utc(check?.operationDate).format("DD-MM-YYYY") || "").style(styles[style])
     ws.cell(2 + i + plusRows, checkTypeColumn).string(check?.checkType || "").style(styles[style])
     ws.cell(2 + i + plusRows, transferDetailColumn).string(check?.transferDetail || "").style(styles[style])
+  })
+
+  return wb
+}
+
+export const cashMovementsExcel = (movements, dollar) => {
+  const wb = new xl.Workbook()
+  const ws = wb.addWorksheet(`CAJA`, {
+    defaultFont: {
+      size: 9,
+      name: 'Ebrima',
+    }
+  })
+
+  const styles = {
+    sectionHead: wb.createStyle({
+      ...fontHeadStyle,
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    }),
+    header: wb.createStyle({
+      ...fontHeadStyle,
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 12,
+        name: "Calibri",
+        color: "#FFFFFF",
+        bold: true
+      }
+    }),
+    importantCell: wb.createStyle({
+      font: {
+        bold: true
+      },
+      ...textCenterStyle,
+      ...thinBorder,
+      ...bgSectionInfo,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      }
+    }),
+    cell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 11
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#c6efce",
+        fgColor: "#c6efce"
+      }
+    }),
+    commonCell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 11
+      }
+    }),
+    notPaidCell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#e8cc84",
+        fgColor: "#e8cc84"
+      }
+    }),
+    notPaidCellTotal: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 12
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#e8cc84",
+        fgColor: "#e8cc84"
+      }
+    }),
+    expiredCell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#ff6969",
+        fgColor: "#ff6969"
+      }
+    })
+  }
+
+  ws.row(1).setHeight(40)
+
+  const dateColumn = 1
+  const detailColumn = 2
+  const creditColumn = 3
+  const debitColumn = 4
+  const balanceColumn = 5
+
+  let headerStyles = styles["header"]
+  if (dollar) headerStyles = {
+    ...headerStyles, fill: {
+      type: "pattern",
+      patternType: "solid",
+      bgColor: "#25853f",
+      fgColor: "#25853f"
+    }
+  }
+
+  ws.cell(1, dateColumn).string("FECHA").style(headerStyles)
+  ws.cell(1, detailColumn).string("CONCEPTO").style(headerStyles)
+  ws.cell(1, creditColumn).string("INGRESO").style(headerStyles)
+  ws.cell(1, debitColumn).string("EGRESO").style(headerStyles)
+  ws.cell(1, balanceColumn).string("SALDO").style(headerStyles)
+  ws.row(1).freeze()
+
+  let plusRows = 0
+
+
+  ws.column(detailColumn).setWidth(30);
+
+
+  movements.forEach((movement, i) => {
+
+    //const style = (!movement.paid && movement?.movementType == "Cheque") ? (moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) || movement?.error ? "expiredCell" : (moment(movement?.date, "DD-MM-YYYY").isAfter(moment()) ? "commonCell" : "notPaidCell")) : "cell"
+    const style = movement?.state == "RECHAZADO" ? "expiredCell" : ((movement?.state == "ACEPTADO" || !movement?.state) ? "commonCell" : "cell")
+
+
+    ws.cell(2 + i + plusRows, dateColumn).string(moment.utc(movement?.date).format("DD-MM-YYYY") || "").style(styles[style])
+    ws.cell(2 + i + plusRows, detailColumn).string(movement?.detail || 0).style(styles[style])
+    ws.cell(2 + i + plusRows, creditColumn).number(movement?.credit || 0).style(styles[style])
+    ws.cell(2 + i + plusRows, debitColumn).number(movement?.debit || 0).style(styles[style])
+    ws.cell(2 + i + plusRows, balanceColumn).formula(`${i ? xl.getExcelCellRef(1 + i + plusRows, balanceColumn) + " + " : ""}${xl.getExcelCellRef(2 + i + plusRows, creditColumn)} - ${xl.getExcelCellRef(2 + i + plusRows, debitColumn)}`).style(styles[style])
   })
 
   return wb

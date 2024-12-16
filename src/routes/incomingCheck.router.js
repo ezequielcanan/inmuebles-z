@@ -1,4 +1,4 @@
-import { createIncomingCheck, getProjectChecks, getIncomingCheck, updateIncomingCheck, updateAllIncomingCheck, insertNewTransfer, deleteTransfer, getIncomingChecksExcel } from "../controllers/incomingCheck.controller.js";
+import { createIncomingCheck, getProjectChecks, getIncomingCheck, updateIncomingCheck, updateAllIncomingCheck, insertNewTransfer, deleteTransfer, getIncomingChecksExcel, deleteIncomingCheck } from "../controllers/incomingCheck.controller.js";
 import Z_Router from "./router.js";
 
 export default class IncomingCheckRouter extends Z_Router {
@@ -11,5 +11,6 @@ export default class IncomingCheckRouter extends Z_Router {
     this.put("/:cid", ["ADMIN", "BANK"], updateIncomingCheck)
     this.put("/all/:cid", ["ADMIN", "BANK"], updateAllIncomingCheck)
     this.delete("/transfer/:cid/:tid", ["ADMIN", "BANK"], deleteTransfer)
+    this.delete("/:cid", ["ADMIN", "BANK"], deleteIncomingCheck)
   }
 }

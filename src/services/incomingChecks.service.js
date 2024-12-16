@@ -13,6 +13,7 @@ class IncomingChecksService {
   updateAllIncomingCheck = async (cid, check) => incomingChecksModel.findOneAndUpdate({ _id: cid }, { $set: check }, { new: true })
   insertNewTransfer = async (cid, transfer) => incomingChecksModel.findOneAndUpdate({ _id: cid }, { $push: { transfers: transfer } }, { new: true })
   deleteTransfer = async (cid, tid) => incomingChecksModel.findOneAndUpdate({ _id: cid }, { $pull: { transfers: { _id: tid } } }, { new: true })
+  deleteIncomingCheck = async (cid) => incomingChecksModel.deleteOne({ _id: cid })
 }
 
 export default IncomingChecksService

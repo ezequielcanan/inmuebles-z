@@ -19,12 +19,13 @@ class MovementsService {
 
   createMovement = async (movement) => movementModel.create(movement)
 
-  getAccountMovements = async (aid, filter = false, finished = true, emission = false) => {
+  getAccountMovements = async (aid, filter = false, finished = true, emission = false, page) => {
     const account = await accountService.getAccountById(aid)
     const movements = await movementModel.find({ account: aid }).sort({ emissionDate: 1 }).lean().exec()
     const incomingChecks = movements?.filter(m => m?.incomingCheck)
+    const rowsLimit = 30
 
-    const checksAsMovements = incomingChecks.map(({_id, note, incomingCheck: check}) => {
+    const checksAsMovements = incomingChecks.map(({ _id, tax, note, incomingCheck: check }) => {
       return {
         _id,
         credit: check.amount,
@@ -40,13 +41,14 @@ class MovementsService {
           check.state === "ACEPTADO"
             ? "PENDIENTE"
             : check.state === "DEPOSITADO"
-            ? "REALIZADO"
-            : check.state === "RECHAZADO"
-            ? "ERROR"
-            : check.state,
+              ? "REALIZADO"
+              : check.state === "RECHAZADO"
+                ? "ERROR"
+                : check.state,
         detail: `${check?.owner?.name || check?.cashAccount?.name || check?.specialFrom} ${check.detail}`,
         incomingCheck: true,
-        note
+        note,
+        tax
       }
     });
 
@@ -68,7 +70,7 @@ class MovementsService {
     const rows = []
     orderedByDateRows.forEach((row, i) => {
       const tax = (row?.tax * row?.credit / 100) || 0
-      const sixThousandths = (((row?.credit || 0) + (row?.debit || 0)) * 0.006) || 0
+      const sixThousandths = (((row?.credit || 0) + (row?.debit || 0) + (tax)) * 0.006) || 0
       rows.push({
         ...row,
         date: moment.utc(row?.date).format("DD-MM-YYYY"),
@@ -81,6 +83,9 @@ class MovementsService {
       })
     })
 
+    if (page == 0 || page) {
+      return rows?.reverse()?.slice(page * rowsLimit, rowsLimit * page + rowsLimit)?.reverse()
+    }
     return rows
   }
 
@@ -177,6 +182,18 @@ class MovementsService {
   getExpiredChecks = async (aid) => {
     const movements = await this.getAccountMovements(aid)
     return movements.filter(movement => !movement.paid && movement.movementType == "Cheque" && moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) && !movements.some(m => m?.lastCheck?.code == movement?.code))
+  }
+
+  getCashMovements = (pid, dollar) => {
+    const findObj = { project: pid }
+    if (dollar) findObj["dollar"] = true
+    else findObj["$or"] = [
+      { dollar: { $exists: false } },
+      { dollar: { $eq: false } },
+      { dollar: null }
+    ]
+
+    return movementModel.find(findObj).sort({ date: "asc" })
   }
 
   updateMovement = async (mid, movement) => movementModel.updateOne({ _id: mid }, { $set: movement })

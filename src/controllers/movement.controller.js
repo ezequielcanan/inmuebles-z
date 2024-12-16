@@ -1,4 +1,4 @@
-import { getProjectChecks, getSupplierOrServiceExcel } from "../excel/payments.js"
+import { cashMovementsExcel, getProjectChecks, getSupplierOrServiceExcel } from "../excel/payments.js"
 import MovementsService from "../services/movements.service.js"
 import ProjectService from "../services/project.service.js"
 import SupplierService from "../services/supplier.service.js"
@@ -22,7 +22,7 @@ export const createMovement = async (req, res) => {
 
 export const getAccountMovements = async (req, res) => {
   try {
-    const result = await movementsService.getAccountMovements(req?.params?.aid, (req?.query?.filter == "true" ? true : false))
+    const result = await movementsService.getAccountMovements(req?.params?.aid, (req?.query?.filter == "true" ? true : false), true, false, req?.query?.page)
     res.sendSuccess(result)
   }
   catch (e) {
@@ -108,9 +108,34 @@ export const getChecksExcel = async (req, res) => {
   }
 }
 
+export const getCashExcel = async (req, res) => {
+  try {
+    const society = await projectService.getProject(req?.params?.pid)
+    const movements = await movementsService.getCashMovements(req?.params?.pid, req?.query?.dollar)
+
+    const wb = cashMovementsExcel(movements, req?.query?.dollar)
+    wb.write(`Caja ${req?.query?.dollar ? "DOLARES " : "PESOS "}${society?.title}.xlsx`, res)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
 export const deleteMovementByIncomingCheck = async (req, res) => {
   try {
     const result = await movementsService.deleteMovementByIncomingCheck(req?.params?.cid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getCashMovements = async (req, res) => {
+  try {
+    const result = await movementsService.getCashMovements(req?.params?.pid, req?.query?.dollar)
     res.sendSuccess(result)
   }
   catch (e) {

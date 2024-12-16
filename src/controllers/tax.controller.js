@@ -1,3 +1,4 @@
+import moment from "moment"
 import TaxService from "../services/tax.service.js"
 
 const taxService = new TaxService()
@@ -29,6 +30,17 @@ export const getActualTax = async (req, res) => {
   try {
     const result = await taxService.getActualTax()
     res.sendSuccess(result[0])
+  }
+  catch (e) {
+    console.error(e)
+    res.sendServerError(e)
+  }
+}
+
+export const getMonthTax = async (req, res) => {
+  try {
+    const result = await taxService.getMonthTax(req?.query?.date || new Date())
+    res.sendSuccess({ tax: result?.percentage || 0 })
   }
   catch (e) {
     console.error(e)
