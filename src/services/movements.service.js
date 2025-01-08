@@ -19,7 +19,7 @@ class MovementsService {
 
   createMovement = async (movement) => movementModel.create(movement)
 
-  getAccountMovements = async (aid, filter = false, finished = true, emission = false, page) => {
+  getAccountMovements = async (aid, filter = "date", finished = true, emission = false, page) => {
     const account = await accountService.getAccountById(aid)
     const movements = await movementModel.find({ account: aid }).sort({ emissionDate: 1 }).lean().exec()
     const incomingChecks = movements?.filter(m => m?.incomingCheck)
@@ -54,8 +54,14 @@ class MovementsService {
 
 
     const orderedByDateRows = [...movements?.filter(m => !m?.incomingCheck), ...checksAsMovements/*, ...transfers, ...checks, ...retentions*/].sort((a, b) => {
-      if (filter) return new Date(a.expirationDate || a.emissionDate) - new Date(b.expirationDate || b.emissionDate)
-      return new Date(emission ? (a.emissionDate || a.date) : (a.date || a.emissionDate)) - new Date(emission ? (b.emissionDate || b.date) : (b.date || b.emissionDate))
+      const dateA = a[filter] ? new Date(a[filter]) : null;
+      const dateB = b[filter] ? new Date(b[filter]) : null;
+
+      if (!dateA && !dateB) return 0; // Ambos no tienen la propiedad
+      if (!dateA) return 1; // `a` no tiene la propiedad, va después
+      if (!dateB) return -1; // `b` no tiene la propiedad, va después
+
+      return dateA - dateB;
     })
 
     if (!finished) return orderedByDateRows.map((row) => {
@@ -89,7 +95,7 @@ class MovementsService {
     return rows
   }
 
-  getProjectChecks = async (pid, filter = false, finished = true, emission = false) => {
+  getProjectChecks = async (pid, filter = "date", finished = true, emission = false) => {
     const movements = await movementModel.aggregate([
       {
         $match: { movementType: "Cheque" } // Filtra por movementType
@@ -166,8 +172,14 @@ class MovementsService {
 
 
     const orderedByDateRows = [...movements].sort((a, b) => {
-      if (filter) return new Date(a.expirationDate) - new Date(b.expirationDate)
-      return new Date(emission ? (a.emissionDate || a.date) : (a.date || a.emissionDate)) - new Date(emission ? (b.emissionDate || b.date) : (b.date || b.emissionDate))
+      const dateA = a[filter] ? new Date(a[filter]) : null;
+      const dateB = b[filter] ? new Date(b[filter]) : null;
+
+      if (!dateA && !dateB) return 0; // Ambos no tienen la propiedad
+      if (!dateA) return 1; // `a` no tiene la propiedad, va después
+      if (!dateB) return -1; // `b` no tiene la propiedad, va después
+
+      return dateA - dateB;
     })
 
     return orderedByDateRows.map(row => {

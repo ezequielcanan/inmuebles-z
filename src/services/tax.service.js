@@ -5,9 +5,10 @@ class TaxService {
   constructor() { }
 
   createTax = tax => taxModel.create(tax)
-  getTaxes = () => taxModel.find().sort({ month: "desc" })
-  getActualTax = () => taxModel.find().sort({ month: "desc" }).limit(1)
-  getMonthTax = (date) => taxModel.findOne({
+  getTaxes = (project) => taxModel.find({ project }).sort({ month: "desc" })
+  getActualTax = (project) => taxModel.find({ project }).sort({ month: "desc" }).limit(1)
+  getMonthTax = (date, project) => taxModel.findOne({
+    project,
     $expr: {
       $and: [
         { $eq: [{ $month: "$month" }, moment(date).month() + 1] },

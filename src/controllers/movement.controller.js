@@ -22,7 +22,8 @@ export const createMovement = async (req, res) => {
 
 export const getAccountMovements = async (req, res) => {
   try {
-    const result = await movementsService.getAccountMovements(req?.params?.aid, (req?.query?.filter == "true" ? true : false), true, false, req?.query?.page)
+    console.log(req?.query?.filter)
+    const result = await movementsService.getAccountMovements(req?.params?.aid, req?.query?.filter, true, false, req?.query?.page)
     res.sendSuccess(result)
   }
   catch (e) {
@@ -97,9 +98,9 @@ export const getExpiredChecks = async (req, res) => {
 export const getChecksExcel = async (req, res) => {
   try {
     const society = await projectService.getProject(req?.params?.pid)
-    const movements = await movementsService.getProjectChecks(req?.params?.pid, req?.query?.filter == "true", true)
+    const movements = await movementsService.getProjectChecks(req?.params?.pid, req?.query?.filter, true)
 
-    const wb = getProjectChecks(movements, req?.query?.filter == "true")
+    const wb = getProjectChecks(movements, req?.query?.filter)
     wb.write(`Cheques ${society?.title}.xlsx`, res)
   }
   catch (e) {
