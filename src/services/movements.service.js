@@ -95,6 +95,8 @@ class MovementsService {
     return rows
   }
 
+  getMovement = async (mid) => movementModel.findOne({ _id: mid })
+
   getProjectChecks = async (pid, filter = "date", finished = true, emission = false) => {
     const movements = await movementModel.aggregate([
       {

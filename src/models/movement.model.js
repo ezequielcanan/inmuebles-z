@@ -33,6 +33,16 @@ movementsSchema.pre("find", function () {
   this.populate("supplier")
   this.populate("service")
   this.populate("incomingCheck")
+  this.populate("project")
+})
+
+movementsSchema.pre("findOne", function () {
+  this.populate("cashAccount")
+  this.populate("account")
+  this.populate("project")
+  this.populate("supplier")
+  this.populate("service")
+  this.populate("incomingCheck")
 })
 
 export default mongoose.model(movementCollection, movementsSchema)

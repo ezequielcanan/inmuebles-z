@@ -31,6 +31,18 @@ export const getAccountMovements = async (req, res) => {
   }
 }
 
+
+export const getMovement = async (req, res) => {
+  try {
+    const result = await movementsService.getMovement(req?.params?.mid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
+
 export const getProjectOutcomingChecks = async (req, res) => {
   try {
     const result = await movementsService.getProjectChecks(req?.params?.pid)
