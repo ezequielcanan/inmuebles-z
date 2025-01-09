@@ -158,6 +158,7 @@ class MovementsService {
           detail: 1,
           credit: 1,
           debit: 1,
+          checkType: 1,
           tax: 1,
           state: 1,
           note: 1,
