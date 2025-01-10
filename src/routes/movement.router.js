@@ -4,8 +4,8 @@ import Z_Router from "./router.js";
 export default class MovementRouter extends Z_Router {
   init() {
     this.get("/:aid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getAccountMovements)
-    this.get("/:aid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getAccountMovements)
     this.get("/excel/service/:sid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getServiceExcel)
+    this.get("/:sid/:pid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getSupplierExcel)
     this.get("/checks/excel/:pid", ["ADMIN", "EXECUTIVE", "BANK", "SECRETARY", "USER"], getChecksExcel)
     this.get("/checks/out/:pid", ["ADMIN", "EXECUTIVE", "BANK", "SECRETARY", "USER"], getProjectOutcomingChecks)
     this.get("/expired/:aid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getExpiredChecks)

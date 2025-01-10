@@ -77,16 +77,21 @@ class MovementsService {
     orderedByDateRows.forEach((row, i) => {
       const tax = (row?.tax * row?.credit / 100) || 0
       const sixThousandths = (((row?.credit || 0) + (row?.debit || 0) + (tax)) * 0.006) || 0
-      rows.push({
+
+      const rowPush = {
         ...row,
-        date: moment.utc(row?.date).format("DD-MM-YYYY"),
-        emissionDate: moment.utc(row?.emissionDate).format("DD-MM-YYYY"),
-        expirationDate: moment.utc(row?.expirationDate).format("DD-MM-YYYY"),
         tax,
         sixThousandths,
-        balance: ((!i ? account?.initialBalance : rows[i - 1]?.balance) || 0) + (((moment(row?.expirationDate, "DD-MM-YYYY").isBefore(moment()) && !row?.paid && row?.movementType == "Cheque") || row?.error) ? 0 : (row?.credit || 0) - (row?.debit || 0) - tax - sixThousandths),
+        balance: ((!i ? account?.initialBalance : rows[i - 1]?.balance) || 0) + (((moment(row?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) && !row?.paid && row?.movementType == "Cheque") || row?.error) ? 0 : (row?.credit || 0) - (row?.debit || 0) - tax - sixThousandths),
         realBalance: ((!i ? account?.initialBalance : rows[i - 1]?.realBalance) || 0) + ((!row?.paid && row?.movementType == "Cheque") ? 0 : (row?.credit || 0) - (row?.debit || 0) - tax - sixThousandths)
-      })
+      }
+
+      if (row?.date) rowPush["date"] = moment.utc(row?.date).format("DD-MM-YYYY")
+      if (row?.emissionDate) rowPush["emissionDate"] = moment.utc(row?.emissionDate).format("DD-MM-YYYY")
+      if (row?.expirationDate) rowPush["expirationDate"] = moment.utc(row?.expirationDate).format("DD-MM-YYYY")
+
+
+      rows.push(rowPush)
     })
 
     if (page == 0 || page) {
@@ -100,7 +105,7 @@ class MovementsService {
   getProjectChecks = async (pid, filter = "date", finished = true, emission = false) => {
     const movements = await movementModel.aggregate([
       {
-        $match: { movementType: "Cheque" } // Filtra por movementType
+        $match: { movementType: "Cheque", project: new Types.ObjectId(pid) } // Filtra por movementType
       },
       {
         $lookup: {
@@ -111,11 +116,11 @@ class MovementsService {
         }
       },
       {
-        $unwind: "$accountDetails"
+        $unwind: { path: "$accountDetails", preserveNullAndEmptyArrays: true }
       },
       {
         $lookup: {
-          from: "cashAccounts",
+          from: "cashaccounts",
           localField: "cashAccount",
           foreignField: "_id",
           as: "cashAccountDetails"
@@ -147,9 +152,6 @@ class MovementsService {
         $unwind: { path: "$serviceDetails", preserveNullAndEmptyArrays: true }
       },
       {
-        $match: { "accountDetails.society": new Types.ObjectId(pid) } // Filtra por project._id
-      },
-      {
         $project: {
           date: 1,
           emissionDate: 1,
@@ -157,6 +159,7 @@ class MovementsService {
           code: 1,
           movementType: 1,
           paid: 1,
+          error: 1,
           detail: 1,
           credit: 1,
           debit: 1,
@@ -186,17 +189,18 @@ class MovementsService {
     })
 
     return orderedByDateRows.map(row => {
-      return {
-        ...row, date: moment.utc(row?.date).format("DD-MM-YYYY"),
-        emissionDate: moment.utc(row?.emissionDate).format("DD-MM-YYYY"),
-        expirationDate: moment.utc(row?.expirationDate).format("DD-MM-YYYY"),
-      }
+      const returnRow = { ...row }
+      if (row?.date) returnRow["date"] = moment.utc(row?.date).format("DD-MM-YYYY")
+      if (row?.emissionDate) returnRow["emissionDate"] = moment.utc(row?.emissionDate).format("DD-MM-YYYY")
+      if (row?.expirationDate) returnRow["expirationDate"] = moment.utc(row?.expirationDate).format("DD-MM-YYYY")
+
+      return returnRow
     })
   }
 
   getExpiredChecks = async (aid) => {
     const movements = await this.getAccountMovements(aid)
-    return movements.filter(movement => !movement.paid && movement.movementType == "Cheque" && moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) && !movements.some(m => m?.lastCheck?.code == movement?.code))
+    return movements.filter(movement => !movement.paid && movement.movementType == "Cheque" && moment(movement?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) && !movements.some(m => m?.lastCheck?.code == movement?.code))
   }
 
   getCashMovements = (pid, dollar) => {

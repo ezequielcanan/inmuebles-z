@@ -723,8 +723,7 @@ export const getAccountExcel = (account, movements, filtered) => {
       plusRows += addThreeRows + 1
     }
 
-    console.log(movement?.error)
-    const style = (!movement.paid && movement?.movementType == "Cheque") ? ((moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) || movement?.error) ? "expiredCell" : "notPaidCell") : "cell"
+    const style = (!movement.paid && movement?.movementType == "Cheque") ? ((moment(movement?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) || movement?.error) ? "expiredCell" : "notPaidCell") : "cell"
     if (style == "notPaidCell") {
       notPaidCount += (movement?.debit || 0) * 1.006
       notPaidCount -= (movement?.credit || 0) * 0.994
@@ -749,7 +748,7 @@ export const getAccountExcel = (account, movements, filtered) => {
     ws.cell(7 + i + plusRows, taxColumn).formula(`${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} * ${movement?.tax || 0}%`).style(styles[style])
     ws.cell(7 + i + plusRows, sixColumn).formula(`(${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} + ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} + ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)}) * 0.006`).style(styles[style])
     ws.cell(7 + i + plusRows, totalColumn).formula(`${`${i ? xl.getExcelCellRef(lastMonth == thisMonth ? 6 + i + plusRows : 6 + i - 4 + plusRows, totalColumn) : account?.initialBalance} + `} ${(!movement?.paid && movement?.movementType == "Cheque") ? "0" : `${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, sixColumn)}`}`).style(styles[style])
-    ws.cell(7 + i + plusRows, projectedColumn).formula(`${`${i ? xl.getExcelCellRef(lastMonth == thisMonth ? 6 + i + plusRows : 6 + i - 4 + plusRows, projectedColumn) : account?.initialBalance} + `} ${((moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) && !movement?.paid && movement?.movementType == "Cheque") || movement?.error) ? 0 : `${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, sixColumn)}`}`).style(styles[style])
+    ws.cell(7 + i + plusRows, projectedColumn).formula(`${`${i ? xl.getExcelCellRef(lastMonth == thisMonth ? 6 + i + plusRows : 6 + i - 4 + plusRows, projectedColumn) : account?.initialBalance} + `} ${((moment(movement?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) && !movement?.paid && movement?.movementType == "Cheque") || movement?.error) ? 0 : `${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, sixColumn)}`}`).style(styles[style])
     ws.cell(7 + i + plusRows, noteColumn).string(movement?.note || "").style(styles[style])
     if (lastMonth != thisMonth) lastMonth = thisMonth
   })
@@ -903,22 +902,21 @@ export const getProjectChecks = (movements, filtered) => {
 
   movements.forEach((movement, i) => {
 
-    const style = (!movement.paid && movement?.movementType == "Cheque") ? (moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) || movement?.error ? "expiredCell" : (moment(movement?.date, "DD-MM-YYYY").isAfter(moment()) ? "commonCell" : "notPaidCell")) : "cell"
+    const style = (!movement.paid && movement?.movementType == "Cheque") ? (moment(movement?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) || movement?.error ? "expiredCell" : (moment(movement?.date, "DD-MM-YYYY").isAfter(moment()) ? "commonCell" : "notPaidCell")) : "cell"
     if (style == "notPaidCell") {
       notPaidCount += movement?.debit * 1.006
       notPaidCount -= (movement?.credit || 0) * 1.006
     }
-
 
     ws.cell(2 + i + plusRows, dateColumn).string(movement?.date || "").style(styles[style])
     ws.cell(2 + i + plusRows, codeColumn).string(movement?.code || "").style(styles[style])
     ws.cell(2 + i + plusRows, emissionColumn).string(movement?.emissionDate || "").style(styles[style])
     ws.cell(2 + i + plusRows, bankColumn).string(movement?.account?.bank || "").style(styles[style])
     ws.cell(2 + i + plusRows, detailColumn).string(movement?.detail || "").style(styles[style])
-    ws.cell(2 + i + plusRows, toTheOrderColumn).string(movement?.supplier?.name || movement?.service?.name || "").style(styles[style])
-    ws.cell(2 + i + plusRows, amountColumn).string(movement?.debit || movement?.credit || "").style(styles[style])
+    ws.cell(2 + i + plusRows, toTheOrderColumn).string(movement?.supplier?.name || movement?.service?.name || movement?.cashAccount?.name || "").style(styles[style])
+    ws.cell(2 + i + plusRows, amountColumn).number(movement?.debit || movement?.credit || "").style(styles[style])
     ws.cell(2 + i + plusRows, checkTypeColumn).string(movement?.checkType || "").style(styles[style])
-    ws.cell(2 + i + plusRows, stateColumn).string(`${movement?.state != "ERROR" ? (!movement?.paid && moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) ? "VENCIDO" : movement?.state) : `ERROR`}${movement?.note ? " - " + movement?.note : ""}`).style(styles[style])
+    ws.cell(2 + i + plusRows, stateColumn).string(`${movement?.state != "ERROR" ? (!movement?.paid && moment(movement?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) ? "VENCIDO" : movement?.state) : `ERROR`}${movement?.note ? " - " + movement?.note : ""}`).style(styles[style])
     ws.cell(2 + i + plusRows, replacedColumn).string(movement?.lastCheck || "").style(styles[style])
   })
 
@@ -1075,7 +1073,7 @@ export const incomingChecksExcel = (project, checks) => {
 
   checks.forEach((check, i) => {
 
-    //const style = (!check.paid && check?.checkType == "Cheque") ? (moment(check?.expirationDate, "DD-MM-YYYY").isBefore(moment()) || check?.error ? "expiredCell" : (moment(check?.date, "DD-MM-YYYY").isAfter(moment()) ? "commonCell" : "notPaidCell")) : "cell"
+    //const style = (!check.paid && check?.checkType == "Cheque") ? (moment(check?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) || check?.error ? "expiredCell" : (moment(check?.date, "DD-MM-YYYY").isAfter(moment()) ? "commonCell" : "notPaidCell")) : "cell"
     const style = check?.state == "RECHAZADO" ? "expiredCell" : ((check?.state == "ACEPTADO" || !check?.state) ? "commonCell" : "cell")
 
 
@@ -1236,7 +1234,7 @@ export const cashMovementsExcel = (movements, dollar) => {
 
   movements.forEach((movement, i) => {
 
-    //const style = (!movement.paid && movement?.movementType == "Cheque") ? (moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) || movement?.error ? "expiredCell" : (moment(movement?.date, "DD-MM-YYYY").isAfter(moment()) ? "commonCell" : "notPaidCell")) : "cell"
+    //const style = (!movement.paid && movement?.movementType == "Cheque") ? (moment(movement?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) || movement?.error ? "expiredCell" : (moment(movement?.date, "DD-MM-YYYY").isAfter(moment()) ? "commonCell" : "notPaidCell")) : "cell"
     const style = movement?.state == "RECHAZADO" ? "expiredCell" : ((movement?.state == "ACEPTADO" || !movement?.state) ? "commonCell" : "cell")
 
 
@@ -1431,7 +1429,7 @@ export const getSupplierOrServiceExcel = (supplier, project, movements, filtered
   let lastMonth = ""
 
   movements.forEach((movement, i) => {
-    if (!moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) || (moment(movement?.expirationDate, "DD-MM-YYYY").isBefore(moment()) && movement?.paid)) {
+    if (!moment(movement?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) || (moment(movement?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) && movement?.paid)) {
       let thisMonth = moment.utc(movement?.emissionDate).format("MMMM")
       thisMonth = thisMonth.charAt(0).toUpperCase() + thisMonth.substring(1)
 
