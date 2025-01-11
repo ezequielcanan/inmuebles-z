@@ -732,7 +732,13 @@ export const getAccountExcel = (account, movements, filtered) => {
     if (thisMonth != nextMonth) {
       ws.cell(7 + i + plusRows - monthCount - 1, 19).number(notPaidCount).style(styles["notPaidCellTotal"])
     }
-
+    if (movement?.error) {
+      if (movement?.debit) {
+        movement.credit = movement.debit
+      } else {
+        movement.debit = movement.credit
+      }
+    }
     ws.cell(7 + i + plusRows, dateColumn).string(movement?.date || "").style(styles[style])
     ws.cell(7 + i + plusRows, emissionColumn).string(movement?.emissionDate || "").style(styles[style])
     ws.cell(7 + i + plusRows, expirationColumn).string(movement?.expirationDate || "").style(styles[style])
@@ -745,8 +751,8 @@ export const getAccountExcel = (account, movements, filtered) => {
     ws.cell(7 + i + plusRows, detailColumn).string(movement?.detail || "").style(styles[style])
     ws.cell(7 + i + plusRows, creditColumn).number(movement?.credit || 0).style(styles[style])
     ws.cell(7 + i + plusRows, debitColumn).number(movement?.debit || 0).style(styles[style])
-    ws.cell(7 + i + plusRows, taxColumn).formula(`${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} * ${movement?.tax || 0}%`).style(styles[style])
-    ws.cell(7 + i + plusRows, sixColumn).formula(`(${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} + ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} + ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)}) * 0.006`).style(styles[style])
+    ws.cell(7 + i + plusRows, taxColumn).formula(!movement?.error ? `${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} * ${movement?.tax || 0}%` : "0").style(styles[style])
+    ws.cell(7 + i + plusRows, sixColumn).formula(!movement?.error ? `(${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} + ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} + ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)}) * 0.006` : "0").style(styles[style])
     ws.cell(7 + i + plusRows, totalColumn).formula(`${`${i ? xl.getExcelCellRef(lastMonth == thisMonth ? 6 + i + plusRows : 6 + i - 4 + plusRows, totalColumn) : account?.initialBalance} + `} ${(!movement?.paid && movement?.movementType == "Cheque") ? "0" : `${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, sixColumn)}`}`).style(styles[style])
     ws.cell(7 + i + plusRows, projectedColumn).formula(`${`${i ? xl.getExcelCellRef(lastMonth == thisMonth ? 6 + i + plusRows : 6 + i - 4 + plusRows, projectedColumn) : account?.initialBalance} + `} ${((moment(movement?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) && !movement?.paid && movement?.movementType == "Cheque") || movement?.error) ? 0 : `${xl.getExcelCellRef(7 + i + plusRows, creditColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, debitColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, taxColumn)} - ${xl.getExcelCellRef(7 + i + plusRows, sixColumn)}`}`).style(styles[style])
     ws.cell(7 + i + plusRows, noteColumn).string(movement?.note || "").style(styles[style])

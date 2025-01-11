@@ -53,7 +53,10 @@ class MovementsService {
     });
 
 
-    const orderedByDateRows = [...movements?.filter(m => !m?.incomingCheck), ...checksAsMovements/*, ...transfers, ...checks, ...retentions*/].sort((a, b) => {
+    const orderedByDateRows = [...movements?.filter(m => {
+      const isExpired = moment(m?.expirationDate).add(33, "days")?.isBefore(moment()) && m?.state == "PENDIENTE" && m?.movementType == "Cheque"
+      return !m?.incomingCheck && !isExpired
+    }), ...checksAsMovements/*, ...transfers, ...checks, ...retentions*/].sort((a, b) => {
       const dateA = a[filter] ? new Date(a[filter]) : null;
       const dateB = b[filter] ? new Date(b[filter]) : null;
 
@@ -75,8 +78,8 @@ class MovementsService {
 
     const rows = []
     orderedByDateRows.forEach((row, i) => {
-      const tax = (row?.tax * row?.credit / 100) || 0
-      const sixThousandths = (((row?.credit || 0) + (row?.debit || 0) + (tax)) * 0.006) || 0
+      const tax = !row?.error ? ((row?.tax * row?.credit / 100) || 0) : 0
+      const sixThousandths = !row?.error ? ((((row?.credit || 0) + (row?.debit || 0) + (tax)) * 0.006) || 0) : 0
 
       const rowPush = {
         ...row,
@@ -89,7 +92,13 @@ class MovementsService {
       if (row?.date) rowPush["date"] = moment.utc(row?.date).format("DD-MM-YYYY")
       if (row?.emissionDate) rowPush["emissionDate"] = moment.utc(row?.emissionDate).format("DD-MM-YYYY")
       if (row?.expirationDate) rowPush["expirationDate"] = moment.utc(row?.expirationDate).format("DD-MM-YYYY")
-
+      if (row?.error) {
+        if (rowPush["debit"]) {
+          rowPush["credit"] = rowPush["debit"]
+        } else {
+          rowPush["debit"] = rowPush["credit"]
+        }
+      }
 
       rows.push(rowPush)
     })

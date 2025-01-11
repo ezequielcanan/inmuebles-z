@@ -15,7 +15,7 @@ export const createService = async (req, res) => {
 
 export const getServices = async (req, res) => {
   try {
-    const result = await serviceService.getServices()
+    const result = await serviceService.getServices(req?.params?.pid)
     res.sendSuccess(result)
   }
   catch (e) {
