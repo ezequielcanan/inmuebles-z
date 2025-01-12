@@ -31,6 +31,16 @@ export const getAccountMovements = async (req, res) => {
   }
 }
 
+export const getServiceMovements = async (req, res) => {
+  try {
+    const result = await movementsService.getServiceMovements(req?.params?.sid)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
 
 export const getMovement = async (req, res) => {
   try {

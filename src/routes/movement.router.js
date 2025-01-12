@@ -1,9 +1,10 @@
-import { createMovement, deleteMovement, deleteMovementByIncomingCheck, getAccountMovements, getCashExcel, getCashMovements, getChecksExcel, getExpiredChecks, getMovement, getProjectOutcomingChecks, getServiceExcel, getSupplierExcel, updateMovement } from "../controllers/movement.controller.js";
+import { createMovement, deleteMovement, deleteMovementByIncomingCheck, getAccountMovements, getCashExcel, getCashMovements, getChecksExcel, getExpiredChecks, getMovement, getProjectOutcomingChecks, getServiceExcel, getServiceMovements, getSupplierExcel, updateMovement } from "../controllers/movement.controller.js";
 import Z_Router from "./router.js";
 
 export default class MovementRouter extends Z_Router {
   init() {
     this.get("/:aid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getAccountMovements)
+    this.get("/service/movements/:sid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getServiceMovements)
     this.get("/excel/service/:sid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getServiceExcel)
     this.get("/:sid/:pid", ["ADMIN", "EXECUTIVE", "BANK", "USER"], getSupplierExcel)
     this.get("/checks/excel/:pid", ["ADMIN", "EXECUTIVE", "BANK", "SECRETARY", "USER"], getChecksExcel)

@@ -86,7 +86,7 @@ class MovementsService {
         tax,
         sixThousandths,
         balance: ((!i ? account?.initialBalance : rows[i - 1]?.balance) || 0) + (((moment(row?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) && !row?.paid && row?.movementType == "Cheque") || row?.error) ? 0 : (row?.credit || 0) - (row?.debit || 0) - tax - sixThousandths),
-        realBalance: ((!i ? account?.initialBalance : rows[i - 1]?.realBalance) || 0) + ((!row?.paid && row?.movementType == "Cheque") ? 0 : (row?.credit || 0) - (row?.debit || 0) - tax - sixThousandths)
+        realBalance: ((!i ? account?.initialBalance : rows[i - 1]?.realBalance) || 0) + ((!row?.paid) ? 0 : (row?.credit || 0) - (row?.debit || 0) - tax - sixThousandths)
       }
 
       if (row?.date) rowPush["date"] = moment.utc(row?.date).format("DD-MM-YYYY")
