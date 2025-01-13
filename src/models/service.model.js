@@ -6,7 +6,8 @@ const servicesSchema = new mongoose.Schema({
   name: String,
   code: String,
   project: { type: mongoose.Schema.Types.ObjectId, ref: "projects", required: false },
-  description: String
+  description: String,
+  plan: Boolean
 })
 
 servicesSchema.pre("findOne", function () {

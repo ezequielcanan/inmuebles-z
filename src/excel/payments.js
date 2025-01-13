@@ -723,7 +723,7 @@ export const getAccountExcel = (account, movements, filtered) => {
       plusRows += addThreeRows + 1
     }
 
-    const style = (!movement.paid && movement?.movementType == "Cheque") ? ((moment(movement?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) || movement?.error) ? "expiredCell" : "notPaidCell") : (movement?.paid ? "cell" : "notPaidCell")
+    const style = (!movement.paid) ? (((moment(movement?.expirationDate, "DD-MM-YYYY").add(33, "days")?.isBefore(moment()) && movement?.movementType == "Cheque") || movement?.error) ? "expiredCell" : "notPaidCell") : (movement?.paid ? "cell" : "notPaidCell")
     if (style == "notPaidCell") {
       notPaidCount += (movement?.debit || 0) * 1.006
       notPaidCount -= (movement?.credit || 0) * 0.994

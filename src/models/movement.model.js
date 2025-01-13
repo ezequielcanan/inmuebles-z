@@ -8,7 +8,7 @@ const movementsSchema = new mongoose.Schema({
   expirationDate: { type: Date, required: false },
   code: String,
   checkType: { type: String, enum: ["ECHEQ", "FISICO"] },
-  movementType: { type: String, enum: ["Cheque", "Transferencia", "Pago Servicios", "Gastos Bancarios"] },
+  movementType: { type: String, enum: ["Cheque", "Transferencia", "Pago Servicios", "Gastos Bancarios", "VEP"] },
   paid: Boolean,
   error: { type: Boolean, default: false },
   state: String,
