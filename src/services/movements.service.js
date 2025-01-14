@@ -55,7 +55,7 @@ class MovementsService {
 
     const orderedByDateRows = [...movements?.filter(m => {
       const isExpired = moment(m?.expirationDate).add(33, "days")?.isBefore(moment()) && m?.state == "PENDIENTE" && m?.movementType == "Cheque"
-      return !m?.incomingCheck && !isExpired
+      return !m?.incomingCheck && !isExpired && !m?.notShows
     }), ...checksAsMovements/*, ...transfers, ...checks, ...retentions*/].sort((a, b) => {
       const dateA = a[filter] ? new Date(a[filter]) : null;
       const dateB = b[filter] ? new Date(b[filter]) : null;

@@ -82,7 +82,7 @@ export const getSupplierExcel = async (req, res) => {
 
 export const getServiceExcel = async (req, res) => {
   try {
-    let movements = await movementsService.getServiceMovements(req?.params?.sid)
+    let movements = (await movementsService.getServiceMovements(req?.params?.sid)).filter(m => !m?.notShows && !m.error)
     movements = movements.sort((a, b) => new Date(a.date || a.emissionDate) - new Date(b.date || b.emissionDate))
     const service = await serviceService.getServiceById(req?.params?.sid)
     const wb = getSupplierOrServiceExcel(service, {}, movements, false, true)

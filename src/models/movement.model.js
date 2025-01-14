@@ -24,7 +24,8 @@ const movementsSchema = new mongoose.Schema({
   service: { type: mongoose.Schema.Types.ObjectId, ref: "services", required: false },
   incomingCheck: { type: mongoose.Schema.Types.ObjectId, ref: "incomingChecks", required: false },
   project: { type: mongoose.Schema.Types.ObjectId, ref: "projects", required: false },
-  dollar: Boolean
+  dollar: Boolean,
+  notShows: { type: Boolean, default: false }
 })
 
 movementsSchema.pre("find", function () {
