@@ -1459,3 +1459,137 @@ export const getSupplierOrServiceExcel = (supplier, project, movements, filtered
   })
   return wb
 }
+
+
+export const getExcelService = (supplier, project, movements, filtered = false, service = false) => {
+  const wb = new xl.Workbook()
+  const ws = wb.addWorksheet(`${supplier?.name || ""}`, {
+    defaultFont: {
+      size: 9,
+      name: 'Ebrima',
+    }
+  })
+
+  const styles = {
+    sectionHead: wb.createStyle({
+      ...fontHeadStyle,
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -'
+    }),
+    header: wb.createStyle({
+      ...fontHeadStyle,
+      ...textCenterStyle,
+      ...boldBorder,
+      ...bgHead,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9,
+        name: "Ebrima",
+        color: "#FFFFFF"
+      }
+    }),
+    importantCell: wb.createStyle({
+      font: {
+        bold: true
+      },
+      ...textCenterStyle,
+      ...thinBorder,
+      ...bgSectionInfo,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      }
+    }),
+    cell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      }
+    }),
+    notPaidCell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#e8cc84",
+        fgColor: "#e8cc84"
+      }
+    }),
+    expiredCell: wb.createStyle({
+      ...textCenterStyle,
+      ...thinBorder,
+      numberFormat: '#,##0.00; -#,##0.00; -',
+      font: {
+        size: 9
+      },
+      fill: {
+        type: "pattern",
+        patternType: "solid",
+        bgColor: "#ffaaaa",
+        fgColor: "#ffaaaa"
+      }
+    })
+  }
+
+
+  ws.row(1).setHeight(40)
+
+  ws.cell(1, 1, 1, 8, true).string(`${supplier?.name || ""} - ${supplier?.code || ""}`).style(styles["sectionHead"])
+
+  const dateCol = 1
+  const bankCol = 2
+  const societyCol = 3
+  const accountNumberCol = 4
+  const codeCol = 5
+  const amountCol = 6
+  const totalCol = 7
+  const noteCol = 8
+
+
+  ws.cell(3, dateCol).string("FECHA").style(styles["header"])
+  ws.cell(3, bankCol).string("BANCO").style(styles["header"])
+  ws.cell(3, societyCol).string("SOCIEDAD").style(styles["header"])
+  ws.cell(3, accountNumberCol).string("N° DE CUENTA").style(styles["header"])
+  ws.cell(3, codeCol).string("N° VEP/CUOTA").style(styles["header"])
+  ws.cell(3, amountCol).string("IMPORTE").style(styles["header"])
+  ws.cell(3, totalCol).string("TOTAL").style(styles["header"])
+  ws.cell(3, noteCol).string("NOTA").style(styles["header"])
+  ws.row(3).freeze()
+
+  const orderProperty = filtered ? "expirationDate" : "emissionDate"
+  let plusRows = 0
+  let lastMonth = ""
+
+  movements.forEach((movement, i) => {
+    let thisMonth = moment.utc(movement?.expirationDate).format("MMMM")
+    thisMonth = thisMonth.charAt(0).toUpperCase() + thisMonth.substring(1)
+    if (lastMonth != thisMonth) {
+      const addThreeRows = !i ? 0 : 3
+      ws.cell(7 + plusRows + addThreeRows, 1, 7 + plusRows + addThreeRows, 8, true).string(`${thisMonth} ${moment.utc(movement["expirationDate"], "DD-MM-YYYY").format("YYYY")} `).style(styles["importantCell"]).style({ font: { size: 14, name: "Ebrima" } })
+      plusRows += addThreeRows + 1
+    }
+
+    const style = movement?.error ? styles["expiredCell"] : styles["cell"]
+
+    ws.cell(7 + plusRows, dateCol).string(movement?.date ? moment.utc(movement?.date).format("DD-MM-YYYY") : "No pago").style(style)
+    ws.cell(7 + plusRows, bankCol).string(movement?.account?.bank || "").style(style)
+    ws.cell(7 + plusRows, societyCol).string(movement?.account?.society?.title || "").style(style)
+    ws.cell(7 + plusRows, accountNumberCol).string(movement?.account?.accountNumber || "").style(style)
+    ws.cell(7 + plusRows, amountCol).number(movement?.debit ? (movement?.debit || 0) : (-movement?.credit || 0)).style(style)
+    ws.cell(7 + plusRows, codeCol).string(!i ? movement?.code : String(i)).style(style)
+    ws.cell(7 + plusRows, totalCol).formula(`${(!i || lastMonth != thisMonth) ? "0" : xl.getExcelCellRef(7 + plusRows - 1, totalCol)} + ${movement?.error ? "0" : xl.getExcelCellRef(7 + plusRows, amountCol)} `).style(style)
+    ws.cell(7 + plusRows, noteCol).string(movement?.note || "").style(style)
+    plusRows++
+    if (lastMonth != thisMonth) lastMonth = thisMonth
+  })
+  return wb
+}

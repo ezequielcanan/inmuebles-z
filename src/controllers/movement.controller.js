@@ -1,4 +1,4 @@
-import { cashMovementsExcel, getProjectChecks, getSupplierOrServiceExcel } from "../excel/payments.js"
+import { cashMovementsExcel, getExcelService, getProjectChecks, getSupplierOrServiceExcel } from "../excel/payments.js"
 import MovementsService from "../services/movements.service.js"
 import ProjectService from "../services/project.service.js"
 import SupplierService from "../services/supplier.service.js"
@@ -82,10 +82,10 @@ export const getSupplierExcel = async (req, res) => {
 
 export const getServiceExcel = async (req, res) => {
   try {
-    let movements = (await movementsService.getServiceMovements(req?.params?.sid)).filter(m => !m?.notShows && !m.error)
+    let movements = (await movementsService.getServiceMovements(req?.params?.sid)).filter(m => !m?.notShows)
     movements = movements.sort((a, b) => new Date(a.date || a.emissionDate) - new Date(b.date || b.emissionDate))
     const service = await serviceService.getServiceById(req?.params?.sid)
-    const wb = getSupplierOrServiceExcel(service, {}, movements, false, true)
+    const wb = getExcelService(service, {}, movements, false, true)
     wb.write(`${service?.name} - ${service?.code} BANCOS.xlsx`, res)
   }
   catch (e) {
