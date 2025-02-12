@@ -1,4 +1,4 @@
-import { createMovement, deleteMovement, deleteMovementByIncomingCheck, getAccountMovements, getCashExcel, getCashMovements, getChecksExcel, getExpiredChecks, getMovement, getProjectOutcomingChecks, getServiceExcel, getServiceMovements, getSupplierExcel, updateMovement } from "../controllers/movement.controller.js";
+import { createMovement, deleteMovement, updateMovementsTaxes, deleteMovementByIncomingCheck, getAccountMovements, getCashExcel, getCashMovements, getChecksExcel, getExpiredChecks, getMovement, getProjectOutcomingChecks, getServiceExcel, getServiceMovements, getSupplierExcel, updateMovement } from "../controllers/movement.controller.js";
 import Z_Router from "./router.js";
 
 export default class MovementRouter extends Z_Router {
@@ -17,6 +17,7 @@ export default class MovementRouter extends Z_Router {
 
     this.post("/", ["ADMIN", "BANK"], createMovement)
 
+    this.put("/tax", ["ADMIN", "BANK"], updateMovementsTaxes)
     this.put("/:mid", ["ADMIN", "BANK"], updateMovement)
 
     this.delete("/:mid", ["ADMIN", "BANK"], deleteMovement)

@@ -105,6 +105,17 @@ export const updateMovement = async (req, res) => {
   }
 }
 
+export const updateMovementsTaxes = async (req, res) => {
+  try {
+    const result = await movementsService.updateMovementsTaxes(req?.body)
+    res.sendSuccess(result)
+  }
+  catch (e) {
+    console.log(e)
+    res.sendServerError(e)
+  }
+}
+
 export const deleteMovement = async (req, res) => {
   try {
     const result = await movementsService.deleteMovement(req?.params?.mid)

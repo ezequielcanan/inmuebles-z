@@ -213,7 +213,7 @@ class MovementsService {
   }
 
   getCashMovements = (pid, dollar) => {
-    const findObj = { project: pid }
+    const findObj = { project: pid, account: { $exists: false } }
     if (dollar) findObj["dollar"] = true
     else findObj["$or"] = [
       { dollar: { $exists: false } },
@@ -225,6 +225,37 @@ class MovementsService {
   }
 
   updateMovement = async (mid, movement) => movementModel.updateOne({ _id: mid }, { $set: movement })
+  updateMovementsTaxes = async (tax) => {
+    const movements = await movementModel.aggregate([
+      {
+        $lookup: {
+          from: "accounts",
+          localField: "account",
+          foreignField: "_id",
+          as: "account"
+        }
+      },
+      { $unwind: { path: "$account", preserveNullAndEmptyArrays: true } },
+      { $match: { "account.society": new Types.ObjectId(tax?.project), credit: { $gte: 1 } } },
+      {
+        $match: {
+          $expr: {
+            $and: [
+              { $eq: [{ $month: "$date" }, moment.utc(tax.month).month() + 1] },
+              { $eq: [{ $year: "$date" }, moment.utc(tax.month).year()] }
+            ]
+          }
+        }
+      }
+    ]);
+
+    const movementIds = movements.map(m => m._id);
+
+    await movementModel.updateMany(
+      { _id: { $in: movementIds } },
+      { $set: { tax: tax?.percentage } }
+    );
+  }
 
   deleteMovement = async (mid) => movementModel.deleteOne({ _id: mid })
   deleteMovementByIncomingCheck = async (cid) => movementModel.deleteOne({ incomingCheck: cid })
